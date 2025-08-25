@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="85aab577-e0db-4046-bff2-d44e524dff8f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Controller/InventoryLogsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Controller/InventoryLogsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/DTO/StaffCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/DTO/StaffCreateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilotDiffState.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/DTO/StaffCreateDTO.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Mapper/StaffMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Mapper/StaffMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Repository/InventoryLogsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Repository/InventoryLogsRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Service/InventoryLogsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Service/InventoryLogsService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,12 +34,12 @@
     &quot;assignee&quot;: &quot;L-Jayawardhana&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/L-Jayawardhana/Cloth-Heaven.git&quot;,
-    &quot;accountId&quot;: &quot;c0ffa36b-8454-4b3f-bede-8896c85e3ed7&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/L-Jayawardhana/Cloth-Haven.git",
+    "accountId": "c0ffa36b-8454-4b3f-bede-8896c85e3ed7"
   }
-}</component>
+}]]></component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -56,28 +55,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "Spring Boot.ClothHeavenApplication.executor": "Run",
-    "git-widget-placeholder": "lakdinu",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/lakdi/Desktop/SLIIT/Y2_S1/OOAD",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.ClothHeavenApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;lakdinu&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/lakdi/Desktop/SLIIT/Y2_S1/OOAD&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="org.example.clothheaven.Exception" />
@@ -117,6 +116,7 @@
       <workItem from="1756036380053" duration="5113000" />
       <workItem from="1756057800552" duration="623000" />
       <workItem from="1756099451260" duration="3387000" />
+      <workItem from="1756112222296" duration="855000" />
     </task>
     <servers />
   </component>
