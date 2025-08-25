@@ -40,14 +40,14 @@ public class InventoryLogsController {
     }
 
     @GetMapping("/getLogByProductId/{productId}")
-    public ResponseEntity<List<InventoryLogsResponseDTO>> getLogByProductId(@PathVariable String productId) {
+    public ResponseEntity<List<InventoryLogsResponseDTO>> getLogByProductId(@PathVariable Long productId) {
         List<InventoryLogsResponseDTO> logList = inventoryLogsService.getLogsByProductId(productId);
         return ResponseEntity.ok(logList);
     }
 
     @GetMapping("/getLogByProductIdAndDateRange")
     public ResponseEntity<List<InventoryLogsResponseDTO>> getLogByProductIdAndDateRange(
-            @RequestParam String productId,
+            @RequestParam Long productId,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate) {
         List<InventoryLogsResponseDTO> logList = inventoryLogsService.getLogsByProductIdAndDateRange(productId, startDate, endDate);
@@ -79,7 +79,7 @@ public class InventoryLogsController {
 
     @GetMapping("/getLogByProductIdAndChangeType")
     public ResponseEntity<List<InventoryLogsResponseDTO>> getLogByProductIdAndChangeType(
-            @RequestParam String productId,
+            @RequestParam Long productId,
             @RequestParam String changeType) {
         List<InventoryLogsResponseDTO> logList = inventoryLogsService.getLogsByProductIdAndChangeType(productId, changeType);
         return ResponseEntity.ok(logList);
@@ -87,7 +87,7 @@ public class InventoryLogsController {
 
     @GetMapping("/getLogByProductIdAndChangeTypeAndDateRange")
     public ResponseEntity<List<InventoryLogsResponseDTO>> getLogByProductIdAndChangeTypeAndDateRange(
-            @RequestParam String productId,
+            @RequestParam Long productId,
             @RequestParam String changeType,
             @RequestParam LocalDateTime startDate,
             @RequestParam LocalDateTime endDate) {

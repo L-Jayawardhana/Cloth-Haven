@@ -8,17 +8,17 @@ public class Product {
 
     @Id
     @Column(name = "product_id", nullable = false)
-    private String productId;
+    private Long productId;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
 
     // Getters and Setters
-    public String getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(String productId) {
+    public void setProductId(Long productId) {
         this.productId = productId;
     }
 

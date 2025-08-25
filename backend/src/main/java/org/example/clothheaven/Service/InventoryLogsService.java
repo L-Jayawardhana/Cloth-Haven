@@ -48,7 +48,7 @@ public class InventoryLogsService {
         return inventoryLogsMapper.toResponseDTO(log);
     }
 
-    public List<InventoryLogsResponseDTO> getLogsByProductId(String productId) {
+    public List<InventoryLogsResponseDTO> getLogsByProductId(Long productId) {
         List<InventoryLogs> logs = inventoryLogsRepository.findByProductProductId(productId);
         if (logs.isEmpty()) {
             throw new EmptyLogsException("No logs found for product ID: " + productId);
@@ -58,7 +58,7 @@ public class InventoryLogsService {
                 .collect(Collectors.toList());
     }
 
-    public List<InventoryLogsResponseDTO> getLogsByProductIdAndDateRange(String productId, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<InventoryLogsResponseDTO> getLogsByProductIdAndDateRange(Long productId, LocalDateTime startDate, LocalDateTime endDate) {
         List<InventoryLogs> logs = inventoryLogsRepository.findByProductProductIdAndInventoryLogsDateBetween(productId, startDate, endDate);
         if (logs.isEmpty()) {
             throw new EmptyLogsException("No logs found for product ID: " + productId + " in the specified date range");
@@ -98,7 +98,7 @@ public class InventoryLogsService {
                 .collect(Collectors.toList());
     }
 
-    public List<InventoryLogsResponseDTO> getLogsByProductIdAndChangeType(String productId, String changeType) {
+    public List<InventoryLogsResponseDTO> getLogsByProductIdAndChangeType(Long productId, String changeType) {
         List<InventoryLogs> logs = inventoryLogsRepository.findByProductProductIdAndChangeType(productId, changeType);
         if (logs.isEmpty()) {
             throw new EmptyLogsException("No logs found for product ID: " + productId + " and change type: " + changeType);
@@ -108,7 +108,7 @@ public class InventoryLogsService {
                 .collect(Collectors.toList());
     }
 
-    public List<InventoryLogsResponseDTO> getLogsByProductIdAndChangeTypeAndDateRange(String productId, String changeType, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<InventoryLogsResponseDTO> getLogsByProductIdAndChangeTypeAndDateRange(Long productId, String changeType, LocalDateTime startDate, LocalDateTime endDate) {
         List<InventoryLogs> logs = inventoryLogsRepository.findByProductProductIdAndChangeTypeAndInventoryLogsDateBetween(productId, changeType, startDate, endDate);
         if (logs.isEmpty()) {
             throw new EmptyLogsException("No logs found for product ID: " + productId + ", change type: " + changeType + " in the specified date range");

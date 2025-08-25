@@ -1001,7 +1001,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <Current>1</Current>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2025-08-24.10:03:49</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-08-25.09:26:06</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </schema>
     <schema id="290" parent="1" name="employee">
@@ -1050,81 +1050,121 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Host>localhost</Host>
       <Plugin>caching_sha2_password</Plugin>
     </user>
-    <table id="303" parent="289" name="staff">
+    <table id="303" parent="289" name="inventory_logs">
       <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </table>
-    <table id="304" parent="289" name="user">
+    <table id="304" parent="289" name="staff">
       <DetailsLevel>3</DetailsLevel>
       <Engine>InnoDB</Engine>
       <CollationName>utf8mb4_0900_ai_ci</CollationName>
     </table>
-    <column id="305" parent="303" name="staff_id">
-      <AutoIncrement>4</AutoIncrement>
+    <table id="305" parent="289" name="user">
+      <DetailsLevel>3</DetailsLevel>
+      <Engine>InnoDB</Engine>
+      <CollationName>utf8mb4_0900_ai_ci</CollationName>
+    </table>
+    <column id="306" parent="303" name="log_id">
+      <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint|0s</StoredType>
     </column>
-    <column id="306" parent="303" name="user_id">
+    <column id="307" parent="303" name="change_type">
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+      <StoredType>enum(&apos;ORDER&apos;, &apos;RESTOCK&apos;, &apos;CANCEL&apos;, &apos;RETURN&apos;, &apos;DAMAGE&apos;, &apos;ADJUSTMENT&apos;)|0e</StoredType>
+    </column>
+    <column id="308" parent="303" name="inventory_logs_date">
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+      <StoredType>datetime(6)|0s</StoredType>
+    </column>
+    <column id="309" parent="303" name="quantity_changed">
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+      <StoredType>int|0s</StoredType>
+    </column>
+    <column id="310" parent="303" name="product_id">
+      <Position>5</Position>
+      <StoredType>varchar(255)|0s</StoredType>
+    </column>
+    <index id="311" parent="303" name="PRIMARY">
+      <ColNames>log_id</ColNames>
+      <Type>btree</Type>
+      <Unique>1</Unique>
+    </index>
+    <key id="312" parent="303" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <Primary>1</Primary>
+      <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
+    </key>
+    <column id="313" parent="304" name="staff_id">
+      <AutoIncrement>1</AutoIncrement>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+      <StoredType>bigint|0s</StoredType>
+    </column>
+    <column id="314" parent="304" name="user_id">
       <Position>2</Position>
       <StoredType>bigint|0s</StoredType>
     </column>
-    <foreign-key id="307" parent="303" name="FKbhogfndgswrqk696i1s2stk2g">
+    <foreign-key id="315" parent="304" name="FKbhogfndgswrqk696i1s2stk2g">
       <ColNames>user_id</ColNames>
       <RefColNames>user_id</RefColNames>
       <RefTableName>user</RefTableName>
     </foreign-key>
-    <index id="308" parent="303" name="PRIMARY">
+    <index id="316" parent="304" name="PRIMARY">
       <ColNames>staff_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="309" parent="303" name="UK_7qatq4kob2sr6rlp44khhj53g">
+    <index id="317" parent="304" name="UK_7qatq4kob2sr6rlp44khhj53g">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="310" parent="303" name="PRIMARY">
+    <key id="318" parent="304" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <key id="311" parent="303" name="UK_7qatq4kob2sr6rlp44khhj53g">
+    <key id="319" parent="304" name="UK_7qatq4kob2sr6rlp44khhj53g">
       <UnderlyingIndexName>UK_7qatq4kob2sr6rlp44khhj53g</UnderlyingIndexName>
     </key>
-    <column id="312" parent="304" name="user_id">
-      <AutoIncrement>6</AutoIncrement>
+    <column id="320" parent="305" name="user_id">
+      <AutoIncrement>1</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>bigint|0s</StoredType>
     </column>
-    <column id="313" parent="304" name="role">
+    <column id="321" parent="305" name="role">
       <NotNull>1</NotNull>
       <Position>2</Position>
       <StoredType>enum(&apos;USER&apos;, &apos;STAFF&apos;, &apos;ADMIN&apos;)|0e</StoredType>
     </column>
-    <column id="314" parent="304" name="username">
+    <column id="322" parent="305" name="username">
       <NotNull>1</NotNull>
       <Position>3</Position>
       <StoredType>varchar(255)|0s</StoredType>
     </column>
-    <index id="315" parent="304" name="PRIMARY">
+    <index id="323" parent="305" name="PRIMARY">
       <ColNames>user_id</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <index id="316" parent="304" name="UK_sb8bbouer5wak8vyiiy4pf2bx">
+    <index id="324" parent="305" name="UK_sb8bbouer5wak8vyiiy4pf2bx">
       <ColNames>username</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>
-    <key id="317" parent="304" name="PRIMARY">
+    <key id="325" parent="305" name="PRIMARY">
       <NameSurrogate>1</NameSurrogate>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <key id="318" parent="304" name="UK_sb8bbouer5wak8vyiiy4pf2bx">
+    <key id="326" parent="305" name="UK_sb8bbouer5wak8vyiiy4pf2bx">
       <UnderlyingIndexName>UK_sb8bbouer5wak8vyiiy4pf2bx</UnderlyingIndexName>
     </key>
   </database-model>

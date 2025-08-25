@@ -9,9 +9,9 @@ import java.util.List;
 
 @Repository
 public interface InventoryLogsRepository extends JpaRepository<InventoryLogs, Long> {
-    List<InventoryLogs> findByProductProductId(String productId);
+    List<InventoryLogs> findByProductProductId(Long productId);
 
-    List<InventoryLogs> findByProductProductIdAndInventoryLogsDateBetween(String productId, LocalDateTime startDate, LocalDateTime endDate);
+    List<InventoryLogs> findByProductProductIdAndInventoryLogsDateBetween(Long productId, LocalDateTime startDate, LocalDateTime endDate);
 
     List<InventoryLogs> findByInventoryLogsDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
@@ -19,7 +19,7 @@ public interface InventoryLogsRepository extends JpaRepository<InventoryLogs, Lo
 
     List<InventoryLogs> findByChangeType(String changeType);
 
-    List<InventoryLogs> findByProductProductIdAndChangeType(String productId, String changeType);
+    List<InventoryLogs> findByProductProductIdAndChangeType(Long productId, String changeType);
 
-    List<InventoryLogs> findByProductProductIdAndChangeTypeAndInventoryLogsDateBetween(String productId, String changeType, LocalDateTime startDate, LocalDateTime endDate);
+    List<InventoryLogs> findByProductProductIdAndChangeTypeAndInventoryLogsDateBetween(Long productId, String changeType, LocalDateTime startDate, LocalDateTime endDate);
 }
