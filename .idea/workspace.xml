@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="85aab577-e0db-4046-bff2-d44e524dff8f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Controller/InventoryLogsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Controller/InventoryLogsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/DTO/StaffCreateDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/DTO/StaffCreateDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Mapper/StaffMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Mapper/StaffMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Repository/InventoryLogsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Repository/InventoryLogsRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Service/InventoryLogsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/org/example/clothheaven/Service/InventoryLogsService.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Enum" />
+        <option value="Class" />
+        <option value="Exception" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;L-Jayawardhana&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/L-Jayawardhana/Cloth-Heaven.git&quot;,
+    &quot;accountId&quot;: &quot;c0ffa36b-8454-4b3f-bede-8896c85e3ed7&quot;
+  }
+}</component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="31WF8JPv459cFjfRhv5k0BXSd1o" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.ClothHeavenApplication.executor": "Run",
+    "git-widget-placeholder": "lakdinu",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/lakdi/Desktop/SLIIT/Y2_S1/OOAD",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="org.example.clothheaven.Exception" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="ClothHeavenApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="Cloth-Heaven" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.clothheaven.ClothHeavenApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.23892.409" />
+        <option value="bundled-js-predefined-d6986cc7102b-e03c56caf84a-JavaScript-IU-252.23892.409" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="Logical" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="85aab577-e0db-4046-bff2-d44e524dff8f" name="Changes" comment="" />
+      <created>1755631763866</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1755631763866</updated>
+      <workItem from="1755631764812" duration="994000" />
+      <workItem from="1755946131866" duration="384000" />
+      <workItem from="1755959659997" duration="2013000" />
+      <workItem from="1756025123899" duration="10995000" />
+      <workItem from="1756036380053" duration="5113000" />
+      <workItem from="1756057800552" duration="623000" />
+      <workItem from="1756099451260" duration="3387000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
