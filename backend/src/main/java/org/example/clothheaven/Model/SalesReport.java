@@ -1,7 +1,6 @@
 package org.example.clothheaven.Model;
 
 import jakarta.persistence.*;
-import jdk.jfr.Category;
 
 import java.time.LocalDate;
 
