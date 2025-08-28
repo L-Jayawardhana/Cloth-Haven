@@ -50,4 +50,7 @@ public class SalesReportController {
         List<SalesReportResponseDTO> reports = salesReportService.getAllSalesReportsBetweenDates(startDate, endDate);
         return ResponseEntity.ok(reports);
     }
+
+    //should be created new customers count report
+    //when full user part implemented it should be possible to get new customers count by date or between dates
 }

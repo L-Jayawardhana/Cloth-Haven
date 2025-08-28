@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmptyLogsException.class)
     public ResponseEntity<ErrorResponse> handleEmptyLogsException(EmptyLogsException e, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), 404, LocalDateTime.now(), request.getRequestURI());
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), 204, LocalDateTime.now(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
     }
 
@@ -34,6 +34,19 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), 204, LocalDateTime.now(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
     }
+
+    @ExceptionHandler(SalesReportNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSalesReportNotFound(SalesReportNotFoundException e, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), 404, LocalDateTime.now(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmptySalesReportException.class)
+    public ResponseEntity<ErrorResponse> handleEmptySalesReportException(EmptySalesReportException e, HttpServletRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), 204, LocalDateTime.now(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
+    }
+
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
