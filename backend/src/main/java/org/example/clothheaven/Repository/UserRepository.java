@@ -1,5 +1,6 @@
-package org.example.clothheaven.user;
+package org.example.clothheaven.Repository;
 
+import org.example.clothheaven.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

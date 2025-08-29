@@ -1,13 +1,35 @@
 import { useState } from "react";
+import { apiService } from "../../lib/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<{ email: boolean; password: boolean }>({ email: false, password: false });
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const emailError = touched.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Enter a valid email" : "";
   const passwordError = touched.password && password.length < 6 ? "Minimum 6 characters" : "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setServerError("");
+    setTouched({ email: true, password: true });
+    
+    if (emailError || passwordError || !email || !password) return;
+    
+    try {
+      setSubmitting(true);
+      const userData = await apiService.login({ email, password });
+      localStorage.setItem("user", JSON.stringify(userData));
+      window.location.href = "/";
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="grid min-h-[calc(100vh-8rem)] gap-8 lg:grid-cols-2">
@@ -19,15 +41,15 @@ export default function Login() {
         />
         <div className="absolute inset-0 bg-gradient-to-tr from-black/50 to-black/10" aria-hidden="true"></div>
         <div className="relative p-8 text-white">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs ring-1 ring-white/20">Cloth Haven</div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs ring-1 ring-inset ring-white/20">Cloth Haven</div>
           <p className="mt-3 max-w-md text-sm text-white/90">Premium fashion, thoughtfully curated. Sign in to continue your shopping.</p>
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-md items-center">
-        <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
           <h1 className="text-xl font-semibold">Welcome back</h1>
           <p className="mt-1 text-sm text-gray-600">Sign in to your account</p>
-          <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm text-gray-700">Email</label>
               <input
@@ -72,15 +94,16 @@ export default function Login() {
             </div>
             <button
               type="submit"
-              className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 active:translate-y-px"
-              disabled={!!emailError || !!passwordError || !email || !password}
+              className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 active:translate-y-px disabled:opacity-60"
+              disabled={!!emailError || !!passwordError || !email || !password || submitting}
             >
-              Sign in
+              {submitting ? "Signing in..." : "Sign in"}
             </button>
+            {serverError ? <p className="text-xs text-red-600">{serverError}</p> : null}
           </form>
           <div className="mt-6 grid gap-3">
-            <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-50">Continue with Google</button>
-            <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-50">Continue with Apple</button>
+            <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm transition hover:bg-gray-50">Continue with Google</button>
+            <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm transition hover:bg-gray-50">Continue with Apple</button>
           </div>
           <p className="mt-6 text-center text-sm text-gray-600">
             New here? <a href="/register" className="font-medium text-gray-900 hover:underline">Create an account</a>

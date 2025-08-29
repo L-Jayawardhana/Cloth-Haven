@@ -5,6 +5,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useState, useEffect } from "react";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -23,6 +24,21 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/";
+  };
+
   return (
     <html lang="en">
       <head>
@@ -41,11 +57,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <nav className="hidden md:flex items-center gap-6 text-sm">
               <a href="/products" className="hover:text-gray-700">Products</a>
               <a href="/cart" className="hover:text-gray-700">Cart</a>
-              <a href="/profile" className="hover:text-gray-700">Profile</a>
+              {user && <a href="/profile" className="hover:text-gray-700">Profile</a>}
             </nav>
             <div className="flex items-center gap-3">
-              <a href="/login" className="text-sm hidden sm:inline-block hover:text-gray-700">Sign in</a>
-              <a href="/register" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800">Sign up</a>
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600">Hi, {user.username}</span>
+                  <button 
+                    onClick={handleLogout}
+                    className="inline-flex items-center rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <a href="/login" className="text-sm hidden sm:inline-block hover:text-gray-700">Sign in</a>
+                  <a href="/register" className="inline-flex items-center rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800">Sign up</a>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -68,7 +98,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="grid gap-1">
                 <a href="/products" className="hover:text-gray-700">All products</a>
                 <a href="/cart" className="hover:text-gray-700">Cart</a>
-                <a href="/profile" className="hover:text-gray-700">Account</a>
+                {user && <a href="/profile" className="hover:text-gray-700">Account</a>}
               </div>
             </div>
             <div className="text-sm">

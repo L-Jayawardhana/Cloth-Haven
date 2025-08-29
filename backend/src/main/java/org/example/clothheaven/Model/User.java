@@ -1,4 +1,4 @@
-package org.example.clothheaven.user;
+package org.example.clothheaven.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
