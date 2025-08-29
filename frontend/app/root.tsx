@@ -34,7 +34,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body className="min-h-screen bg-gray-50 text-gray-900 antialiased">
         <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="/home" className="inline-flex items-center gap-2">
+            <a href="/" className="inline-flex items-center gap-2">
               <span className="h-8 w-8 rounded-full bg-gray-900 text-white grid place-items-center font-bold">CH</span>
               <span className="font-semibold tracking-tight">Cloth Haven</span>
             </a>
