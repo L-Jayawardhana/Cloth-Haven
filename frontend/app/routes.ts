@@ -14,4 +14,14 @@ export default [
   route("cart", "routes/cart/index.tsx"),
   route("profile", "routes/profile/index.tsx"),
   route("checkout", "routes/checkout/index.tsx"),
+  // Admin routes
+  route("admin", "routes/admin/route.tsx", [
+    index("routes/admin/index.tsx"),
+    route("users", "routes/admin/users.tsx"),
+    route("products", "routes/admin/products.tsx"),
+    route("inventory", "routes/admin/inventory.tsx"),
+    route("orders", "routes/admin/orders.tsx"),
+    route("reports", "routes/admin/reports.tsx"),
+    route("settings", "routes/admin/settings.tsx"),
+  ]),
 ] satisfies RouteConfig;
