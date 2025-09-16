@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categories")
+@CrossOrigin(origins = "*") // Add CORS support if needed
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -22,45 +23,125 @@ public class CategoryController {
 
     @PostMapping("/add-category")
     public ResponseEntity<CategoryResponseDTO> addCategory(
-            @RequestParam("category") String categoryJson) {
+            @RequestBody CategoryCreateDTO categoryCreateDTO) {
 
-        CategoryResponseDTO response = categoryService.addCategory(categoryJson);
-        return ResponseEntity.ok(response);
+        try {
+            CategoryResponseDTO response = categoryService.addCategory(categoryCreateDTO);
+            if (response.isSuccess()) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Internal server error: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<CategoryCreateDTO>> getAllCategories() {
-        List<CategoryCreateDTO> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+    public ResponseEntity<CategoryResponseDTO> getAllCategories() {
+        try {
+            List<CategoryCreateDTO> categories = categoryService.getAllCategories();
+            CategoryResponseDTO response = new CategoryResponseDTO(
+                    true,
+                    "Categories retrieved successfully",
+                    categories
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Failed to retrieve categories: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryCreateDTO> getCategory(@PathVariable Long categoryId) {
-        CategoryCreateDTO category = categoryService.getCategoryById(categoryId);
-        if (category != null) {
-            return ResponseEntity.ok(category);
+    public ResponseEntity<CategoryResponseDTO> getCategory(@PathVariable Long categoryId) {
+        try {
+            CategoryCreateDTO category = categoryService.getCategoryById(categoryId);
+            if (category != null) {
+                CategoryResponseDTO response = new CategoryResponseDTO(
+                        true,
+                        "Category retrieved successfully",
+                        category
+                );
+                return ResponseEntity.ok(response);
+            } else {
+                CategoryResponseDTO response = new CategoryResponseDTO(
+                        false,
+                        "Category not found with ID: " + categoryId
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Failed to retrieve category: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/update/{categoryId}")
     public ResponseEntity<CategoryResponseDTO> updateCategory(
             @PathVariable Long categoryId,
-            @RequestParam("category") String categoryJson) {
+            @RequestBody CategoryCreateDTO categoryCreateDTO) {
 
-        CategoryResponseDTO response = categoryService.updateCategory(categoryId, categoryJson);
-        return ResponseEntity.ok(response);
+        try {
+            CategoryResponseDTO response = categoryService.updateCategory(categoryId, categoryCreateDTO);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            }
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Internal server error: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @DeleteMapping("/delete/{categoryId}")
     public ResponseEntity<CategoryResponseDTO> deleteCategory(@PathVariable Long categoryId) {
-        CategoryResponseDTO response = categoryService.deleteCategory(categoryId);
-        return ResponseEntity.ok(response);
+        try {
+            CategoryResponseDTO response = categoryService.deleteCategory(categoryId);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Failed to delete category: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllCategoryNames() {
-        List<String> categories = categoryService.getAllCategoryNames();
-        return new ResponseEntity<>(categories, HttpStatus.OK);
+    public ResponseEntity<CategoryResponseDTO> getAllCategoryNames() {
+        try {
+            List<String> categoryNames = categoryService.getAllCategoryNames();
+            CategoryResponseDTO response = new CategoryResponseDTO(
+                    true,
+                    "Category names retrieved successfully",
+                    categoryNames
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            CategoryResponseDTO errorResponse = new CategoryResponseDTO(
+                    false,
+                    "Failed to retrieve category names: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }
