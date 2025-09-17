@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 @Component
 public class CategoryMapper {
 
-    /**
-     * Convert Category entity to CategoryCreateDTO
-     */
+
+      //Convert Category entity to CategoryCreateDTO
+
     public CategoryCreateDTO toDTO(Category category) {
         if (category == null) {
             return null;
@@ -24,22 +24,20 @@ public class CategoryMapper {
         );
     }
 
-    /**
-     * Convert CategoryCreateDTO to new Category entity (for creation)
-     */
+
+     //Convert CategoryCreateDTO to new Category entity (for creation)
+
     public Category toNewEntity(CategoryCreateDTO dto) {
         if (dto == null) {
             return null;
         }
         Category category = new Category();
         category.setCategoryName(dto.getCategoryName());
-        // Note: categoryId is not set as it's auto-generated
         return category;
     }
 
-    /**
-     * Convert CategoryCreateDTO to Category entity (for updates)
-     */
+
+     //Convert CategoryCreateDTO to Category entity
     public Category toEntity(CategoryCreateDTO dto) {
         if (dto == null) {
             return null;
@@ -50,9 +48,8 @@ public class CategoryMapper {
         return category;
     }
 
-    /**
-     * Update existing Category entity with CategoryCreateDTO data
-     */
+
+      //Update existing Category entity with CategoryCreateDTO data
     public Category updateEntity(Category existingCategory, CategoryCreateDTO dto) {
         if (dto == null || existingCategory == null) {
             return existingCategory;
@@ -61,9 +58,7 @@ public class CategoryMapper {
         return existingCategory;
     }
 
-    /**
-     * Convert List of Category entities to List of CategoryCreateDTOs
-     */
+     //Convert List of Category entities to List of CategoryCreateDTOs
     public List<CategoryCreateDTO> toDTOList(List<Category> categories) {
         if (categories == null) {
             return null;
@@ -73,9 +68,8 @@ public class CategoryMapper {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Convert List of CategoryCreateDTOs to List of Category entities
-     */
+
+     //Convert List of CategoryCreateDTOs to List of Category entities
     public List<Category> toEntityList(List<CategoryCreateDTO> categoryDTOs) {
         if (categoryDTOs == null) {
             return null;
@@ -85,9 +79,9 @@ public class CategoryMapper {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Extract category names from List of Category entities
-     */
+
+     // Extract category names from List of Category entities
+
     public List<String> toCategoryNamesList(List<Category> categories) {
         if (categories == null) {
             return null;
@@ -97,9 +91,8 @@ public class CategoryMapper {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Convert category name to CategoryCreateDTO (useful for simple operations)
-     */
+
+     //Convert category name to CategoryCreateDTO (useful for simple operations)
     public CategoryCreateDTO fromCategoryName(String categoryName) {
         if (categoryName == null || categoryName.trim().isEmpty()) {
             return null;

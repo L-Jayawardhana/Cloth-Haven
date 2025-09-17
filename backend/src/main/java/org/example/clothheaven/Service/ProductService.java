@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -127,5 +128,9 @@ public class ProductService {
         productMapper.updateEntity(product, request, category);
         Product updatedProduct = productRepository.save(product);
         return productMapper.toResponseDTO(updatedProduct);
+    }
+
+    public Optional<Product> getProductEntityById(Long productId) {
+        return productRepository.findById(productId);
     }
 }
