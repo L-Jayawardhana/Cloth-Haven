@@ -48,7 +48,6 @@ public class CategoryMapper {
         return category;
     }
 
-
       //Update existing Category entity with CategoryCreateDTO data
     public Category updateEntity(Category existingCategory, CategoryCreateDTO dto) {
         if (dto == null || existingCategory == null) {
@@ -67,7 +66,6 @@ public class CategoryMapper {
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
-
 
      //Convert List of CategoryCreateDTOs to List of Category entities
     public List<Category> toEntityList(List<CategoryCreateDTO> categoryDTOs) {
@@ -90,7 +88,6 @@ public class CategoryMapper {
                 .map(Category::getCategoryName)
                 .collect(Collectors.toList());
     }
-
 
      //Convert category name to CategoryCreateDTO (useful for simple operations)
     public CategoryCreateDTO fromCategoryName(String categoryName) {

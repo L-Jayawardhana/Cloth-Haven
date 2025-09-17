@@ -1,3 +1,7 @@
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getJson } from "~/lib/api";
+
 type Product = {
   id: string;
   name: string;
@@ -14,175 +18,7 @@ type Product = {
   inStock: boolean;
 };
 
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Classic Cotton T-Shirt",
-    price: 24.99,
-    originalPrice: 34.99,
-    imageUrl: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1600&auto=format&fit=crop",
-    tag: "Sale",
-    category: "Tops",
-    description: "Premium cotton blend t-shirt with comfortable fit",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["White", "Black", "Navy", "Gray"],
-    rating: 4.5,
-    reviews: 128,
-    inStock: true,
-  },
-  {
-    id: "2",
-    name: "Denim Jacket",
-    price: 89.99,
-    imageUrl: "https://images.unsplash.com/photo-1544022613-e87ca75a784a?q=80&w=1600&auto=format&fit=crop",
-    tag: "New",
-    category: "Outerwear",
-    description: "Classic denim jacket with vintage wash",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Blue", "Black"],
-    rating: 4.8,
-    reviews: 89,
-    inStock: true,
-  },
-  {
-    id: "3",
-    name: "High-Waist Jeans",
-    price: 69.99,
-    imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1600&auto=format&fit=crop",
-    category: "Bottoms",
-    description: "Comfortable high-waist jeans with stretch",
-    sizes: ["24", "26", "28", "30", "32"],
-    colors: ["Blue", "Black", "Light Blue"],
-    rating: 4.3,
-    reviews: 156,
-    inStock: true,
-  },
-  {
-    id: "4",
-    name: "Oversized Hoodie",
-    price: 54.99,
-    imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1600&auto=format&fit=crop",
-    tag: "Limited",
-    category: "Tops",
-    description: "Cozy oversized hoodie perfect for layering",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Gray", "Black", "Cream"],
-    rating: 4.7,
-    reviews: 203,
-    inStock: true,
-  },
-  {
-    id: "5",
-    name: "Summer Dress",
-    price: 79.99,
-    imageUrl: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1600&auto=format&fit=crop",
-    tag: "New",
-    category: "Dresses",
-    description: "Flowing summer dress with floral pattern",
-    sizes: ["XS", "S", "M", "L"],
-    colors: ["Floral", "Solid Blue", "Solid Pink"],
-    rating: 4.6,
-    reviews: 94,
-    inStock: true,
-  },
-  {
-    id: "6",
-    name: "Cargo Pants",
-    price: 64.99,
-    imageUrl: "https://images.unsplash.com/photo-1506629905607-9b0b0b0b0b0b?q=80&w=1600&auto=format&fit=crop",
-    category: "Bottoms",
-    description: "Utility cargo pants with multiple pockets",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Khaki", "Black", "Olive"],
-    rating: 4.4,
-    reviews: 67,
-    inStock: true,
-  },
-  {
-    id: "7",
-    name: "Knit Sweater",
-    price: 89.99,
-    originalPrice: 119.99,
-    imageUrl: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=1600&auto=format&fit=crop",
-    tag: "Sale",
-    category: "Tops",
-    description: "Soft knit sweater for cold weather",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Cream", "Gray", "Navy"],
-    rating: 4.9,
-    reviews: 178,
-    inStock: true,
-  },
-  {
-    id: "8",
-    name: "Leather Jacket",
-    price: 199.99,
-    imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1600&auto=format&fit=crop",
-    tag: "Premium",
-    category: "Outerwear",
-    description: "Genuine leather jacket with classic cut",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "Brown"],
-    rating: 4.8,
-    reviews: 45,
-    inStock: false,
-  },
-  {
-    id: "9",
-    name: "Casual Blouse",
-    price: 39.99,
-    imageUrl: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=1600&auto=format&fit=crop",
-    category: "Tops",
-    description: "Elegant blouse perfect for office wear",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    colors: ["White", "Black", "Navy", "Pink"],
-    rating: 4.2,
-    reviews: 112,
-    inStock: true,
-  },
-  {
-    id: "10",
-    name: "Jogger Pants",
-    price: 49.99,
-    imageUrl: "https://images.unsplash.com/photo-1506629905607-9b0b0b0b0b0b?q=80&w=1600&auto=format&fit=crop",
-    category: "Bottoms",
-    description: "Comfortable jogger pants with elastic waist",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "Gray", "Navy"],
-    rating: 4.5,
-    reviews: 89,
-    inStock: true,
-  },
-  {
-    id: "11",
-    name: "Maxi Dress",
-    price: 94.99,
-    imageUrl: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=1600&auto=format&fit=crop",
-    tag: "Eco",
-    category: "Dresses",
-    description: "Sustainable maxi dress made from organic cotton",
-    sizes: ["XS", "S", "M", "L"],
-    colors: ["Green", "Blue", "Pink"],
-    rating: 4.7,
-    reviews: 134,
-    inStock: true,
-  },
-  {
-    id: "12",
-    name: "Bomber Jacket",
-    price: 74.99,
-    imageUrl: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=1600&auto=format&fit=crop",
-    category: "Outerwear",
-    description: "Stylish bomber jacket with ribbed cuffs",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Black", "Navy", "Olive"],
-    rating: 4.4,
-    reviews: 76,
-    inStock: true,
-  },
-];
-
-import React, { useState } from "react";
+// Removed demo/mock products. Data now comes from the backend only.
 
 export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -191,10 +27,69 @@ export default function Products() {
   const [sortBy, setSortBy] = useState("featured");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = ["All", "Tops", "Bottoms", "Dresses", "Outerwear"];
+  const { data: categoryNames } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      // Backend returns CategoryResponseDTO with message, success and data: string[]
+      const res = await getJson<{ success: boolean; message: string; data?: string[] }>(
+        "/categories/names"
+      );
+      return res?.data ?? [];
+    },
+    staleTime: 60_000,
+  });
+  const categories = ["All", ...(categoryNames ?? [])];
   const tags = ["All", "New", "Sale", "Limited", "Eco", "Premium"];
 
-  const filteredProducts = MOCK_PRODUCTS.filter((product) => {
+  const queryParams = {
+    q: searchQuery || undefined,
+    category: selectedCategory !== "All" ? selectedCategory : undefined,
+    tag: selectedTag !== "All" ? selectedTag : undefined,
+    maxPrice: priceRange || undefined,
+    sort: sortBy || undefined,
+  } as const;
+
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ["products", queryParams],
+    queryFn: async () => {
+      // Map backend Product -> UI Product
+      type BackendProduct = {
+        productId: number;
+        name: string;
+        description?: string;
+        productPrice: number;
+        size?: string;
+        colour?: string;
+        stockQuantity?: number;
+        category?: { categoryName?: string } | null;
+      };
+      const items = await getJson<BackendProduct[]>(
+        "/products/get-products",
+        queryParams as Record<string, string | number | boolean | undefined>
+      );
+      const mapped: Product[] = (items ?? []).map((p, idx) => ({
+        id: String(p.productId ?? idx + 1),
+        name: p.name ?? "Unnamed",
+        price: typeof p.productPrice === "number" ? p.productPrice : 0,
+        originalPrice: undefined,
+        imageUrl: "https://placehold.co/600x800?text=No+Image",
+        tag: undefined,
+        category: p.category?.categoryName ?? "Uncategorized",
+        description: p.description ?? "",
+        sizes: p.size ? [p.size] : ["Free"],
+        colors: p.colour ? [p.colour] : ["Black"],
+        rating: 0,
+        reviews: 0,
+        inStock: (p.stockQuantity ?? 0) > 0,
+      }));
+      return mapped;
+    },
+    staleTime: 60_000,
+  });
+
+  const sourceProducts = data ?? [];
+
+  const filteredProducts = sourceProducts.filter((product) => {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
     const matchesTag = selectedTag === "All" || product.tag === selectedTag;
     const matchesPrice = product.price <= priceRange;
@@ -243,7 +138,7 @@ export default function Products() {
 
         <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
           {/* Filters Sidebar */}
-          <aside className="space-y-6">
+      <aside className="space-y-6">
             {/* Search */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Search</h3>
@@ -291,9 +186,9 @@ export default function Products() {
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>$0</span>
                   <span className="font-medium">${priceRange}</span>
-                </div>
-              </div>
             </div>
+          </div>
+        </div>
 
             {/* Tags */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
@@ -311,9 +206,9 @@ export default function Products() {
                   >
                     {tag}
                   </button>
-                ))}
-              </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
             {/* Clear Filters */}
             <button
@@ -327,7 +222,7 @@ export default function Products() {
             >
               Clear All Filters
             </button>
-          </aside>
+      </aside>
 
           {/* Product Grid */}
           <section className="space-y-6">
@@ -335,7 +230,7 @@ export default function Products() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {sortedProducts.length} Products Found
+                  {isLoading ? "Loading products..." : `${sortedProducts.length} Products Found`}
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   {selectedCategory !== "All" && `in ${selectedCategory}`}
@@ -352,10 +247,37 @@ export default function Products() {
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
                 <option value="rating">Highest Rated</option>
-              </select>
-            </div>
+          </select>
+        </div>
+
+            {/* Loading state */}
+            {isLoading && (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="animate-pulse overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                    <div className="aspect-[4/5] bg-gray-200" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                      <div className="h-3 w-1/2 bg-gray-200 rounded" />
+                      <div className="h-8 w-full bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Error state */}
+            {isError && !isLoading && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                Failed to load products from the server.
+                <button onClick={() => refetch()} className="ml-3 underline">
+                  Retry
+                </button>
+              </div>
+            )}
 
             {/* Products Grid */}
+            {!isLoading && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedProducts.map((product) => (
                 <div
@@ -459,9 +381,10 @@ export default function Products() {
                 </div>
               ))}
             </div>
+            )}
 
             {/* No Results */}
-            {sortedProducts.length === 0 && (
+            {!isLoading && sortedProducts.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🔍</div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No products found</h3>

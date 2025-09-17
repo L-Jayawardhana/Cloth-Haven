@@ -60,8 +60,29 @@ npm install
 
 3. Start development server
 ```bash
-npm run dev
+npx react-router dev
 ```
+
+### Backend API configuration
+
+Create a `.env` file in the project root with your backend base URL:
+
+```bash
+VITE_API_URL=http://localhost:3000
+```
+
+The frontend uses an Axios client at `app/lib/api.ts` with `VITE_API_URL` as the base URL. The products page calls `GET /products` and supports the following query params:
+
+- `q` (search text)
+- `category`
+- `tag`
+- `maxPrice`
+- `sort` one of `featured|newest|price-low|price-high|rating`
+
+Supported backend response formats:
+
+- Array: `[{ id, name, price, imageUrl, ... }]`
+- Or object with items: `{ items: [{...}] }`
 
 4. Build for production
 ```bash
