@@ -23,7 +23,7 @@ type Product = {
 export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedTag, setSelectedTag] = useState("All");
-  const [priceRange, setPriceRange] = useState(200);
+  const [priceRange, setPriceRange] = useState(100000);
   const [sortBy, setSortBy] = useState("featured");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -67,7 +67,8 @@ export default function Products() {
         "/products/get-products",
         queryParams as Record<string, string | number | boolean | undefined>
       );
-      const mapped: Product[] = (items ?? []).map((p, idx) => ({
+      type ImageDTO = { imageId: number; imageUrl: string; productId: number };
+      const mappedBase: Product[] = (items ?? []).map((p, idx) => ({
         id: String(p.productId ?? idx + 1),
         name: p.name ?? "Unnamed",
         price: typeof p.productPrice === "number" ? p.productPrice : 0,
@@ -82,12 +83,33 @@ export default function Products() {
         reviews: 0,
         inStock: (p.stockQuantity ?? 0) > 0,
       }));
-      return mapped;
+
+      // Fetch first image URL for each product (if any)
+      const withImages = await Promise.all(
+        mappedBase.map(async (p) => {
+          try {
+            const imgs = await getJson<ImageDTO[]>(`/images/product/${p.id}`);
+            const url = (imgs && imgs.length > 0) ? imgs[0].imageUrl : undefined;
+            return { ...p, imageUrl: url ?? p.imageUrl };
+          } catch {
+            return p;
+          }
+        })
+      );
+      return withImages;
     },
     staleTime: 60_000,
   });
 
   const sourceProducts = data ?? [];
+
+  const formatLkr = (amount: number) => {
+    try {
+      return new Intl.NumberFormat("en-LK", { style: "currency", currency: "LKR", maximumFractionDigits: 0 }).format(amount);
+    } catch {
+      return `LKR ${Math.round(amount).toLocaleString()}`;
+    }
+  };
 
   const filteredProducts = sourceProducts.filter((product) => {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
@@ -178,14 +200,14 @@ export default function Products() {
                 <input
                   type="range"
                   min="0"
-                  max="200"
+                  max="100000"
                   value={priceRange}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPriceRange(Number(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>$0</span>
-                  <span className="font-medium">${priceRange}</span>
+                  <span>{formatLkr(0)}</span>
+                  <span className="font-medium">{formatLkr(priceRange)}</span>
             </div>
           </div>
         </div>
@@ -326,7 +348,7 @@ export default function Products() {
                     {/* Price */}
                     <div className="flex items-center gap-2 mb-3">
                       <span className="font-bold text-gray-900">
-                        ${product.price.toFixed(2)}
+                        {formatLkr(product.price)}
                       </span>
                       {product.originalPrice && (
                         <span className="text-sm text-gray-500 line-through">
