@@ -4,25 +4,19 @@ public class ProductCreateDTO {
     private Long productId;
     private String name;
     private String description;
-    private Integer stockQuantity;
     private Double productPrice;
     private Long categoryId;
-    private String size;
-    private String colour;
     private String categoryName;
 
     public ProductCreateDTO() {
     }
 
-    public ProductCreateDTO(Long productId, String name, String description, Integer stockQuantity, Double productPrice, Long categoryId, String size, String colour, String categoryName) {
+    public ProductCreateDTO(Long productId, String name, String description, Double productPrice, Long categoryId, String categoryName) {
         this.productId = productId;
         this.name = name;
         this.description = description;
-        this.stockQuantity = stockQuantity;
         this.productPrice = productPrice;
         this.categoryId = categoryId;
-        this.size = size;
-        this.colour = colour;
         this.categoryName = categoryName;
     }
 
@@ -50,14 +44,6 @@ public class ProductCreateDTO {
         this.description = description;
     }
 
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-
     public Double getProductPrice() {
         return productPrice;
     }
@@ -74,21 +60,6 @@ public class ProductCreateDTO {
         this.categoryId = categoryId;
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public String getColour() {
-        return colour;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
 
     public String getCategoryName() {
         return categoryName;

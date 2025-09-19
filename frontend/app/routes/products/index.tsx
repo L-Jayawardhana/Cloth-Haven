@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getJson } from "~/lib/api";
+import { Link } from "react-router";
+import ProductDetail from "./product-detail";
 
 type Product = {
   id: string;
@@ -16,9 +18,90 @@ type Product = {
   rating: number;
   reviews: number;
   inStock: boolean;
+  availableSizes?: string[];
+  availableColors?: string[];
+  totalQuantity?: number;
 };
 
 // Removed demo/mock products. Data now comes from the backend only.
+
+// Function to get color value for any color name
+const getColorValue = (colorName: string): string => {
+  const color = colorName.toLowerCase().trim();
+  
+  // Common color mappings
+  const colorMap: { [key: string]: string } = {
+    'white': '#ffffff',
+    'black': '#000000',
+    'red': '#ef4444',
+    'blue': '#3b82f6',
+    'green': '#10b981',
+    'yellow': '#f59e0b',
+    'orange': '#f97316',
+    'purple': '#8b5cf6',
+    'pink': '#ec4899',
+    'brown': '#92400e',
+    'gray': '#6b7280',
+    'grey': '#6b7280',
+    'navy': '#1e3a8a',
+    'cream': '#fef3c7',
+    'beige': '#f5f5dc',
+    'olive': '#84cc16',
+    'khaki': '#d4af37',
+    'light blue': '#93c5fd',
+    'dark blue': '#1e40af',
+    'light green': '#86efac',
+    'dark green': '#166534',
+    'light red': '#fca5a5',
+    'dark red': '#991b1b',
+    'maroon': '#7f1d1d',
+    'burgundy': '#7c2d12',
+    'coral': '#ff7f7f',
+    'turquoise': '#06b6d4',
+    'teal': '#14b8a6',
+    'indigo': '#6366f1',
+    'violet': '#8b5cf6',
+    'magenta': '#d946ef',
+    'cyan': '#06b6d4',
+    'lime': '#84cc16',
+    'gold': '#fbbf24',
+    'silver': '#9ca3af',
+    'bronze': '#cd7f32',
+    'copper': '#b87333'
+  };
+  
+  // Check if it's a direct match
+  if (colorMap[color]) {
+    return colorMap[color];
+  }
+  
+  // Try to find partial matches
+  for (const [key, value] of Object.entries(colorMap)) {
+    if (color.includes(key) || key.includes(color)) {
+      return value;
+    }
+  }
+  
+  // If no match found, try to generate a color from the name
+  // This creates a consistent color based on the string
+  let hash = 0;
+  for (let i = 0; i < colorName.length; i++) {
+    hash = colorName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  // Generate RGB values
+  const r = (hash & 0xff0000) >> 16;
+  const g = (hash & 0x00ff00) >> 8;
+  const b = hash & 0x0000ff;
+  
+  // Ensure minimum brightness
+  const minBrightness = 100;
+  const finalR = Math.max(r, minBrightness);
+  const finalG = Math.max(g, minBrightness);
+  const finalB = Math.max(b, minBrightness);
+  
+  return `rgb(${finalR}, ${finalG}, ${finalB})`;
+};
 
 export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -26,6 +109,8 @@ export default function Products() {
   const [priceRange, setPriceRange] = useState(100000);
   const [sortBy, setSortBy] = useState("featured");
   const [searchQuery, setSearchQuery] = useState("");
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { data: categoryNames } = useQuery({
     queryKey: ["categories"],
@@ -60,14 +145,25 @@ export default function Products() {
         productPrice: number;
         size?: string;
         colour?: string;
-        stockQuantity?: number;
         category?: { categoryName?: string } | null;
+        inStock?: boolean;
+        availableSizes?: string[];
+        availableColors?: string[];
+        totalQuantity?: number;
       };
       const items = await getJson<BackendProduct[]>(
         "/products/get-products",
         queryParams as Record<string, string | number | boolean | undefined>
       );
       type ImageDTO = { imageId: number; imageUrl: string; productId: number };
+      // Create a mapping for categoryId to category name
+      const categoryMap: { [key: number]: string } = {
+        1: "Men's Wear",
+        2: "Women's Wear", 
+        3: "Kids' Wear",
+        4: "Accessories"
+      };
+
       const mappedBase: Product[] = (items ?? []).map((p, idx) => ({
         id: String(p.productId ?? idx + 1),
         name: p.name ?? "Unnamed",
@@ -75,13 +171,16 @@ export default function Products() {
         originalPrice: undefined,
         imageUrl: "https://placehold.co/600x800?text=No+Image",
         tag: undefined,
-        category: p.category?.categoryName ?? "Uncategorized",
+        category: categoryMap[p.categoryId] ?? "Uncategorized",
         description: p.description ?? "",
         sizes: p.size ? [p.size] : ["Free"],
         colors: p.colour ? [p.colour] : ["Black"],
         rating: 0,
         reviews: 0,
-        inStock: (p.stockQuantity ?? 0) > 0,
+        inStock: p.inStock ?? true,
+        availableSizes: p.availableSizes ?? (p.size ? [p.size] : ["Free"]),
+        availableColors: p.availableColors ?? (p.colour ? [p.colour] : ["Black"]),
+        totalQuantity: p.totalQuantity ?? 0,
       }));
 
       // Fetch first image URL for each product (if any)
@@ -305,33 +404,88 @@ export default function Products() {
                 <div
                   key={product.id}
                   className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                  onMouseEnter={() => setHoveredProduct(product.id)}
+                  onMouseLeave={() => setHoveredProduct(null)}
                 >
                   <div className="relative aspect-[4/5] bg-gray-100 overflow-hidden">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <Link to={`/products/${product.id}`}>
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110 cursor-pointer"
+                      />
+                    </Link>
                     {product.tag && (
                       <span className="absolute right-3 top-3 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm">
                         {product.tag}
                       </span>
                     )}
                     {!product.inStock && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center pointer-events-none">
                         <span className="bg-white px-3 py-1 rounded-full text-sm font-medium text-gray-900">
                           Out of Stock
                         </span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                    
+                    {/* Hover overlay with stock and size info */}
+                    {hoveredProduct === product.id && (
+                      <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white p-4 pointer-events-none">
+                        <div className="text-center space-y-3">
+                          <div className="text-lg font-semibold">
+                            {product.inStock ? "In Stock" : "Out of Stock"}
+                          </div>
+                          {product.totalQuantity && product.totalQuantity > 0 && (
+                            <div className="text-sm opacity-90">
+                              {product.totalQuantity} units available
+                            </div>
+                          )}
+                          {product.availableSizes && product.availableSizes.length > 0 && (
+                            <div>
+                              <div className="text-sm font-medium mb-2">Available Sizes:</div>
+                              <div className="flex flex-wrap gap-1 justify-center">
+                                {product.availableSizes.map((size, index) => (
+                                  <span
+                                    key={index}
+                                    className="bg-white/20 px-2 py-1 rounded text-xs"
+                                  >
+                                    {size}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {product.availableColors && product.availableColors.length > 0 && (
+                            <div>
+                              <div className="text-sm font-medium mb-2">Available Colors:</div>
+                              <div className="flex flex-wrap gap-1 justify-center max-w-32">
+                                {product.availableColors.map((color, index) => (
+                                  <div
+                                    key={index}
+                                    className="w-4 h-4 rounded-full border border-white/30"
+                                    style={{
+                                      backgroundColor: getColorValue(color)
+                                    }}
+                                    title={color}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
                   </div>
                   
                   <div className="p-4">
                     <div className="mb-2">
-                      <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1">
-                        {product.name}
-                      </h3>
+                      <Link to={`/products/${product.id}`}>
+                        <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1 hover:text-gray-700 transition-colors">
+                          {product.name}
+                        </h3>
+                      </Link>
                       <p className="text-xs text-gray-600 line-clamp-2">
                         {product.description}
                       </p>
@@ -357,48 +511,25 @@ export default function Products() {
                       )}
                     </div>
 
-                    {/* Colors */}
-                    <div className="flex items-center gap-1 mb-3">
-                      <span className="text-xs text-gray-500">Colors:</span>
-                      <div className="flex gap-1">
-                        {product.colors.slice(0, 3).map((color, index) => (
-                          <div
-                            key={index}
-                            className="w-3 h-3 rounded-full border border-gray-300"
-                            style={{
-                              backgroundColor: color.toLowerCase() === 'white' ? '#ffffff' :
-                                             color.toLowerCase() === 'black' ? '#000000' :
-                                             color.toLowerCase() === 'navy' ? '#1e3a8a' :
-                                             color.toLowerCase() === 'gray' ? '#6b7280' :
-                                             color.toLowerCase() === 'blue' ? '#3b82f6' :
-                                             color.toLowerCase() === 'pink' ? '#ec4899' :
-                                             color.toLowerCase() === 'cream' ? '#fef3c7' :
-                                             color.toLowerCase() === 'brown' ? '#92400e' :
-                                             color.toLowerCase() === 'olive' ? '#84cc16' :
-                                             color.toLowerCase() === 'khaki' ? '#d4af37' :
-                                             color.toLowerCase() === 'green' ? '#10b981' :
-                                             color.toLowerCase() === 'light blue' ? '#93c5fd' : '#e5e7eb'
-                            }}
-                            title={color}
-                          />
-                        ))}
-                        {product.colors.length > 3 && (
-                          <span className="text-xs text-gray-500">+{product.colors.length - 3}</span>
-                        )}
-                      </div>
-                    </div>
 
                     {/* Add to Cart Button */}
-                    <button
-                      disabled={!product.inStock}
-                      className={`w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                        product.inStock
-                          ? "bg-gray-900 text-white hover:bg-gray-800"
-                          : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                      }`}
-                    >
-                      {product.inStock ? "Add to Cart" : "Out of Stock"}
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        disabled={!product.inStock}
+                        className={`w-full rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                          product.inStock
+                            ? "bg-gray-900 text-white hover:bg-gray-800"
+                            : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        }`}
+                      >
+                        {product.inStock ? "Add to Cart" : "Out of Stock"}
+                      </button>
+                      {product.inStock && product.totalQuantity && product.totalQuantity > 0 && (
+                        <div className="text-xs text-gray-600 text-center">
+                          Max: {product.totalQuantity} units available
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -429,6 +560,14 @@ export default function Products() {
           </section>
         </div>
       </div>
+      
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetail
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </div>
   );
 }

@@ -20,14 +20,6 @@ public class Product {
     @Column(nullable = false)
     private Double productPrice;
 
-    @Column(nullable = false)
-    private String size;
-
-    @Column(nullable = false)
-    private String colour;
-
-    @Column(nullable = false)
-    private Integer stockQuantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoryId", nullable = false)
@@ -37,14 +29,11 @@ public class Product {
     public Product() {
     }
 
-    public Product(Long productId, String name, String description, Double productPrice, String size, String colour, Integer stockQuantity, Category category) {
+    public Product(Long productId, String name, String description, Double productPrice, Category category) {
         this.productId = productId;
         this.name = name;
         this.description = description;
         this.productPrice = productPrice;
-        this.size = size;
-        this.colour = colour;
-        this.stockQuantity = stockQuantity;
         this.category = category;
     }
 
@@ -80,29 +69,6 @@ public class Product {
         this.productPrice = productPrice;
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public String getColour() {
-        return colour;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
-
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
 
     public Category getCategory() {
         return category;

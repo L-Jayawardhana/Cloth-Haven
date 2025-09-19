@@ -37,8 +37,8 @@ public class ProductController {
     }
 
     @GetMapping("/get-products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProductCreateDTO());
     }
 
     @GetMapping("/get-products-with-category")
@@ -51,15 +51,17 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
     }
 
-    @GetMapping("/size/{size}")
-    public ResponseEntity<List<ProductResponseDTO>> getProductsBySize(@PathVariable String size) {
-        return ResponseEntity.ok(productService.getProductsBySize(size));
-    }
+    // The following endpoints are obsolete since size and colour are no longer in Product.
+    // Use ColorsSizeQuantityAvailabilityController for filtering by size/colour instead.
+    // @GetMapping("/size/{size}")
+    // public ResponseEntity<List<ProductResponseDTO>> getProductsBySize(@PathVariable String size) {
+    //     return ResponseEntity.ok(productService.getProductsBySize(size));
+    // }
 
-    @GetMapping("/colour/{colour}")
-    public ResponseEntity<List<ProductResponseDTO>> getProductsByColour(@PathVariable String colour) {
-        return ResponseEntity.ok(productService.getProductsByColour(colour));
-    }
+    // @GetMapping("/colour/{colour}")
+    // public ResponseEntity<List<ProductResponseDTO>> getProductsByColour(@PathVariable String colour) {
+    //     return ResponseEntity.ok(productService.getProductsByColour(colour));
+    // }
 
     @GetMapping("/price-range")
     public ResponseEntity<List<ProductResponseDTO>> getProductsByPriceRange(@RequestParam Double minPrice, @RequestParam Double maxPrice) {

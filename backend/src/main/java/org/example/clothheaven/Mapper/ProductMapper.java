@@ -24,10 +24,7 @@ public class ProductMapper {
         Product product = new Product();
         product.setName(request.getName());
         product.setDescription(request.getDescription());
-        product.setStockQuantity(request.getStockQuantity());
         product.setProductPrice(request.getProductPrice());
-        product.setSize(request.getSize());
-        product.setColour(request.getColour());
         product.setCategory(category);
         return product;
     }
@@ -41,10 +38,7 @@ public class ProductMapper {
         }
         existingProduct.setName(request.getName());
         existingProduct.setDescription(request.getDescription());
-        existingProduct.setStockQuantity(request.getStockQuantity());
         existingProduct.setProductPrice(request.getProductPrice());
-        existingProduct.setSize(request.getSize());
-        existingProduct.setColour(request.getColour());
         existingProduct.setCategory(category);
         return existingProduct;
     }
@@ -60,12 +54,8 @@ public class ProductMapper {
         dto.setProductId(product.getProductId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
-        dto.setStockQuantity(product.getStockQuantity());
         dto.setProductPrice(product.getProductPrice());
-        dto.setSize(product.getSize());
-        dto.setColour(product.getColour());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getCategoryId() : null);
-        dto.setCategoryName(product.getCategory() != null ? product.getCategory().getCategoryName() : null);
         return dto;
     }
 
@@ -91,11 +81,8 @@ public class ProductMapper {
                 product,
                 product.getName(),
                 product.getDescription(),
-                product.getStockQuantity(),
                 product.getProductPrice(),
                 product.getCategory() != null ? product.getCategory().getCategoryId() : null,
-                product.getSize(),
-                product.getColour(),
                 product.getProductId()
         );
     }
@@ -108,9 +95,6 @@ public class ProductMapper {
                 false,
                 errorMessage,
                 null,   // data field is null when error occurs
-                null,
-                null,
-                null,
                 null,
                 null,
                 null,
@@ -128,10 +112,7 @@ public class ProductMapper {
         dto.setProductId(product.getProductId());
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
-        dto.setStockQuantity(product.getStockQuantity());
         dto.setProductPrice(product.getProductPrice());
-        dto.setSize(product.getSize());
-        dto.setColour(product.getColour());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getCategoryId() : null);
         dto.setSuccess(true);
         dto.setMessage("Success");

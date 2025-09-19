@@ -2,11 +2,13 @@ package org.example.clothheaven.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.example.clothheaven.DTO.ProductResponseDTO;
+import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.Model.Product;
 import org.example.clothheaven.Model.Category;
 import org.example.clothheaven.Repository.ProductRepository;
 import org.example.clothheaven.Repository.CategoryRepository;
 import org.example.clothheaven.Mapper.ProductMapper;
+import org.example.clothheaven.Service.ColorsSizeQuantityAvailabilityService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -22,11 +25,13 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
+        this.colorsSizeQuantityAvailabilityService = colorsSizeQuantityAvailabilityService;
     }
 
     @Transactional
@@ -52,11 +57,8 @@ public class ProductService {
                 response.setMessage("Category not found with id: " + request.getCategoryId());
                 response.setName(request.getName());
                 response.setDescription(request.getDescription());
-                response.setStockQuantity(request.getStockQuantity());
                 response.setProductPrice(request.getProductPrice());
                 response.setCategoryId(request.getCategoryId());
-                response.setSize(request.getSize());
-                response.setColour(request.getColour());
                 return response;
             }
             Product product = productMapper.toNewEntity(request, category);
@@ -77,27 +79,26 @@ public class ProductService {
 
     public List<ProductResponseDTO> getAllProductCreateDTO() {
         List<Product> products = productRepository.findAllWithCategory();
-        return productMapper.toResponseDTOList(products);
+        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
+        return dtos.stream()
+                .map(this::enrichWithStockInfo)
+                .collect(Collectors.toList());
     }
 
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
         List<Product> products = productRepository.findByCategoryCategoryId(categoryId);
-        return productMapper.toResponseDTOList(products);
-    }
-
-    public List<ProductResponseDTO> getProductsBySize(String size) {
-        List<Product> products = productRepository.findBySize(size);
-        return productMapper.toResponseDTOList(products);
-    }
-
-    public List<ProductResponseDTO> getProductsByColour(String colour) {
-        List<Product> products = productRepository.findByColour(colour);
-        return productMapper.toResponseDTOList(products);
+        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
+        return dtos.stream()
+                .map(this::enrichWithStockInfo)
+                .collect(Collectors.toList());
     }
 
     public List<ProductResponseDTO> getProductsByPriceRange(Double minPrice, Double maxPrice) {
         List<Product> products = productRepository.findByPriceRange(minPrice, maxPrice);
-        return productMapper.toResponseDTOList(products);
+        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
+        return dtos.stream()
+                .map(this::enrichWithStockInfo)
+                .collect(Collectors.toList());
     }
 
     public boolean deleteProduct(Long productId) {
@@ -113,7 +114,8 @@ public class ProductService {
     public ProductResponseDTO getProductById(Long productId) {
         Product product = productRepository.findById(productId).orElse(null);
         if (product == null) return null;
-        return productMapper.toResponseDTO(product);
+        ProductResponseDTO dto = productMapper.toResponseDTO(product);
+        return enrichWithStockInfo(dto);
     }
 
     public ProductResponseDTO updateProduct(Long productId, ProductResponseDTO request) {
@@ -127,10 +129,73 @@ public class ProductService {
         Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
         productMapper.updateEntity(product, request, category);
         Product updatedProduct = productRepository.save(product);
-        return productMapper.toResponseDTO(updatedProduct);
+        ProductResponseDTO dto = productMapper.toResponseDTO(updatedProduct);
+        return enrichWithStockInfo(dto);
     }
 
     public Optional<Product> getProductEntityById(Long productId) {
         return productRepository.findById(productId);
+    }
+
+    /**
+     * Enrich ProductResponseDTO with stock and size information
+     */
+    private ProductResponseDTO enrichWithStockInfo(ProductResponseDTO dto) {
+        if (dto == null || dto.getProductId() == null) {
+            return dto;
+        }
+
+        try {
+            List<ColorsSizeQuantityAvailabilityResponseDTO> stockInfo = 
+                colorsSizeQuantityAvailabilityService.getByProductId(dto.getProductId());
+            
+            if (stockInfo != null && !stockInfo.isEmpty()) {
+                // Calculate if product is in stock (any variant available)
+                boolean inStock = stockInfo.stream()
+                    .anyMatch(item -> item.getAvailability() != null && item.getAvailability() && 
+                             item.getQuantity() != null && item.getQuantity() > 0);
+                
+                // Get unique available sizes
+                List<String> availableSizes = stockInfo.stream()
+                    .filter(item -> item.getAvailability() != null && item.getAvailability() && 
+                             item.getQuantity() != null && item.getQuantity() > 0)
+                    .map(ColorsSizeQuantityAvailabilityResponseDTO::getSize)
+                    .distinct()
+                    .collect(Collectors.toList());
+                
+                // Get unique available colors
+                List<String> availableColors = stockInfo.stream()
+                    .filter(item -> item.getAvailability() != null && item.getAvailability() && 
+                             item.getQuantity() != null && item.getQuantity() > 0)
+                    .map(ColorsSizeQuantityAvailabilityResponseDTO::getColor)
+                    .distinct()
+                    .collect(Collectors.toList());
+                
+                // Calculate total quantity
+                int totalQuantity = stockInfo.stream()
+                    .filter(item -> item.getAvailability() != null && item.getAvailability())
+                    .mapToInt(item -> item.getQuantity() != null ? item.getQuantity() : 0)
+                    .sum();
+                
+                dto.setInStock(inStock);
+                dto.setAvailableSizes(availableSizes);
+                dto.setAvailableColors(availableColors);
+                dto.setTotalQuantity(totalQuantity);
+            } else {
+                // No stock information available
+                dto.setInStock(false);
+                dto.setAvailableSizes(List.of());
+                dto.setAvailableColors(List.of());
+                dto.setTotalQuantity(0);
+            }
+        } catch (Exception e) {
+            log.warn("Error fetching stock info for product {}: {}", dto.getProductId(), e.getMessage());
+            dto.setInStock(false);
+            dto.setAvailableSizes(List.of());
+            dto.setAvailableColors(List.of());
+            dto.setTotalQuantity(0);
+        }
+        
+        return dto;
     }
 }

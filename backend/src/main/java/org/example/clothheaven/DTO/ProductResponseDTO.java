@@ -1,32 +1,32 @@
 package org.example.clothheaven.DTO;
 
+import java.util.List;
+
 public class ProductResponseDTO {
     private boolean success;
     private String message;
     private Object data;
     private String name;
     private String description;
-    private Integer stockQuantity;
     private Double productPrice;
     private Long categoryId;
-    private String size;
-    private String colour;
     private Long productId;
+    private Boolean inStock;
+    private List<String> availableSizes;
+    private List<String> availableColors;
+    private Integer totalQuantity;
 
     public ProductResponseDTO() {
     }
 
-    public ProductResponseDTO(boolean success, String message, Object data, String name, String description, Integer stockQuantity, Double productPrice, Long categoryId, String size, String colour, Long productId) {
+    public ProductResponseDTO(boolean success, String message, Object data, String name, String description, Double productPrice, Long categoryId, Long productId) {
         this.success = success;
         this.message = message;
         this.data = data;
         this.name = name;
         this.description = description;
-        this.stockQuantity = stockQuantity;
         this.productPrice = productPrice;
         this.categoryId = categoryId;
-        this.size = size;
-        this.colour = colour;
         this.productId = productId;
     }
 
@@ -70,14 +70,6 @@ public class ProductResponseDTO {
         this.description = description;
     }
 
-    public Integer getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-
     public Double getProductPrice() {
         return productPrice;
     }
@@ -94,27 +86,43 @@ public class ProductResponseDTO {
         this.categoryId = categoryId;
     }
 
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
-    public String getColour() {
-        return colour;
-    }
-
-    public void setColour(String colour) {
-        this.colour = colour;
-    }
-
     public Long getProductId() {
         return productId;
     }
 
     public void setProductId(Long productId) {
         this.productId = productId;
+    }
+
+    public Boolean getInStock() {
+        return inStock;
+    }
+
+    public void setInStock(Boolean inStock) {
+        this.inStock = inStock;
+    }
+
+    public List<String> getAvailableSizes() {
+        return availableSizes;
+    }
+
+    public void setAvailableSizes(List<String> availableSizes) {
+        this.availableSizes = availableSizes;
+    }
+
+    public List<String> getAvailableColors() {
+        return availableColors;
+    }
+
+    public void setAvailableColors(List<String> availableColors) {
+        this.availableColors = availableColors;
+    }
+
+    public Integer getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(Integer totalQuantity) {
+        this.totalQuantity = totalQuantity;
     }
 }
