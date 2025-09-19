@@ -51,6 +51,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByCategory(categoryId));
     }
 
+    @GetMapping("/sub-category/{subCategoryId}")
+    public ResponseEntity<List<ProductResponseDTO>> getProductsBySubCategory(@PathVariable Long subCategoryId) {
+        return ResponseEntity.ok(productService.getProductsBySubCategory(subCategoryId));
+    }
+
     // The following endpoints are obsolete since size and colour are no longer in Product.
     // Use ColorsSizeQuantityAvailabilityController for filtering by size/colour instead.
     // @GetMapping("/size/{size}")

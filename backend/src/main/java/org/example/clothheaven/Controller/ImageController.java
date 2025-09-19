@@ -31,9 +31,7 @@ public class ImageController {
         this.productService = productService;
     }
 
-    /**
-     * Create a new image
-     */
+    //Create a new image
     @PostMapping
     public ResponseEntity<?> createImage(@Valid @RequestBody ImageCreateDTO imageCreateDTO) {
         try {
@@ -56,9 +54,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Get image by ID
-     */
+     //Get image by ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getImageById(
             @PathVariable("id") @NotNull @Positive Long id) {
@@ -79,9 +75,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Get all images
-     */
+    //Get all images
     @GetMapping
     public ResponseEntity<?> getAllImages() {
         try {
@@ -93,9 +87,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Get images by product ID
-     */
+     //Get images by product ID
     @GetMapping("/product/{productId}")
     public ResponseEntity<?> getImagesByProductId(
             @PathVariable("productId") @NotNull @Positive Long productId) {
@@ -111,9 +103,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Update an image
-     */
+     //Update an image
     @PutMapping("/{id}")
     public ResponseEntity<?> updateImage(
             @PathVariable("id") @NotNull @Positive Long id,
@@ -141,9 +131,7 @@ public class ImageController {
         }
     }
 
-    /**
-     * Delete an image
-     */
+     //Delete an image
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteImage(
             @PathVariable("id") @NotNull @Positive Long id) {
@@ -164,9 +152,8 @@ public class ImageController {
         }
     }
 
-    /**
-     * Check if image exists
-     */
+
+     //Check if image exists
     @GetMapping("/{id}/exists")
     public ResponseEntity<Boolean> imageExists(
             @PathVariable("id") @NotNull @Positive Long id) {
@@ -178,9 +165,8 @@ public class ImageController {
         }
     }
 
-    /**
-     * Error response class for consistent error handling
-     */
+
+     // Error response class for consistent error handling
     public static class ErrorResponse {
         private final String message;
         private final long timestamp;

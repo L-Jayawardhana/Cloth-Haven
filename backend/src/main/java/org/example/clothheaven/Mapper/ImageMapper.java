@@ -13,9 +13,7 @@ import java.util.stream.Collectors;
 @Component
 public class ImageMapper {
 
-    /**
-     * Convert Image entity to ImageResponseDTO
-     */
+     //Convert Image entity to ImageResponseDTO
     public ImageResponseDTO toResponseDTO(Image image) {
         if (image == null) {
             return null;
@@ -27,9 +25,8 @@ public class ImageMapper {
         );
     }
 
-    /**
-     * Convert ImageCreateDTO to new Image entity
-     */
+
+     //Convert ImageCreateDTO to new Image entity
     public Image toNewEntity(ImageCreateDTO dto, Product product) {
         if (dto == null || product == null) {
             return null;
@@ -41,9 +38,7 @@ public class ImageMapper {
         return image;
     }
 
-    /**
-     * Update existing Image entity from ImageCreateDTO
-     */
+     //Update existing Image entity from ImageCreateDTO
     public void updateEntity(Image existingImage, ImageCreateDTO dto) {
         if (existingImage == null || dto == null) {
             return;
@@ -54,9 +49,8 @@ public class ImageMapper {
         }
     }
 
-    /**
-     * Convert list of Image entities to list of ImageResponseDTOs
-     */
+
+     //Convert list of Image entities to list of ImageResponseDTOs
     public List<ImageResponseDTO> toResponseDTOList(List<Image> images) {
         if (images == null) {
             return Collections.emptyList();

@@ -105,6 +105,9 @@ const getColorValue = (colorName: string): string => {
 
 export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<number | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
   const [priceRange, setPriceRange] = useState(100000);
   const [sortBy, setSortBy] = useState("featured");
@@ -112,18 +115,34 @@ export default function Products() {
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { data: categoryNames } = useQuery({
-    queryKey: ["categories"],
+  // Fetch categories with IDs
+  const { data: categoriesFull } = useQuery({
+    queryKey: ["categories-full"],
     queryFn: async () => {
-      // Backend returns CategoryResponseDTO with message, success and data: string[]
-      const res = await getJson<{ success: boolean; message: string; data?: string[] }>(
-        "/categories/names"
+      const res = await getJson<{ success: boolean; message: string; data?: { categoryId: number; categoryName: string }[] }>(
+        "/categories/all"
       );
       return res?.data ?? [];
     },
     staleTime: 60_000,
   });
-  const categories = ["All", ...(categoryNames ?? [])];
+
+  const categories = [{ categoryId: -1, categoryName: "All" }, ...(categoriesFull ?? [])];
+
+  // Load sub-categories when a concrete category is selected
+  const { data: subCategories } = useQuery({
+    queryKey: ["subcategories", selectedCategoryId],
+    queryFn: async () => {
+      if (!selectedCategoryId || selectedCategory === "All") return [] as { subCategoryId: number; categoryId: number; subCategory: string }[];
+      const res = await getJson<{ success: boolean; message: string; data?: { subCategoryId: number; categoryId: number; subCategory: string }[] }>(
+        `/sub-categories/by-category/${selectedCategoryId}`
+      );
+      return res?.data ?? [];
+    },
+    enabled: !!selectedCategoryId && selectedCategory !== "All",
+    staleTime: 60_000,
+  });
+
   const tags = ["All", "New", "Sale", "Limited", "Eco", "Premium"];
 
   const queryParams = {
@@ -135,9 +154,8 @@ export default function Products() {
   } as const;
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
-    queryKey: ["products", queryParams],
+    queryKey: ["products", queryParams, selectedCategoryId, selectedSubCategoryId],
     queryFn: async () => {
-      // Map backend Product -> UI Product
       type BackendProduct = {
         productId: number;
         name: string;
@@ -145,25 +163,90 @@ export default function Products() {
         productPrice: number;
         size?: string;
         colour?: string;
-        category?: { categoryName?: string } | null;
+        categoryId?: number;
+        category?: { categoryId?: number; categoryName?: string } | null;
         inStock?: boolean;
         availableSizes?: string[];
         availableColors?: string[];
         totalQuantity?: number;
       };
+      type ImageDTO = { imageId: number; imageUrl: string; productId: number };
+
+      // Priority 1: sub-category
+      if (selectedSubCategoryId) {
+        const items = await getJson<BackendProduct[]>(`/products/sub-category/${selectedSubCategoryId}`);
+        const mappedBase: Product[] = (items ?? []).map((p, idx) => ({
+          id: String(p.productId ?? idx + 1),
+          name: p.name ?? "Unnamed",
+          price: typeof p.productPrice === "number" ? p.productPrice : 0,
+          originalPrice: undefined,
+          imageUrl: "https://placehold.co/600x800?text=No+Image",
+          tag: undefined,
+          category: p.category?.categoryName ?? "Uncategorized",
+          description: p.description ?? "",
+          sizes: p.size ? [p.size] : ["Free"],
+          colors: p.colour ? [p.colour] : ["Black"],
+          rating: 0,
+          reviews: 0,
+          inStock: p.inStock ?? true,
+          availableSizes: p.availableSizes ?? (p.size ? [p.size] : ["Free"]),
+          availableColors: p.availableColors ?? (p.colour ? [p.colour] : ["Black"]),
+          totalQuantity: p.totalQuantity ?? 0,
+        }));
+        const withImages = await Promise.all(
+          mappedBase.map(async (p) => {
+            try {
+              const imgs = await getJson<ImageDTO[]>(`/images/product/${p.id}`);
+              const url = (imgs && imgs.length > 0) ? imgs[0].imageUrl : undefined;
+              return { ...p, imageUrl: url ?? p.imageUrl };
+            } catch {
+              return p;
+            }
+          })
+        );
+        return withImages;
+      }
+
+      // Priority 2: category
+      if (selectedCategoryId) {
+        const items = await getJson<BackendProduct[]>(`/products/category/${selectedCategoryId}`);
+        const mappedBase: Product[] = (items ?? []).map((p, idx) => ({
+          id: String(p.productId ?? idx + 1),
+          name: p.name ?? "Unnamed",
+          price: typeof p.productPrice === "number" ? p.productPrice : 0,
+          originalPrice: undefined,
+          imageUrl: "https://placehold.co/600x800?text=No+Image",
+          tag: undefined,
+          category: p.category?.categoryName ?? "Uncategorized",
+          description: p.description ?? "",
+          sizes: p.size ? [p.size] : ["Free"],
+          colors: p.colour ? [p.colour] : ["Black"],
+          rating: 0,
+          reviews: 0,
+          inStock: p.inStock ?? true,
+          availableSizes: p.availableSizes ?? (p.size ? [p.size] : ["Free"]),
+          availableColors: p.availableColors ?? (p.colour ? [p.colour] : ["Black"]),
+          totalQuantity: p.totalQuantity ?? 0,
+        }));
+        const withImages = await Promise.all(
+          mappedBase.map(async (p) => {
+            try {
+              const imgs = await getJson<ImageDTO[]>(`/images/product/${p.id}`);
+              const url = (imgs && imgs.length > 0) ? imgs[0].imageUrl : undefined;
+              return { ...p, imageUrl: url ?? p.imageUrl };
+            } catch {
+              return p;
+            }
+          })
+        );
+        return withImages;
+      }
+
+      // Fallback: all products (existing filters like search, price, tag are client-side)
       const items = await getJson<BackendProduct[]>(
         "/products/get-products",
         queryParams as Record<string, string | number | boolean | undefined>
       );
-      type ImageDTO = { imageId: number; imageUrl: string; productId: number };
-      // Create a mapping for categoryId to category name
-      const categoryMap: { [key: number]: string } = {
-        1: "Men's Wear",
-        2: "Women's Wear", 
-        3: "Kids' Wear",
-        4: "Accessories"
-      };
-
       const mappedBase: Product[] = (items ?? []).map((p, idx) => ({
         id: String(p.productId ?? idx + 1),
         name: p.name ?? "Unnamed",
@@ -171,7 +254,7 @@ export default function Products() {
         originalPrice: undefined,
         imageUrl: "https://placehold.co/600x800?text=No+Image",
         tag: undefined,
-        category: categoryMap[p.categoryId] ?? "Uncategorized",
+        category: p.category?.categoryName ?? "Uncategorized",
         description: p.description ?? "",
         sizes: p.size ? [p.size] : ["Free"],
         colors: p.colour ? [p.colour] : ["Black"],
@@ -182,8 +265,6 @@ export default function Products() {
         availableColors: p.availableColors ?? (p.colour ? [p.colour] : ["Black"]),
         totalQuantity: p.totalQuantity ?? 0,
       }));
-
-      // Fetch first image URL for each product (if any)
       const withImages = await Promise.all(
         mappedBase.map(async (p) => {
           try {
@@ -211,12 +292,11 @@ export default function Products() {
   };
 
   const filteredProducts = sourceProducts.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || !!selectedCategoryId || product.category === selectedCategory;
     const matchesTag = selectedTag === "All" || product.tag === selectedTag;
     const matchesPrice = product.price <= priceRange;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
     return matchesCategory && matchesTag && matchesPrice && matchesSearch;
   });
 
@@ -278,18 +358,44 @@ export default function Products() {
               <div className="space-y-2">
                 {categories.map((category) => (
                   <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    key={category.categoryId}
+                    onClick={() => {
+                      setSelectedCategory(category.categoryName);
+                      setSelectedCategoryId(category.categoryId > 0 ? category.categoryId : null);
+                      setSelectedSubCategory(null);
+                      setSelectedSubCategoryId(null);
+                    }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                      selectedCategory === category
+                      selectedCategory === category.categoryName
                         ? "bg-blue-100 text-blue-700 font-medium"
                         : "text-gray-600 hover:bg-gray-100"
                     }`}
                   >
-                    {category}
+                    {category.categoryName}
                   </button>
                 ))}
               </div>
+
+              {selectedCategory !== "All" && (subCategories?.length ?? 0) > 0 && (
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2">Sub-categories</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {subCategories!.map((sc) => (
+                      <button
+                        key={sc.subCategoryId}
+                        onClick={() => { setSelectedSubCategory(sc.subCategory); setSelectedSubCategoryId(sc.subCategoryId); }}
+                        className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          selectedSubCategory === sc.subCategory
+                            ? "bg-blue-100 text-blue-700 border border-blue-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200"
+                        }`}
+                      >
+                        {sc.subCategory}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Price Range */}
@@ -335,6 +441,9 @@ export default function Products() {
             <button
               onClick={() => {
                 setSelectedCategory("All");
+                setSelectedCategoryId(null);
+                setSelectedSubCategory(null);
+                setSelectedSubCategoryId(null);
                 setSelectedTag("All");
                 setPriceRange(200);
                 setSearchQuery("");
@@ -355,6 +464,7 @@ export default function Products() {
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   {selectedCategory !== "All" && `in ${selectedCategory}`}
+                  {selectedSubCategory && ` • ${selectedSubCategory}`}
                   {selectedTag !== "All" && ` • ${selectedTag}`}
                 </p>
               </div>
@@ -547,6 +657,9 @@ export default function Products() {
                 <button
                   onClick={() => {
                     setSelectedCategory("All");
+                    setSelectedCategoryId(null);
+                    setSelectedSubCategory(null);
+                    setSelectedSubCategoryId(null);
                     setSelectedTag("All");
                     setPriceRange(200);
                     setSearchQuery("");

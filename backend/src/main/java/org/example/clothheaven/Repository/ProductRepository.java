@@ -16,6 +16,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Find products by category ID
     List<Product> findByCategoryCategoryId(Long categoryId);
 
+    // Find products by sub-category ID
+    List<Product> findBySubCategory_SubCategoryId(Long subCategoryId);
+
     // Custom query to get products with category details
     @Query("SELECT p FROM Product p JOIN FETCH p.category")
     List<Product> findAllWithCategory();

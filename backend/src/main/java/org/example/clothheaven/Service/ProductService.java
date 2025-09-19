@@ -7,6 +7,7 @@ import org.example.clothheaven.Model.Product;
 import org.example.clothheaven.Model.Category;
 import org.example.clothheaven.Repository.ProductRepository;
 import org.example.clothheaven.Repository.CategoryRepository;
+import org.example.clothheaven.Repository.SubCategoryRepository;
 import org.example.clothheaven.Mapper.ProductMapper;
 import org.example.clothheaven.Service.ColorsSizeQuantityAvailabilityService;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,15 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final SubCategoryRepository subCategoryRepository;
     private final ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService, SubCategoryRepository subCategoryRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
         this.colorsSizeQuantityAvailabilityService = colorsSizeQuantityAvailabilityService;
+        this.subCategoryRepository = subCategoryRepository;
     }
 
     @Transactional
@@ -62,6 +65,9 @@ public class ProductService {
                 return response;
             }
             Product product = productMapper.toNewEntity(request, category);
+            if (request.getSubCategoryId() != null) {
+                subCategoryRepository.findById(request.getSubCategoryId()).ifPresent(product::setSubCategory);
+            }
             Product savedProduct = productRepository.save(product);
             return productMapper.toResponseDTO(savedProduct);
         } catch (Exception e) {
@@ -128,9 +134,20 @@ public class ProductService {
         }
         Category category = categoryRepository.findById(request.getCategoryId()).orElse(null);
         productMapper.updateEntity(product, request, category);
+        if (request.getSubCategoryId() != null) {
+            subCategoryRepository.findById(request.getSubCategoryId()).ifPresent(product::setSubCategory);
+        } else {
+            product.setSubCategory(null);
+        }
         Product updatedProduct = productRepository.save(product);
         ProductResponseDTO dto = productMapper.toResponseDTO(updatedProduct);
         return enrichWithStockInfo(dto);
+    }
+
+    public List<ProductResponseDTO> getProductsBySubCategory(Long subCategoryId) {
+        List<Product> products = productRepository.findBySubCategory_SubCategoryId(subCategoryId);
+        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
+        return dtos.stream().map(this::enrichWithStockInfo).collect(Collectors.toList());
     }
 
     public Optional<Product> getProductEntityById(Long productId) {

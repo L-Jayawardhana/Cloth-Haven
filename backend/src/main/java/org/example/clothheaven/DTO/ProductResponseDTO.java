@@ -10,6 +10,7 @@ public class ProductResponseDTO {
     private String description;
     private Double productPrice;
     private Long categoryId;
+    private Long subCategoryId;
     private Long productId;
     private Boolean inStock;
     private List<String> availableSizes;
@@ -84,6 +85,14 @@ public class ProductResponseDTO {
 
     public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public Long getSubCategoryId() {
+        return subCategoryId;
+    }
+
+    public void setSubCategoryId(Long subCategoryId) {
+        this.subCategoryId = subCategoryId;
     }
 
     public Long getProductId() {
