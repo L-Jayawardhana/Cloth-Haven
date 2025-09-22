@@ -14,4 +14,9 @@ export default [
   route("cart", "routes/cart/index.tsx"),
   route("profile", "routes/profile/index.tsx"),
   route("checkout", "routes/checkout/index.tsx"),
+  route("debug", "routes/debug.tsx"),
+  route("simple-test", "routes/simple-test.tsx"),
+  route("login-fixed", "routes/auth/login-fixed.tsx"),
+  route("browser-test", "routes/browser-test.tsx"),
+  route("test-login", "routes/test-login.tsx"),
 ] satisfies RouteConfig;

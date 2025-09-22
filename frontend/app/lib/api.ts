@@ -29,6 +29,11 @@ export interface UpdateUserRequest {
   role: string;
 }
 
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 class ApiService {
   private async request<T>(
     endpoint: string,
@@ -84,6 +89,13 @@ class ApiService {
     return this.request<User>(`/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
+    });
+  }
+
+  async changePassword(userId: number, passwordData: PasswordChangeRequest): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/users/${userId}/password`, {
+      method: 'PUT',
+      body: JSON.stringify(passwordData),
     });
   }
 

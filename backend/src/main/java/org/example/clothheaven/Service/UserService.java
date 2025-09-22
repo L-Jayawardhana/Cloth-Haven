@@ -47,6 +47,20 @@ public class UserService {
         throw new RuntimeException("User not found with id: " + userId);
     }
 
+    public boolean changePassword(Long userId, String currentPassword, String newPassword) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            // Check if current password matches
+            if (user.getPw().equals(currentPassword)) {
+                user.setPw(newPassword);
+                userRepository.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
     }

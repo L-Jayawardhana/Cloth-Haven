@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { apiService } from "../../lib/api";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -15,15 +14,53 @@ export default function Register() {
     e.preventDefault();
     setServerError("");
     
-    if (!username || !emailOk || !pw) return;
+    // Basic validation
+    if (!username || !email || !pw) {
+      setServerError("Please fill in all required fields");
+      return;
+    }
+    
+    if (!emailOk) {
+      setServerError("Please enter a valid email address");
+      return;
+    }
+    
+    if (pw.length < 6) {
+      setServerError("Password must be at least 6 characters");
+      return;
+    }
     
     try {
       setSubmitting(true);
-      const userData = await apiService.register({ username, email, phoneNo, pw, role: "CUSTOMER" });
-      localStorage.setItem("user", JSON.stringify(userData));
-      window.location.href = "/";
+      console.log("Attempting registration with:", { username, email, phoneNo, pw });
+      
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          username, 
+          email, 
+          phoneNo, 
+          pw, 
+          role: "CUSTOMER" 
+        }),
+      });
+      
+      console.log("Registration response status:", response.status);
+      const data = await response.json();
+      console.log("Registration response data:", data);
+      
+      if (response.ok) {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/";
+      } else {
+        setServerError(data.message || "Registration failed");
+      }
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Network error. Please try again.");
+      console.error("Registration error:", err);
+      setServerError(err instanceof Error ? err.message : "Network error occurred");
     } finally {
       setSubmitting(false);
     }
@@ -53,7 +90,7 @@ export default function Register() {
               <input 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
-                className="mt-1 w-full rounded-md border-gray-300 px-3 py-2" 
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
                 placeholder="Jane Doe" 
               />
             </div>
@@ -63,7 +100,7 @@ export default function Register() {
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
                 type="email" 
-                className="mt-1 w-full rounded-md border-gray-300 px-3 py-2" 
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
                 placeholder="you@example.com" 
               />
             </div>
@@ -72,7 +109,7 @@ export default function Register() {
               <input 
                 value={phoneNo} 
                 onChange={(e) => setPhoneNo(e.target.value)} 
-                className="mt-1 w-full rounded-md border-gray-300 px-3 py-2" 
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
                 placeholder="+1 555 0100" 
               />
             </div>
@@ -82,14 +119,14 @@ export default function Register() {
                 value={pw} 
                 onChange={(e) => setPw(e.target.value)} 
                 type="password" 
-                className="mt-1 w-full rounded-md border-gray-300 px-3 py-2" 
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
                 placeholder="••••••••" 
               />
             </div>
             <button 
-              disabled={!username || !emailOk || !pw || submitting} 
+              disabled={!username || !email || !pw || submitting} 
               type="submit" 
-              className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-60"
+              className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 active:translate-y-px disabled:opacity-60"
             >
               {submitting ? "Creating..." : "Create account"}
             </button>

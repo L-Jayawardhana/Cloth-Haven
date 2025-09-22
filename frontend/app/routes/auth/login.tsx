@@ -1,31 +1,53 @@
 import { useState } from "react";
-import { apiService } from "../../lib/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState<{ email: boolean; password: boolean }>({ email: false, password: false });
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
-
-  const emailError = touched.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? "Enter a valid email" : "";
-  const passwordError = touched.password && password.length < 6 ? "Minimum 6 characters" : "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError("");
-    setTouched({ email: true, password: true });
     
-    if (emailError || passwordError || !email || !password) return;
+    // Basic validation
+    if (!email || !password) {
+      setServerError("Please fill in all fields");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setServerError("Password must be at least 6 characters");
+      return;
+    }
+
+    setSubmitting(true);
     
     try {
-      setSubmitting(true);
-      const userData = await apiService.login({ email, password });
-      localStorage.setItem("user", JSON.stringify(userData));
-      window.location.href = "/";
+      console.log("Attempting login with:", { email, password });
+      
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      console.log("Response status:", response.status);
+      const data = await response.json();
+      console.log("Response data:", data);
+      
+      if (response.ok) {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/";
+      } else {
+        setServerError(data.message || "Login failed");
+      }
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Network error. Please try again.");
+      console.error("Login error:", err);
+      setServerError(err instanceof Error ? err.message : "Network error occurred");
     } finally {
       setSubmitting(false);
     }
@@ -56,11 +78,9 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                className={`mt-1 w-full rounded-md border px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20 ${emailError ? "border-red-400" : "border-gray-300"}`}
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20"
                 placeholder="you@example.com"
               />
-              {emailError ? <p className="mt-1 text-xs text-red-600">{emailError}</p> : null}
             </div>
             <div>
               <div className="flex items-center justify-between">
@@ -72,8 +92,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                  className={`mt-1 w-full rounded-md border px-3 py-2 pr-10 outline-none transition focus:ring-2 focus:ring-gray-900/20 ${passwordError ? "border-red-400" : "border-gray-300"}`}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 pr-10 outline-none transition focus:ring-2 focus:ring-gray-900/20"
                   placeholder="••••••••"
                 />
                 <button
@@ -84,7 +103,6 @@ export default function Login() {
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
-              {passwordError ? <p className="mt-1 text-xs text-red-600">{passwordError}</p> : null}
             </div>
             <div className="flex items-center justify-between text-sm">
               <label className="inline-flex items-center gap-2">
@@ -95,7 +113,7 @@ export default function Login() {
             <button
               type="submit"
               className="w-full rounded-md bg-gray-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-gray-800 active:translate-y-px disabled:opacity-60"
-              disabled={!!emailError || !!passwordError || !email || !password || submitting}
+              disabled={!email || !password || submitting}
             >
               {submitting ? "Signing in..." : "Sign in"}
             </button>

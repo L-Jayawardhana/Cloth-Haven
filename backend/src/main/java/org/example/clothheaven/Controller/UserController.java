@@ -1,6 +1,7 @@
 package org.example.clothheaven.Controller;
 
 import jakarta.validation.Valid;
+import org.example.clothheaven.DTO.PasswordChangeRequest;
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -60,6 +62,18 @@ public class UserController {
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody PasswordChangeRequest req) {
+        boolean success = userService.changePassword(userId, req.getCurrentPassword(), req.getNewPassword());
+
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Password changed successfully"));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Current password is incorrect"));
         }
     }
 
