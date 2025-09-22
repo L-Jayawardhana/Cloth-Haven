@@ -2,6 +2,7 @@ package org.example.clothheaven.Service;
 
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,9 +13,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -51,9 +54,8 @@ public class UserService {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // Check if current password matches
-            if (user.getPw().equals(currentPassword)) {
-                user.setPw(newPassword);
+            if (passwordEncoder.matches(currentPassword, user.getPw())) {
+                user.setPw(passwordEncoder.encode(newPassword));
                 userRepository.save(user);
                 return true;
             }

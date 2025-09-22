@@ -40,9 +40,25 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
+
+    const defaultHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Attach JWT if present
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) {
+          defaultHeaders['Authorization'] = `Bearer ${parsed.token}`;
+        }
+      }
+    } catch {}
+
     const config: RequestInit = {
       headers: {
-        'Content-Type': 'application/json',
+        ...defaultHeaders,
         ...options.headers,
       },
       ...options,
@@ -50,12 +66,10 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-
       return await response.json();
     } catch (error) {
       if (error instanceof Error) {
@@ -66,15 +80,15 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(credentials: LoginRequest): Promise<User> {
-    return this.request<User>('/auth/login', {
+  async login(credentials: LoginRequest): Promise<User & { token?: string }> {
+    return this.request<User & { token?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
-  async register(userData: RegisterRequest): Promise<User> {
-    return this.request<User>('/auth/register', {
+  async register(userData: RegisterRequest): Promise<User & { token?: string }> {
+    return this.request<User & { token?: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     });
