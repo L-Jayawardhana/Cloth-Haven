@@ -14,7 +14,7 @@ public class SalesReport {
     private Long reportId;
 
     @Column(name = "sales_report_date", nullable = false)
-    private LocalDate SalesReportDate;
+    private LocalDate salesReportDate;
 
     @Column(name = "total_sales", nullable = false)
     private Double totalSales; //total revenue on that date
@@ -93,10 +93,10 @@ public class SalesReport {
     }
 
     public LocalDate getSalesReportDate() {
-        return SalesReportDate;
+        return salesReportDate;
     }
 
     public void setSalesReportDate(LocalDate salesReportDate) {
-        SalesReportDate = salesReportDate;
+        this.salesReportDate = salesReportDate;
     }
 }
