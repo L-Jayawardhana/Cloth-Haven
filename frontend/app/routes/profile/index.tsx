@@ -12,10 +12,12 @@ export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     phoneNo: "",
+    address: "",
     role: ""
   });
   const [passwordData, setPasswordData] = useState<PasswordChangeData>({
@@ -31,10 +33,12 @@ export default function Profile() {
     if (userData) {
       const userObj = JSON.parse(userData);
       setUser(userObj);
+      setHasToken(!!userObj?.token);
       setFormData({
         username: userObj.username || "",
         email: userObj.email || "",
         phoneNo: userObj.phoneNo || "",
+        address: userObj.address || "",
         role: userObj.role || ""
       });
     }
@@ -59,6 +63,10 @@ export default function Profile() {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!hasToken) {
+      setMessage({ type: "error", text: "Your session is missing a token. Please log in again." });
+      return;
+    }
 
     setLoading(true);
     setMessage({ type: "", text: "" });
@@ -146,6 +154,11 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {!hasToken && (
+          <div className="mb-6 p-4 rounded-lg bg-yellow-50 text-yellow-800 border border-yellow-200">
+            Session expired or missing token. Please <a className="underline" href="/login">log in</a> again to edit your profile.
+          </div>
+        )}
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
@@ -184,7 +197,7 @@ export default function Profile() {
                   </div>
                 )}
 
-                <form onSubmit={handleProfileSubmit} className="space-y-6">
+                <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -233,6 +246,21 @@ export default function Profile() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Address
+                      </label>
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors"
+                        placeholder="Enter address"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
                         Role
                       </label>
                       <input
@@ -240,12 +268,25 @@ export default function Profile() {
                         name="role"
                         value={formData.role}
                         onChange={handleInputChange}
-                        disabled={!isEditing}
+                        disabled={true}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors"
                         placeholder="Enter role"
                       />
                     </div>
                   </div>
+
+                  {isEditing && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={handleProfileSubmit}
+                        disabled={loading}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+                      >
+                        {loading ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                     <div className="flex gap-3">
@@ -263,28 +304,6 @@ export default function Profile() {
                       ) : (
                         <>
                           <button
-                            type="submit"
-                            disabled={loading}
-                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
-                          >
-                            {loading ? (
-                              <>
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Saving...
-                              </>
-                            ) : (
-                              <>
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                Save Changes
-                              </>
-                            )}
-                          </button>
-                          <button
                             type="button"
                             onClick={() => {
                               setIsEditing(false);
@@ -292,6 +311,7 @@ export default function Profile() {
                                 username: user.username || "",
                                 email: user.email || "",
                                 phoneNo: user.phoneNo || "",
+                                address: user.address || "",
                                 role: user.role || ""
                               });
                             }}

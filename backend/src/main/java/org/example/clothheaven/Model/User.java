@@ -28,6 +28,9 @@ public class User {
     @Column(name = "phone_no", length = 30)
     private String phoneNo;
 
+    @Column(name = "address", length = 255)
+    private String address;
+
     @Column(name = "pw", nullable = false)
     private String pw;
 
@@ -77,6 +80,14 @@ public class User {
 
     public void setPhoneNo(String phoneNo) {
         this.phoneNo = phoneNo;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public String getPw() {

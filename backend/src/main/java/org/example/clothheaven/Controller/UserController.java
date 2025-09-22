@@ -42,6 +42,7 @@ public class UserController {
         user.setUsername(req.username());
         user.setEmail(req.email());
         user.setPhoneNo(req.phoneNo());
+        user.setAddress(req.address());
         user.setPw(req.pw());
         user.setRole(req.role());
 
@@ -56,6 +57,7 @@ public class UserController {
             userDetails.setUsername(req.username());
             userDetails.setEmail(req.email());
             userDetails.setPhoneNo(req.phoneNo());
+            userDetails.setAddress(req.address());
             userDetails.setRole(req.role());
 
             User updatedUser = userService.updateUser(userId, userDetails);
@@ -91,6 +93,7 @@ public class UserController {
             String username,
             String email,
             String phoneNo,
+            String address,
             String pw,
             String role) {
     }
@@ -99,6 +102,7 @@ public class UserController {
             String username,
             String email,
             String phoneNo,
+            String address,
             String role) {
     }
 }

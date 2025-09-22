@@ -5,6 +5,7 @@ export interface User {
   username: string;
   email: string;
   phoneNo?: string;
+  address?: string;
   role: string;
   createdAt?: string;
 }
@@ -26,6 +27,7 @@ export interface UpdateUserRequest {
   username: string;
   email: string;
   phoneNo?: string;
+  address?: string;
   role: string;
 }
 

@@ -43,6 +43,7 @@ public class AuthController {
                 u.setUsername(req.username());
                 u.setEmail(req.email());
                 u.setPhoneNo(req.phoneNo());
+                u.setAddress(req.address());
                 u.setPw(passwordEncoder.encode(req.pw()));
                 u.setRole(req.role() == null || req.role().isBlank() ? "CUSTOMER" : req.role());
                 u.setCreatedAt(LocalDateTime.now());
@@ -92,6 +93,7 @@ public class AuthController {
                         String username,
                         String email,
                         String phoneNo,
+                        String address,
                         String pw,
                         String role) {
         }
