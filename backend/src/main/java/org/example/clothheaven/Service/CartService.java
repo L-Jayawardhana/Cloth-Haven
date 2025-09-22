@@ -69,7 +69,7 @@ public class CartService {
         cartItemRepository.save(cartItem);
 
         // Return updated cart
-        Cart updatedCart = cartRepository.findByUserIdWithItems(cartItem.getCart().getUserId())
+        Cart updatedCart = cartRepository.findByUserIdWithItems(cartItem.getCartId().getUserId())
                 .orElseThrow(() -> new CartItemNotFoundException("Cart not found"));
 
         return cartMapper.toCartResponseDTO(updatedCart);

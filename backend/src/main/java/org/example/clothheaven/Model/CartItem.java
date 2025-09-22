@@ -13,7 +13,7 @@ public class CartItem {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    @Column(nullable = false)
+    @JoinColumn(name = "product_id", nullable = false)
     private Long productId;
 
     @Column(nullable = false)
@@ -32,8 +32,8 @@ public class CartItem {
     public Long getCartItemId() { return cartItemId; }
     public void setCartItemId(Long cartItemId) { this.cartItemId = cartItemId; }
 
-    public Cart getCart() { return cart; }
-    public void setCart(Cart cart) { this.cart = cart; }
+    public Cart getCartId() { return cart; }
+    public void setCartId(Cart cartId) { this.cart = cart; }
 
     public Long getProductId() { return productId; }
     public void setProductId(Long productId) { this.productId = productId; }
