@@ -173,11 +173,17 @@ export default function Profile() {
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-8 text-white">
                 <div className="flex items-center space-x-4">
                   <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-2xl font-bold">
-                    {user.username.charAt(0).toUpperCase()}
+                    {user.username?.charAt(0)?.toUpperCase()}
                   </div>
                   <div>
                     <h2 className="text-xl font-semibold">{user.username}</h2>
                     <p className="text-blue-100">{user.email}</p>
+                    {user.phoneNo && (
+                      <p className="text-blue-100 opacity-90 text-sm mt-1">{user.phoneNo}</p>
+                    )}
+                    {user.address && (
+                      <p className="text-blue-100 opacity-90 text-sm">{user.address}</p>
+                    )}
                     <span className="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-sm">
                       {user.role}
                     </span>

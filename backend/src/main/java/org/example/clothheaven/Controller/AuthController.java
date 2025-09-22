@@ -58,6 +58,8 @@ public class AuthController {
                 body.put("userid", u.getUserId());
                 body.put("username", u.getUsername());
                 body.put("email", u.getEmail());
+                body.put("phoneNo", u.getPhoneNo());
+                body.put("address", u.getAddress());
                 body.put("role", u.getRole());
                 body.put("token", token);
 
@@ -83,6 +85,8 @@ public class AuthController {
                 body.put("userid", user.getUserId());
                 body.put("username", user.getUsername());
                 body.put("email", user.getEmail());
+                body.put("phoneNo", user.getPhoneNo());
+                body.put("address", user.getAddress());
                 body.put("role", user.getRole());
                 body.put("token", token);
 

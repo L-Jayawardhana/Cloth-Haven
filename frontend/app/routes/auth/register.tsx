@@ -4,6 +4,7 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNo, setPhoneNo] = useState("");
+  const [address, setAddress] = useState("");
   const [pw, setPw] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
@@ -32,7 +33,7 @@ export default function Register() {
     
     try {
       setSubmitting(true);
-      console.log("Attempting registration with:", { username, email, phoneNo, pw });
+      console.log("Attempting registration with:", { username, email, phoneNo, address, pw });
       
       const response = await fetch("http://localhost:8080/api/auth/register", {
         method: "POST",
@@ -43,6 +44,7 @@ export default function Register() {
           username, 
           email, 
           phoneNo, 
+          address,
           pw, 
           role: "CUSTOMER" 
         }),
@@ -111,6 +113,15 @@ export default function Register() {
                 onChange={(e) => setPhoneNo(e.target.value)} 
                 className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
                 placeholder="+1 555 0100" 
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700">Address</label>
+              <input 
+                value={address} 
+                onChange={(e) => setAddress(e.target.value)} 
+                className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 outline-none transition focus:ring-2 focus:ring-gray-900/20" 
+                placeholder="123 Main St, City" 
               />
             </div>
             <div>
