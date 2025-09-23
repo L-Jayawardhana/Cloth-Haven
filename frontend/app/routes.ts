@@ -19,4 +19,6 @@ export default [
   route("login-fixed", "routes/auth/login-fixed.tsx"),
   route("browser-test", "routes/browser-test.tsx"),
   route("test-login", "routes/test-login.tsx"),
+  route("forgot-password", "routes/auth/forgot-password.tsx"),
+  route("reset-password", "routes/auth/reset-password.tsx"),
 ] satisfies RouteConfig;

@@ -6,10 +6,18 @@ import org.example.clothheaven.DTO.LoginResponse;
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.UserRepository;
 import org.example.clothheaven.Util.JwtUtil;
+import org.example.clothheaven.DTO.ForgotPasswordRequest;
+import org.example.clothheaven.DTO.ResetPasswordRequest;
+import org.example.clothheaven.Model.PasswordResetToken;
+import org.example.clothheaven.Repository.PasswordResetTokenRepository;
+import org.example.clothheaven.Service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,11 +32,16 @@ public class AuthController {
         private final UserRepository userRepository;
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
+        private final PasswordResetTokenRepository tokenRepository;
+        private final EmailService emailService;
 
-        public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+                        PasswordResetTokenRepository tokenRepository, EmailService emailService) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtUtil = jwtUtil;
+                this.tokenRepository = tokenRepository;
+                this.emailService = emailService;
         }
 
         @PostMapping("/register")
@@ -91,6 +104,66 @@ public class AuthController {
                 body.put("token", token);
 
                 return ResponseEntity.ok(body);
+        }
+
+        @PostMapping("/forgot-password")
+        public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+                Optional<User> userOpt = userRepository.findByEmail(req.getEmail());
+                if (userOpt.isEmpty()) {
+                        // Don't reveal if email exists or not for security
+                        return ResponseEntity.ok(Map.of("message", "If the email exists, a reset code has been sent"));
+                }
+
+                // Generate 6-digit verification code
+                String resetCode = generateResetCode();
+
+                // Save or update reset token
+                Optional<PasswordResetToken> existingToken = tokenRepository.findByEmailAndUsedFalse(req.getEmail());
+                PasswordResetToken token = existingToken.orElse(new PasswordResetToken());
+                token.setEmail(req.getEmail());
+                token.setToken(resetCode);
+                token.setExpiryDate(LocalDateTime.now().plusHours(1));
+                token.setUsed(false);
+                tokenRepository.save(token);
+
+                // Send email
+                emailService.sendPasswordResetEmail(req.getEmail(), resetCode);
+
+                return ResponseEntity.ok(Map.of("message", "If the email exists, a reset code has been sent"));
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+                Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(req.getToken());
+                if (tokenOpt.isEmpty() || tokenOpt.get().isUsed() ||
+                                tokenOpt.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                        .body(Map.of("message", "Invalid or expired reset code"));
+                }
+
+                PasswordResetToken token = tokenOpt.get();
+                Optional<User> userOpt = userRepository.findByEmail(token.getEmail());
+                if (userOpt.isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                        .body(Map.of("message", "User not found"));
+                }
+
+                // Update password
+                User user = userOpt.get();
+                user.setPw(passwordEncoder.encode(req.getNewPassword()));
+                userRepository.save(user);
+
+                // Mark token as used
+                token.setUsed(true);
+                tokenRepository.save(token);
+
+                return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
+        }
+
+        private String generateResetCode() {
+                SecureRandom random = new SecureRandom();
+                int code = 100000 + random.nextInt(900000); // 6-digit code
+                return String.valueOf(code);
         }
 
         public record RegisterRequest(
