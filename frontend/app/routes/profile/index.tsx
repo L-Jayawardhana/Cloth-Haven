@@ -27,6 +27,9 @@ export default function Profile() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -130,6 +133,28 @@ export default function Profile() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     window.location.href = "/";
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!user) return;
+    if (!deletePassword) {
+      setMessage({ type: "error", text: "Please enter your password to confirm." });
+      return;
+    }
+    setDeleting(true);
+    setMessage({ type: "", text: "" });
+    try {
+      await apiService.deleteAccount(user.userid, deletePassword);
+      localStorage.removeItem("user");
+      alert("Your account has been deleted. We're sorry to see you go.");
+      window.location.href = "/";
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Failed to delete account" });
+    } finally {
+      setDeleting(false);
+      setDeletePassword("");
+      setShowDeleteDialog(false);
+    }
   };
 
   if (!user) {
@@ -482,16 +507,57 @@ export default function Profile() {
             <div className="bg-white rounded-2xl shadow-sm border border-red-200 p-6">
               <h3 className="text-lg font-semibold text-red-900 mb-4">Danger Zone</h3>
               <p className="text-sm text-red-600 mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Sign Out
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="w-full flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0V5a2 2 0 012-2h3a2 2 0 012 2v2m-7 0h8" />
+                  </svg>
+                  Delete Account
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sign Out
+                </button>
+              </div>
             </div>
+            {showDeleteDialog && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Delete your account?</h4>
+                  <p className="text-sm text-gray-600 mb-4">This will delete all your data permanently. Please confirm by entering your password.</p>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
+                  />
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      onClick={() => { setShowDeleteDialog(false); setDeletePassword(""); }}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      disabled={deleting}
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      {deleting ? "Deleting..." : "Yes, delete"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

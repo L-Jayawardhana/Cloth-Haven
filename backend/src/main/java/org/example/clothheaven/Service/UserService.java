@@ -68,6 +68,18 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public boolean deleteUserWithPassword(Long userId, String password) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (passwordEncoder.matches(password, user.getPw())) {
+                userRepository.deleteById(userId);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean emailExists(String email) {
         return userRepository.findByEmail(email).isPresent();
     }

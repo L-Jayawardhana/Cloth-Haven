@@ -2,6 +2,7 @@ package org.example.clothheaven.Controller;
 
 import jakarta.validation.Valid;
 import org.example.clothheaven.DTO.PasswordChangeRequest;
+import org.example.clothheaven.DTO.DeleteAccountRequest;
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Service.UserService;
 import org.springframework.http.HttpStatus;
@@ -87,6 +88,16 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping("/{userId}/delete-account")
+    public ResponseEntity<?> deleteAccount(@PathVariable Long userId, @Valid @RequestBody DeleteAccountRequest req) {
+        boolean deleted = userService.deleteUserWithPassword(userId, req.getPassword());
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Password is incorrect"));
     }
 
     public record CreateUserRequest(

@@ -119,6 +119,13 @@ class ApiService {
   async getAllUsers(): Promise<User[]> {
     return this.request<User[]>('/users');
   }
+
+  async deleteAccount(userId: number, password: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/users/${userId}/delete-account`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+  }
 }
 
 export const apiService = new ApiService();
