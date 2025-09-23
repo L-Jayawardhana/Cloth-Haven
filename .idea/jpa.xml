@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="PersistenceUnitSettings">
-    <persistence-units>
-      <persistence-unit moduleName="Cloth-Heaven" name="Cloth-Heaven" framework="JPA" ormUnit="Cloth-Heaven:Cloth-Heaven" defaultDataSourceId="481ec1bb-58ec-4fba-9246-8e3e1c369353" />
-    </persistence-units>
-  </component>
-</project>
