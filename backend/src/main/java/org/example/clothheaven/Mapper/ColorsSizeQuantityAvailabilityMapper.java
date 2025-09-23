@@ -28,4 +28,19 @@ public class ColorsSizeQuantityAvailabilityMapper {
             entity.getQuantity()
         );
     }
+
+    public void updateEntityFromDto(ColorsSizeQuantityAvailability entity, ColorsSizeQuantityAvailabilityCreateDTO dto, Product product) {
+        if (entity == null || dto == null) return;
+        if (product != null) {
+            entity.setProduct(product);
+        }
+        if (dto.getColor() != null) {
+            entity.setColor(dto.getColor());
+        }
+        if (dto.getSize() != null) {
+            entity.setSize(dto.getSize());
+        }
+        entity.setAvailability(dto.getAvailability());
+        entity.setQuantity(dto.getQuantity());
+    }
 }

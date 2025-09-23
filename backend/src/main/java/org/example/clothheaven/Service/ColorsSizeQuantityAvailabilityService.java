@@ -34,5 +34,52 @@ public class ColorsSizeQuantityAvailabilityService {
         List<ColorsSizeQuantityAvailability> list = repository.findByProduct_ProductId(productId);
         return list.stream().map(mapper::toResponseDTO).collect(Collectors.toList());
     }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO update(Long id, ColorsSizeQuantityAvailabilityCreateDTO dto) {
+        Optional<ColorsSizeQuantityAvailability> existingOpt = repository.findById(id);
+        if (existingOpt.isEmpty()) return null;
+
+        ColorsSizeQuantityAvailability existing = existingOpt.get();
+
+        if (dto.getProductId() != null && (existing.getProduct() == null ||
+                !dto.getProductId().equals(existing.getProduct().getProductId()))) {
+            Optional<Product> productOpt = productRepository.findById(dto.getProductId());
+            if (productOpt.isEmpty()) return null;
+            existing.setProduct(productOpt.get());
+        }
+
+        if (dto.getColor() != null) {
+            existing.setColor(dto.getColor());
+        }
+        if (dto.getSize() != null) {
+            existing.setSize(dto.getSize());
+        }
+        existing.setAvailability(dto.getAvailability());
+        existing.setQuantity(dto.getQuantity());
+
+        ColorsSizeQuantityAvailability saved = repository.save(existing);
+        return mapper.toResponseDTO(saved);
+    }
+
+    public boolean delete(Long id) {
+        Optional<ColorsSizeQuantityAvailability> existingOpt = repository.findById(id);
+        if (existingOpt.isEmpty()) return false;
+        repository.delete(existingOpt.get());
+        return true;
+    }
+
+    public boolean existsById(Long id) {
+        return repository.existsById(id);
+    }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO getById(Long id) {
+        Optional<ColorsSizeQuantityAvailability> existingOpt = repository.findById(id);
+        return existingOpt.map(mapper::toResponseDTO).orElse(null);
+    }
+
+    public List<ColorsSizeQuantityAvailabilityResponseDTO> getAll() {
+        List<ColorsSizeQuantityAvailability> list = repository.findAll();
+        return list.stream().map(mapper::toResponseDTO).collect(Collectors.toList());
+    }
 }
 
