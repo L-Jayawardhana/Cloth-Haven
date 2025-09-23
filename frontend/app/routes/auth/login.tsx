@@ -83,10 +83,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <div className="flex items-center justify-between">
-                <label className="block text-sm text-gray-700">Password</label>
-                <a href="#" className="text-xs text-gray-600 hover:text-gray-800">Forgot password?</a>
-              </div>
+              
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
