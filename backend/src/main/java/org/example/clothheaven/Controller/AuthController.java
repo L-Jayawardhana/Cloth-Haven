@@ -2,7 +2,6 @@ package org.example.clothheaven.Controller;
 
 import jakarta.validation.Valid;
 import org.example.clothheaven.DTO.LoginRequest;
-import org.example.clothheaven.DTO.LoginResponse;
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.UserRepository;
 import org.example.clothheaven.Util.JwtUtil;
@@ -17,8 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,6 +98,7 @@ public class AuthController {
                 body.put("phoneNo", user.getPhoneNo());
                 body.put("address", user.getAddress());
                 body.put("role", user.getRole());
+                body.put("createdAt", user.getCreatedAt());
                 body.put("token", token);
 
                 return ResponseEntity.ok(body);
