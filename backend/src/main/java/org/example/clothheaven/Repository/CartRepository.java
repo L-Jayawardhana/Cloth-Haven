@@ -10,10 +10,10 @@ import java.util.Optional;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
 
-    @Query("SELECT c FROM Cart c LEFT JOIN FETCH c.cartItems WHERE c.userId = :userId")
+    @Query("SELECT c FROM Cart c LEFT JOIN FETCH c.cartItems WHERE c.user.userId = :userId")
     Optional<Cart> findByUserIdWithItems(@Param("userId") Long userId);
 
-    Optional<Cart> findByUserId(Long userId);
+    Optional<Cart> findByUser_UserId(Long userId);
 
-    boolean existsByUserId(Long userId);
+    boolean existsByUser_UserId(Long userId);
 }

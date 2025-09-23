@@ -22,11 +22,10 @@ public class CartMapper {
 
         return new CartResponseDTO(
                 cart.getCartId(),
-                cart.getUserId(),
+                cart.getUser() != null ? cart.getUser().getUserId() : null,
                 cart.getCreatedAt(),
                 cart.getUpdatedAt(),
-                itemDTOs
-        );
+                itemDTOs);
     }
 
     public CartItemResponseDTO toCartItemResponseDTO(CartItem cartItem) {
@@ -36,8 +35,7 @@ public class CartMapper {
 
         return new CartItemResponseDTO(
                 cartItem.getCartItemId(),
-                cartItem.getProductId(),
-                cartItem.getCartItemsQuantity()
-        );
+                cartItem.getProduct() != null ? cartItem.getProduct().getProductId() : null,
+                cartItem.getCartItemsQuantity());
     }
 }

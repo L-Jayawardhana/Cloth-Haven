@@ -1,5 +1,8 @@
 package org.example.clothheaven.Service;
 
+import org.example.clothheaven.Model.User;
+import org.example.clothheaven.Model.Product;
+
 import org.example.clothheaven.DTO.AddToCartDTO;
 import org.example.clothheaven.DTO.CartResponseDTO;
 import org.example.clothheaven.DTO.UpdateCartItemDTO;
@@ -17,6 +20,11 @@ import java.util.Optional;
 @Service
 @Transactional
 public class CartService {
+    @Autowired
+    private org.example.clothheaven.Repository.UserRepository userRepository;
+
+    @Autowired
+    private org.example.clothheaven.Repository.ProductRepository productRepository;
 
     @Autowired
     private CartRepository cartRepository;
@@ -29,12 +37,21 @@ public class CartService {
 
     public CartResponseDTO addItemToCart(AddToCartDTO addToCartDTO) {
         // Find or create cart for user
-        Cart cart = cartRepository.findByUserId(addToCartDTO.getUserId())
-                .orElseGet(() -> cartRepository.save(new Cart(addToCartDTO.getUserId())));
+        User user = userRepository.findById(addToCartDTO.getUserId())
+                .orElseThrow(
+                        () -> new CartItemNotFoundException("User not found with id: " + addToCartDTO.getUserId()));
+        Cart cart = cartRepository.findByUser_UserId(addToCartDTO.getUserId())
+                .orElseGet(() -> {
+                    Cart newCart = new Cart(user);
+                    return cartRepository.save(newCart);
+                });
 
         // Check if item already exists in cart
+        Product product = productRepository.findById(addToCartDTO.getProductId())
+                .orElseThrow(() -> new CartItemNotFoundException(
+                        "Product not found with id: " + addToCartDTO.getProductId()));
         Optional<CartItem> existingItem = cartItemRepository
-                .findByCartCartIdAndProductId(cart.getCartId(), addToCartDTO.getProductId());
+                .findByCartCartIdAndProduct_ProductId(cart.getCartId(), product.getProductId());
 
         if (existingItem.isPresent()) {
             // Update quantity if item exists
@@ -43,7 +60,7 @@ public class CartService {
             cartItemRepository.save(item);
         } else {
             // Create new cart item
-            CartItem newItem = new CartItem(cart, addToCartDTO.getProductId(), addToCartDTO.getQuantity());
+            CartItem newItem = new CartItem(cart, product, addToCartDTO.getQuantity());
             cartItemRepository.save(newItem);
         }
 
@@ -69,21 +86,21 @@ public class CartService {
         cartItemRepository.save(cartItem);
 
         // Return updated cart
-        Cart updatedCart = cartRepository.findByUserIdWithItems(cartItem.getCartId().getUserId())
+        Cart updatedCart = cartRepository.findByUserIdWithItems(cartItem.getCartId().getUser().getUserId())
                 .orElseThrow(() -> new CartItemNotFoundException("Cart not found"));
 
         return cartMapper.toCartResponseDTO(updatedCart);
     }
 
     public void removeItemFromCart(Long userId, Long productId) {
-        Cart cart = cartRepository.findByUserId(userId)
+        Cart cart = cartRepository.findByUser_UserId(userId)
                 .orElseThrow(() -> new CartItemNotFoundException("Cart not found for user: " + userId));
 
-        cartItemRepository.deleteByCartCartIdAndProductId(cart.getCartId(), productId);
+        cartItemRepository.deleteByCartCartIdAndProduct_ProductId(cart.getCartId(), productId);
     }
 
     public void clearCart(Long userId) {
-        Cart cart = cartRepository.findByUserId(userId)
+        Cart cart = cartRepository.findByUser_UserId(userId)
                 .orElseThrow(() -> new CartItemNotFoundException("Cart not found for user: " + userId));
 
         cart.getCartItems().clear();

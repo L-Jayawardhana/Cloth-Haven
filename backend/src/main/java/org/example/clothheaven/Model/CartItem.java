@@ -13,31 +13,53 @@ public class CartItem {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Long productId;
+    private Product product;
 
     @Column(nullable = false)
     private Integer cartItemsQuantity;
 
     // Constructors
-    public CartItem() {}
+    public CartItem() {
+    }
 
-    public CartItem(Cart cart, Long productId, Integer quantity) {
+    public CartItem(Cart cart, Product product, Integer quantity) {
         this.cart = cart;
-        this.productId = productId;
+        this.product = product;
         this.cartItemsQuantity = quantity;
     }
 
     // Getters and Setters
-    public Long getCartItemId() { return cartItemId; }
-    public void setCartItemId(Long cartItemId) { this.cartItemId = cartItemId; }
+    public Long getCartItemId() {
+        return cartItemId;
+    }
 
-    public Cart getCartId() { return cart; }
-    public void setCartId(Cart cartId) { this.cart = cart; }
+    public void setCartItemId(Long cartItemId) {
+        this.cartItemId = cartItemId;
+    }
 
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
+    public Cart getCartId() {
+        return cart;
+    }
 
-    public Integer getCartItemsQuantity() { return cartItemsQuantity; }
-    public void setCartItemsQuantity(Integer cartItemsQuantity) { this.cartItemsQuantity = cartItemsQuantity; }
+    public void setCartId(Cart cartId) {
+        this.cart = cart;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Integer getCartItemsQuantity() {
+        return cartItemsQuantity;
+    }
+
+    public void setCartItemsQuantity(Integer cartItemsQuantity) {
+        this.cartItemsQuantity = cartItemsQuantity;
+    }
 }
