@@ -21,6 +21,9 @@ out/
 *.iws
 *.ipr
 
+# Ignore JetBrains IDE settings
+.idea/
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
