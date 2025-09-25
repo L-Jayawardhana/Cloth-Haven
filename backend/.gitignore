@@ -14,10 +14,15 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
-*.iws
+.idea/
 *.iml
+*.xml
+out/
+*.iws
 *.ipr
+
+# Ignore JetBrains IDE settings
+.idea/
 
 ### NetBeans ###
 /nbproject/private/
