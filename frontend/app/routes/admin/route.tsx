@@ -1,6 +1,56 @@
 import { Outlet, NavLink } from "react-router";
+import { useEffect, useState } from "react";
 
 export default function AdminLayout() {
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAdminAccess = () => {
+      const userData = localStorage.getItem("user");
+      
+      if (!userData) {
+        // No user data, redirect to login
+        window.location.href = "/login";
+        return;
+      }
+
+      try {
+        const user = JSON.parse(userData);
+        if (user.role === "ADMIN") {
+          setIsAuthorized(true);
+        } else {
+          // Not an admin, redirect to home with error message
+          alert("Access denied. Admin privileges required.");
+          window.location.href = "/";
+          return;
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        window.location.href = "/login";
+        return;
+      }
+      
+      setIsLoading(false);
+    };
+
+    checkAdminAccess();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return null; // Will redirect, so don't render anything
+  }
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
       <aside className="lg:sticky lg:top-20 h-max rounded-xl border border-indigo-100 bg-white shadow-sm">

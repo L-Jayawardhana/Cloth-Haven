@@ -24,4 +24,13 @@ export default [
     route("reports", "routes/admin/reports.tsx"),
     route("settings", "routes/admin/settings.tsx"),
   ]),
+  // Authentication routes
+  route("forgot-password", "routes/auth/forgot-password.tsx"),
+  route("reset-password", "routes/auth/reset-password.tsx"),
+  route("login-fixed", "routes/auth/login-fixed.tsx"),
+  // Debug and test routes
+  route("debug", "routes/debug.tsx"),
+  route("simple-test", "routes/simple-test.tsx"),
+  route("browser-test", "routes/browser-test.tsx"),
+  route("test-login", "routes/test-login.tsx"),
 ] satisfies RouteConfig;

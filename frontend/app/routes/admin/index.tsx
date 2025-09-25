@@ -1,15 +1,68 @@
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Link } from "react-router";
+import { useState, useEffect } from "react";
+import { apiService } from "../../lib/api";
 
 export default function AdminDashboard() {
+  const [customerCount, setCustomerCount] = useState<number | null>(null);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
+  const [customerError, setCustomerError] = useState("");
+
+  // Load customer count on component mount
+  useEffect(() => {
+    loadCustomerCount();
+  }, []);
+
+  const loadCustomerCount = async () => {
+    try {
+      setLoadingCustomers(true);
+      setCustomerError("");
+      const users = await apiService.getAllUsers();
+      // Count users with CUSTOMER role
+      const customers = users.filter(user => user.role === "CUSTOMER");
+      setCustomerCount(customers.length);
+    } catch (error: any) {
+      console.error("Failed to load customer count:", error);
+      setCustomerError("Failed to load");
+      setCustomerCount(null);
+    } finally {
+      setLoadingCustomers(false);
+    }
+  };
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <button 
+          onClick={loadCustomerCount}
+          disabled={loadingCustomers}
+          className="rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-50 transition-colors"
+        >
+          {loadingCustomers ? 'Refreshing...' : 'Refresh Data'}
+        </button>
+      </div>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Kpi title="Total Sales" value="$12,480" sub="Today / This Month" accent="amber" />
         <Kpi title="Total Orders" value="324" sub="Today / This Month" accent="indigo" />
-        <Kpi title="Total Customers" value="1,987" sub="Active users" accent="emerald" />
+        <Kpi 
+          title="Total Customers" 
+          value={
+            loadingCustomers 
+              ? "..."
+              : customerError 
+                ? "Error" 
+                : customerCount?.toString() || "0"
+          } 
+          sub={
+            loadingCustomers 
+              ? "Loading..." 
+              : customerError 
+                ? "Failed to load" 
+                : "Active users"
+          } 
+          accent={customerError ? "rose" : "emerald"}
+        />
         <Kpi title="New Customers" value="47" sub="This week" accent="teal" />
         <Kpi title="Low Stock Alerts" value="8" sub="Items below threshold" accent="rose" />
       </section>
@@ -107,13 +160,20 @@ export default function AdminDashboard() {
 }
 
 function Kpi({ title, value, sub, accent = "indigo" }: { title: string; value: string; sub: string; accent?: "indigo" | "emerald" | "teal" | "amber" | "rose" }) {
+  const isLoading = value === "...";
+  
   return (
     <Card className="bg-gray-800 border-gray-700">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-gray-200">{title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-2xl font-semibold text-white">{value}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-2xl font-semibold text-white">{value}</p>
+          {isLoading && (
+            <div className="w-4 h-4 border-2 border-gray-400 border-t-white rounded-full animate-spin"></div>
+          )}
+        </div>
         <p className={`text-xs mt-1 ${
           accent === "indigo"
             ? "text-indigo-300"

@@ -1,7 +1,7 @@
 package org.example.clothheaven.Model;
 
 public enum Role {
-    USER,
+    CUSTOMER,
     STAFF,
     ADMIN
 }
