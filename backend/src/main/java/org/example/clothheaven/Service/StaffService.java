@@ -1,16 +1,17 @@
 package org.example.clothheaven.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.example.clothheaven.DTO.StaffResponseDTO;
 import org.example.clothheaven.Exception.EmptyStaffException;
 import org.example.clothheaven.Exception.StaffMemberNotFoundException;
 import org.example.clothheaven.Mapper.StaffMapper;
 import org.example.clothheaven.Model.Staff;
+import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class StaffService {
@@ -44,5 +45,11 @@ public class StaffService {
         Staff staff = staffRepository.findById(staffId)
                 .orElseThrow(() -> new StaffMemberNotFoundException("Staff member not found with ID: " + staffId));
         staffRepository.delete(staff);
+    }
+
+    public StaffResponseDTO createStaff(User user) {
+        Staff staff = new Staff(user);
+        Staff savedStaff = staffRepository.save(staff);
+        return staffMapper.toResponseDTO(savedStaff);
     }
 }

@@ -1,33 +1,58 @@
 package org.example.clothheaven.Model;
 
+import java.time.LocalDateTime;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "user")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "userid")
     private Long userId;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(name = "username", nullable = false, length = 100)
     private String username;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
+    @Column(name = "email", nullable = false, unique = true, length = 150)
+    private String email;
 
-    // Default constructor
+    @Column(name = "phone_no", length = 30)
+    private String phoneNo;
+
+    @Column(name = "address", length = 255)
+    private String address;
+
+    @Column(name = "pw", nullable = false)
+    private String pw;
+
+    @Column(name = "role", nullable = false, length = 50)
+    private String role;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     public User() {
     }
 
-    // Constructor with parameters
-    public User(String username, Role role) {
+    public User(String username, String role) {
         this.username = username;
         this.role = role;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 
     public Long getUserId() {
@@ -46,11 +71,51 @@ public class User {
         this.username = username;
     }
 
-    public Role getRole() {
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNo() {
+        return phoneNo;
+    }
+
+    public void setPhoneNo(String phoneNo) {
+        this.phoneNo = phoneNo;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPw() {
+        return pw;
+    }
+
+    public void setPw(String pw) {
+        this.pw = pw;
+    }
+
+    public String getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    public void setRole(String role) {
         this.role = role;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

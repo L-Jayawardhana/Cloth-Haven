@@ -15,6 +15,10 @@ public class UserMapper {
 
         User user = new User();
         user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNo(dto.getPhoneNo());
+        user.setAddress(dto.getAddress());
+        user.setPw(dto.getPw());
         user.setRole(dto.getRole());
         return user;
     }
@@ -27,6 +31,9 @@ public class UserMapper {
         UserResponseDTO responseDTO = new UserResponseDTO();
         responseDTO.setUserId(user.getUserId());
         responseDTO.setUsername(user.getUsername());
+        responseDTO.setEmail(user.getEmail());
+        responseDTO.setPhoneNo(user.getPhoneNo());
+        responseDTO.setAddress(user.getAddress());
         responseDTO.setRole(user.getRole());
         return responseDTO;
     }

@@ -1,6 +1,14 @@
 package org.example.clothheaven.Model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "staff")
@@ -12,7 +20,7 @@ public class Staff {
     private Long staffId;
 
     @OneToOne(cascade = CascadeType.REMOVE) // when deleting user form the staff table it will automatically delete the user from the user table
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "userid")
     private User user;
 
     // Default constructor

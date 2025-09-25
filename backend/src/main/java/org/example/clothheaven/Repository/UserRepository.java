@@ -1,12 +1,11 @@
 package org.example.clothheaven.Repository;
 
-import org.example.clothheaven.Model.Role;
+import java.util.List;
+import java.util.Optional;
+
 import org.example.clothheaven.Model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -15,5 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByUsername(String username);
 
-    List<User> findByRole(Role role);
+    List<User> findByRole(String role);
+
+    Optional<User> findByEmail(String email);
 }
+
