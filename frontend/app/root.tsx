@@ -8,6 +8,7 @@ import {
 } from "react-router";
 
 import { useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import type { Route } from "./+types/root";
 import "./app.css";

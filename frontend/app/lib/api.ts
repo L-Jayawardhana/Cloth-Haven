@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 export interface User {
-  userId: number;
+  userid: number;
   username: string;
   email: string;
   phoneNo?: string;
@@ -10,10 +10,44 @@ export interface User {
   createdAt?: string;
 }
 
-export interface LoginResponse extends User {
-  token: string;
-  redirectUrl?: string;
+// Cart endpoints
+export interface CartItem {
+  cartItemId: number;
+  productId: number;
+  quantity: number;
+  productName?: string;
+  productImage?: string;
+  price?: number;
 }
+
+export interface Cart {
+  cartId: number;
+  userId: number;
+  items: CartItem[];
+}
+
+class CartApi {
+  async getCartByUserId(userId: number): Promise<Cart> {
+    return apiService["request"](`/cart/user/${userId}`);
+  }
+
+  async removeItemFromCart(userId: number, productId: number): Promise<void> {
+    await apiService["request"](`/cart/user/${userId}/product/${productId}`, { method: "DELETE" });
+  }
+
+  async updateCartItemQuantity(cartItemId: number, quantity: number): Promise<Cart> {
+    return apiService["request"](`/cart/item/${cartItemId}`, {
+      method: "PUT",
+      body: JSON.stringify({ quantity }),
+    });
+  }
+
+  async clearCart(userId: number): Promise<void> {
+    await apiService["request"](`/cart/user/${userId}/clear`, { method: "DELETE" });
+  }
+}
+
+export const cartApi = new CartApi();
 
 export interface LoginRequest {
   email: string;
@@ -34,7 +68,7 @@ export interface UpdateUserRequest {
   email: string;
   phoneNo?: string;
   address?: string;
-  // role removed - users can't change their own role
+  role: string;
 }
 
 export interface PasswordChangeRequest {
@@ -88,8 +122,8 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(credentials: LoginRequest): Promise<LoginResponse> {
-    return this.request<LoginResponse>('/auth/login', {
+  async login(credentials: LoginRequest): Promise<User & { token?: string }> {
+    return this.request<User & { token?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -129,27 +163,6 @@ class ApiService {
     return this.request<{ message: string }>(`/users/${userId}/delete-account`, {
       method: 'POST',
       body: JSON.stringify({ password }),
-    });
-  }
-
-  async adminDeleteUser(userId: number, adminPassword: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/users/${userId}/admin-delete`, {
-      method: 'POST',
-      body: JSON.stringify({ password: adminPassword }),
-    });
-  }
-
-  async forgotPassword(email: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    });
-  }
-
-  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ token, newPassword }),
     });
   }
 }
