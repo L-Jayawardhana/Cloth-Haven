@@ -15,7 +15,7 @@ public class InventoryLogs {
 
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
-    private Product product; // Ensure Product.productId is String
+    private Product product;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false)

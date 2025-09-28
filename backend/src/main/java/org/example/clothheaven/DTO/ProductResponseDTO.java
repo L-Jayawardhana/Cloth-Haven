@@ -126,5 +126,12 @@ public class ProductResponseDTO {
     public void setTotalQuantity(Integer totalQuantity) {
         this.totalQuantity = totalQuantity;
     }
-    
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
 }

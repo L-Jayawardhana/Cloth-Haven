@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -155,7 +156,7 @@ public class CategoryService {
         try {
             return categoryRepository.findAll().stream()
                     .map(Category::getCategoryName)
-                    .toList();
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Failed to retrieve category names: " + e.getMessage(), e);
         }
