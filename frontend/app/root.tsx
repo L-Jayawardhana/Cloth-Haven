@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
   useLocation,
 } from "react-router";
+
 import { useState, useEffect } from "react";
 
 import type { Route } from "./+types/root";
@@ -143,5 +144,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const queryClient = new QueryClient();
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Outlet />
+    </QueryClientProvider>
+  );
 }
