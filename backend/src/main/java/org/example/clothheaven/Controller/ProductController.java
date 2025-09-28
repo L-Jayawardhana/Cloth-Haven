@@ -16,7 +16,7 @@ public class ProductController {
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
     private final ProductService productService;
 
-    // Explicit constructor for final fields
+
     public ProductController(ProductService productService) {
         this.productService = productService;
     }

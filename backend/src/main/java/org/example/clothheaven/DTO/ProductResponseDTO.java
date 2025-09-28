@@ -95,14 +95,6 @@ public class ProductResponseDTO {
         this.subCategoryId = subCategoryId;
     }
 
-    public Long getProductId() {
-        return productId;
-    }
-
-    public void setProductId(Long productId) {
-        this.productId = productId;
-    }
-
     public Boolean getInStock() {
         return inStock;
     }
@@ -134,4 +126,5 @@ public class ProductResponseDTO {
     public void setTotalQuantity(Integer totalQuantity) {
         this.totalQuantity = totalQuantity;
     }
+    
 }

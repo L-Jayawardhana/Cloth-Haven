@@ -6,9 +6,10 @@ import org.example.clothheaven.Model.Category;
 import org.example.clothheaven.Model.SubCategory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.example.clothheaven.DTO.ProductCreateDTO;
+import org.example.clothheaven.DTO.ProductResponseDTO;
 
 @Component
 public class ProductMapper {
@@ -60,9 +61,6 @@ public class ProductMapper {
 
         return product;
     }
-
-
-
 
      //Create ProductResponseDTO for successful operations
     public ProductResponseDTO toSuccessResponse(Product product, String message) {
