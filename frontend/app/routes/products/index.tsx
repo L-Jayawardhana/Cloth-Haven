@@ -1,96 +1,270 @@
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl: string;
-  tag?: string;
+import React, { useEffect, useState } from "react";
+import { cartApi } from "../../lib/api";
+
+// Mock UI components since shadcn/ui might not be available
+type ButtonProps = {
+  children: React.ReactNode;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  [x: string]: any;
 };
 
-const MOCK_PRODUCTS: Product[] = Array.from({ length: 12 }).map((_, i) => ({
-  id: String(i + 1),
-  name: `Essential Tee ${i + 1}`,
-  price: 29 + (i % 4) * 10,
-  imageUrl:
-    "https://images.unsplash.com/photo-1520975922284-9d8cc6c7e533?q=80&w=1600&auto=format&fit=crop",
-  tag: i % 3 === 0 ? "New" : undefined,
-}));
+const Button = ({ children, type = "button", disabled = false, onClick, ...props }: ButtonProps) => (
+  <button
+    type={type}
+    disabled={disabled}
+    onClick={onClick}
+    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+      disabled 
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+        : "bg-blue-600 text-white hover:bg-blue-700"
+    }`}
+    {...props}
+  >
+    {children}
+  </button>
+);
 
-export default function Products() {
+const Input = ({ className = "", ...props }) => (
+  <input
+    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
+    {...props}
+  />
+);
+
+type Category = {
+  categoryId: number;
+  categoryName?: string;
+};
+
+type SubCategory = {
+  subCategoryId: number;
+  subCategoryName?: string;
+};
+
+type Product = {
+  productId?: number;
+  name: string;
+  description: string;
+  productPrice: number;
+  category: Category;
+  subCategory: SubCategory;
+  imageUrl?: string;
+};
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [form, setForm] = useState<Omit<Product, 'productId' | 'imageUrl'>>({
+    name: "",
+    description: "",
+    productPrice: 0,
+    category: { categoryId: 1 },
+    subCategory: { subCategoryId: 1 },
+  });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products
+  useEffect(() => {
+    fetch("http://localhost:8080/api/v1/products/get-products")
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch');
+        return res.json();
+      })
+      .then(setProducts)
+      .catch(() => setError("Failed to fetch products"));
+  }, []);
+
+  // Handle form input
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === "categoryId") {
+      setForm((f) => ({
+        ...f,
+        category: { ...f.category, categoryId: Number(value) },
+      }));
+    } else if (name === "subCategoryId") {
+      setForm((f) => ({
+        ...f,
+        subCategory: { ...f.subCategory, subCategoryId: Number(value) },
+      }));
+    } else if (name === "productPrice") {
+      setForm((f) => ({ ...f, productPrice: Number(value) }));
+    } else {
+      setForm((f) => ({ ...f, [name]: value }));
+    }
+  };
+
+  // Handle form submit
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("productPrice", String(form.productPrice));
+      formData.append("categoryId", String(form.category.categoryId));
+      formData.append("subCategoryId", String(form.subCategory.subCategoryId));
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+      const res = await fetch("http://localhost:8080/api/v1/products/add-product", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to add product');
+      const data = await res.json();
+      if (data.success === false) {
+        setError(data.message || "Failed to add product");
+      } else {
+        setProducts((prev) => [...prev, data]);
+        setForm({
+          name: "",
+          description: "",
+          productPrice: 0,
+          category: { categoryId: 1 },
+          subCategory: { subCategoryId: 1 },
+        });
+        setImageFile(null);
+      }
+    } catch (err) {
+      setError("Failed to add product");
+    }
+    setLoading(false);
+  };
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-      {/* Filters */}
-      <aside className="space-y-6">
-        <div className="rounded-2xl border border-gray-200 bg-white p-4">
-          <p className="font-medium">Filters</p>
-          <div className="mt-3 space-y-4 text-sm">
-            <div>
-              <label className="block text-gray-600">Category</label>
-              <select className="mt-1 w-full rounded-md border-gray-300">
-                <option>All</option>
-                <option>Tops</option>
-                <option>Bottoms</option>
-                <option>Accessories</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-600">Price range</label>
-              <input type="range" min={0} max={150} className="mt-2 w-full" />
-              <div className="mt-1 flex justify-between text-xs text-gray-500">
-                <span>$0</span><span>$150+</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {['XS','S','M','L','XL','XXL'].map(s => (
-                <button key={s} className="rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">{s}</button>
-              ))}
-            </div>
-          </div>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Products Management</h1>
+      
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+          {error}
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-4">
-          <p className="font-medium">Tags</p>
-          <div className="mt-3 flex flex-wrap gap-2 text-xs">
-            {['New','Sale','Limited','Eco'].map(t => (
-              <span key={t} className="rounded-full border border-gray-300 px-2 py-1">{t}</span>
+      )}
+      
+      {/* Add Product Form */}
+      <form className="bg-white rounded-lg shadow-md p-6 mb-8" onSubmit={handleSubmit} encType="multipart/form-data">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">Add New Product</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Input
+            name="name"
+            placeholder="Product Name"
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            name="description"
+            placeholder="Description"
+            value={form.description}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            name="productPrice"
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="Price"
+            value={form.productPrice}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            name="categoryId"
+            type="number"
+            min="1"
+            placeholder="Category ID"
+            value={form.category.categoryId}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            name="subCategoryId"
+            type="number"
+            min="1"
+            placeholder="SubCategory ID"
+            value={form.subCategory.subCategoryId}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={e => setImageFile(e.target.files?.[0] || null)}
+            className="col-span-full border border-gray-300 rounded-md px-3 py-2"
+          />
+          <Button type="submit" disabled={loading}>
+            {loading ? "Adding..." : "Add Product"}
+          </Button>
+        </div>
+      </form>
+      
+      {/* Products List */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700">
+          Products ({products.length})
+        </h2>
+        
+        {products.length === 0 ? (
+          <p className="text-gray-500 text-center py-8">No products found</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <div
+                key={product.productId}
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              >
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-40 object-cover rounded mb-2"
+                  />
+                )}
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">
+                  {product.name}
+                </h3>
+                <p className="text-gray-600 text-sm mb-3">{product.description}</p>
+                <div className="flex justify-between items-center text-sm mb-2">
+                  <span className="font-semibold text-green-600">
+                    ${product.productPrice.toFixed(2)}
+                  </span>
+                  <div className="text-gray-500">
+                    Cat: {product.category?.categoryId} | Sub: {product.subCategory?.subCategoryId}
+                  </div>
+                </div>
+                <Button onClick={async () => {
+                  // Get user from localStorage
+                  let user = null;
+                  try {
+                    const raw = localStorage.getItem("user");
+                    user = raw ? JSON.parse(raw) : null;
+                  } catch {}
+                  if (!user) {
+                    alert("Please sign in to add to cart.");
+                    return;
+                  }
+                  if (typeof product.productId !== 'number') {
+                    alert("Invalid product ID");
+                    return;
+                  }
+                  await cartApi.addItemToCart(user.userid, product.productId, 1);
+                  window.location.href = '/cart';
+                }}>
+                  Add to Cart
+                </Button>
+              </div>
             ))}
           </div>
-        </div>
-      </aside>
-
-      {/* Product grid */}
-      <section className="space-y-4">
-        <div className="flex items-end justify-between">
-          <h1 className="text-xl font-semibold">Products</h1>
-          <select className="rounded-md border-gray-300 text-sm">
-            <option>Featured</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-          </select>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {MOCK_PRODUCTS.map((p) => (
-            <div key={p.id} className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:shadow-lg">
-              <div className="relative aspect-[4/5] bg-gray-100">
-                <img
-                  src={p.imageUrl}
-                  alt={p.name}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                {p.tag ? (
-                  <span className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-medium">{p.tag}</span>
-                ) : null}
-              </div>
-              <div className="p-3">
-                <p className="text-sm font-medium">{p.name}</p>
-                <div className="mt-1 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">${p.price.toFixed(2)}</p>
-                  <button className="rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">Add</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        )}
+      </div>
     </div>
   );
 }

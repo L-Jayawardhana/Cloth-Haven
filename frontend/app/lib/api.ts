@@ -26,16 +26,25 @@ export interface Cart {
   items: CartItem[];
 }
 
+
+
 class CartApi {
-  async getCartByUserId(userId: number): Promise<Cart> {
+  async getCartByUserId(userId: number): Promise<Cart | null> {
     return apiService["request"](`/cart/user/${userId}`);
+  }
+
+  async addItemToCart(userId: number, productId: number, quantity: number = 1): Promise<void> {
+    await apiService["request"](`/cart/add`, {
+      method: "POST",
+      body: JSON.stringify({ userId, productId, quantity }),
+    });
   }
 
   async removeItemFromCart(userId: number, productId: number): Promise<void> {
     await apiService["request"](`/cart/user/${userId}/product/${productId}`, { method: "DELETE" });
   }
 
-  async updateCartItemQuantity(cartItemId: number, quantity: number): Promise<Cart> {
+  async updateCartItemQuantity(cartItemId: number, quantity: number): Promise<Cart | null> {
     return apiService["request"](`/cart/item/${cartItemId}`, {
       method: "PUT",
       body: JSON.stringify({ quantity }),
@@ -80,7 +89,7 @@ class ApiService {
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
-  ): Promise<T> {
+  ): Promise<T | null> {
     const url = `${API_BASE_URL}${endpoint}`;
 
     const defaultHeaders: Record<string, string> = {
@@ -112,7 +121,12 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      // If response is 204 No Content, return null
+      if (response.status === 204) {
+        return null as any;
+      }
+      const text = await response.text();
+      return text ? JSON.parse(text) : null;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -122,14 +136,14 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(credentials: LoginRequest): Promise<User & { token?: string }> {
+  async login(credentials: LoginRequest): Promise<(User & { token?: string }) | null> {
     return this.request<User & { token?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
   }
 
-  async register(userData: RegisterRequest): Promise<User & { token?: string }> {
+  async register(userData: RegisterRequest): Promise<(User & { token?: string }) | null> {
     return this.request<User & { token?: string }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -137,29 +151,29 @@ class ApiService {
   }
 
   // User endpoints
-  async getUser(userId: number): Promise<User> {
+  async getUser(userId: number): Promise<User | null> {
     return this.request<User>(`/users/${userId}`);
   }
 
-  async updateUser(userId: number, userData: UpdateUserRequest): Promise<User> {
+  async updateUser(userId: number, userData: UpdateUserRequest): Promise<User | null> {
     return this.request<User>(`/users/${userId}`, {
       method: 'PUT',
       body: JSON.stringify(userData),
     });
   }
 
-  async changePassword(userId: number, passwordData: PasswordChangeRequest): Promise<{ message: string }> {
+  async changePassword(userId: number, passwordData: PasswordChangeRequest): Promise<{ message: string } | null> {
     return this.request<{ message: string }>(`/users/${userId}/password`, {
       method: 'PUT',
       body: JSON.stringify(passwordData),
     });
   }
 
-  async getAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<User[] | null> {
     return this.request<User[]>('/users');
   }
 
-  async deleteAccount(userId: number, password: string): Promise<{ message: string }> {
+  async deleteAccount(userId: number, password: string): Promise<{ message: string } | null> {
     return this.request<{ message: string }>(`/users/${userId}/delete-account`, {
       method: 'POST',
       body: JSON.stringify({ password }),

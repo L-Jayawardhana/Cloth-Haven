@@ -13,5 +13,17 @@ export default defineConfig({
         secure: false,
       },
     },
+    watch: {
+      ignored: [
+        '**/node_modules/**',
+        '**/build/**',
+        '**/.react-router/**',
+        '**/.idea/**',
+        '**/.git/**',
+        '**/target/**',
+        '**/.mvn/**',
+        '**/.DS_Store',
+      ],
+    },
   },
 });
