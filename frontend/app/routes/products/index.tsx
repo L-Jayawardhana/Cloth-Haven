@@ -68,13 +68,37 @@ export default function ProductsPage() {
 
   // Fetch products
   useEffect(() => {
-    fetch("http://localhost:8080/api/v1/products/get-products")
-      .then((res) => {
+    let mounted = true;
+    
+    const fetchProducts = async () => {
+      if (loading) return; // Prevent multiple simultaneous requests
+      
+      setLoading(true);
+      try {
+        const res = await fetch("http://localhost:8080/api/v1/products/get-products");
         if (!res.ok) throw new Error('Failed to fetch');
-        return res.json();
-      })
-      .then(setProducts)
-      .catch(() => setError("Failed to fetch products"));
+        const data = await res.json();
+        
+        if (mounted) {
+          setProducts(data);
+          setError(null);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError("Failed to fetch products");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Handle form input
@@ -240,24 +264,44 @@ export default function ProductsPage() {
                     Cat: {product.category?.categoryId} | Sub: {product.subCategory?.subCategoryId}
                   </div>
                 </div>
-                <Button onClick={async () => {
-                  // Get user from localStorage
-                  let user = null;
-                  try {
-                    const raw = localStorage.getItem("user");
-                    user = raw ? JSON.parse(raw) : null;
-                  } catch {}
-                  if (!user) {
-                    alert("Please sign in to add to cart.");
-                    return;
-                  }
-                  if (typeof product.productId !== 'number') {
-                    alert("Invalid product ID");
-                    return;
-                  }
-                  await cartApi.addItemToCart(user.userid, product.productId, 1);
-                  window.location.href = '/cart';
-                }}>
+                <Button 
+                  disabled={loading}
+                  onClick={async (e) => {
+                    const button = e.currentTarget;
+                    if (button.disabled) return;
+                    
+                    button.disabled = true;
+                    try {
+                      // Get user from localStorage
+                      let user = null;
+                      try {
+                        const raw = localStorage.getItem("user");
+                        user = raw ? JSON.parse(raw) : null;
+                      } catch {}
+                      if (!user) {
+                        alert("Please sign in to add to cart.");
+                        return;
+                      }
+                      if (typeof product.productId !== 'number') {
+                        alert("Invalid product ID");
+                        return;
+                      }
+                      await cartApi.addItemToCart(user.userid, product.productId, 1);
+                      alert("Item added to cart!");
+                      // Use React Router navigation instead of window.location
+                      setTimeout(() => {
+                        window.location.href = '/cart';
+                      }, 1000);
+                    } catch (error) {
+                      console.error('Error adding to cart:', error);
+                      alert('Failed to add item to cart');
+                    } finally {
+                      setTimeout(() => {
+                        button.disabled = false;
+                      }, 2000); // Prevent rapid clicking
+                    }
+                  }}
+                >
                   Add to Cart
                 </Button>
               </div>

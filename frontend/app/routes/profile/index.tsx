@@ -75,9 +75,15 @@ export default function Profile() {
     setMessage({ type: "", text: "" });
 
     try {
-      // Remove role from formData - users can't change their own role
-      const { role, ...updateData } = formData;
-      const updatedUser = await apiService.updateUser(user.userId, updateData);
+      // Include role in updateData since the interface requires it
+      const updateData = {
+        username: formData.username,
+        email: formData.email,
+        phoneNo: formData.phoneNo,
+        address: formData.address,
+        role: formData.role
+      };
+      const updatedUser = await apiService.updateUser(user.userid, updateData);
       const newUserData = { ...user, ...updatedUser };
       localStorage.setItem("user", JSON.stringify(newUserData));
       setUser(newUserData);
@@ -111,7 +117,7 @@ export default function Profile() {
     setMessage({ type: "", text: "" });
 
     try {
-      await apiService.changePassword(user.userId, {
+      await apiService.changePassword(user.userid, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
@@ -146,7 +152,7 @@ export default function Profile() {
     setDeleting(true);
     setMessage({ type: "", text: "" });
     try {
-      await apiService.deleteAccount(user.userId, deletePassword);
+      await apiService.deleteAccount(user.userid, deletePassword);
       localStorage.removeItem("user");
       alert("Your account has been deleted. We're sorry to see you go.");
       window.location.href = "/";

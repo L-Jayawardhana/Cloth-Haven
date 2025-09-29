@@ -1,7 +1,6 @@
 package org.example.clothheaven.Service;
 
-import org.example.clothheaven.Model.User;
-import org.example.clothheaven.Model.Product;
+import java.util.Optional;
 
 import org.example.clothheaven.DTO.AddToCartDTO;
 import org.example.clothheaven.DTO.CartResponseDTO;
@@ -10,12 +9,13 @@ import org.example.clothheaven.Exception.CartItemNotFoundException;
 import org.example.clothheaven.Mapper.CartMapper;
 import org.example.clothheaven.Model.Cart;
 import org.example.clothheaven.Model.CartItem;
+import org.example.clothheaven.Model.Product;
+import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.CartItemRepository;
 import org.example.clothheaven.Repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -73,8 +73,20 @@ public class CartService {
         }
 
         public CartResponseDTO getCartByUserId(Long userId) {
-                Cart cart = cartRepository.findByUserIdWithItems(userId)
-                                .orElseThrow(() -> new CartItemNotFoundException("Cart not found for user: " + userId));
+                Optional<Cart> cartOptional = cartRepository.findByUserIdWithItems(userId);
+                
+                Cart cart;
+                if (cartOptional.isPresent()) {
+                        cart = cartOptional.get();
+                } else {
+                        // Create a new empty cart for the user
+                        User user = userRepository.findById(userId)
+                                        .orElseThrow(() -> new CartItemNotFoundException("User not found with id: " + userId));
+                        
+                        cart = new Cart();
+                        cart.setUser(user);
+                        cart = cartRepository.save(cart);
+                }
 
                 return cartMapper.toCartResponseDTO(cart);
         }

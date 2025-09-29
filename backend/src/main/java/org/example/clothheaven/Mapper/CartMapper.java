@@ -1,12 +1,13 @@
 package org.example.clothheaven.Mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.example.clothheaven.DTO.CartItemResponseDTO;
 import org.example.clothheaven.DTO.CartResponseDTO;
 import org.example.clothheaven.Model.Cart;
 import org.example.clothheaven.Model.CartItem;
 import org.springframework.stereotype.Component;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class CartMapper {
@@ -36,6 +37,8 @@ public class CartMapper {
         return new CartItemResponseDTO(
                 cartItem.getCartItemId(),
                 cartItem.getProduct() != null ? cartItem.getProduct().getProductId() : null,
+                cartItem.getProduct() != null ? cartItem.getProduct().getName() : null,
+                cartItem.getProduct() != null ? cartItem.getProduct().getProductPrice() : null,
                 cartItem.getCartItemsQuantity());
     }
 }

@@ -36,7 +36,7 @@ export default function ForgotPassword() {
     setMessage({ type: "", text: "" });
     try {
       const data = await apiService.forgotPassword(email);
-      setMessage({ type: "success", text: data.message });
+      setMessage({ type: "success", text: data?.message || "Reset code sent successfully" });
       setStep("code");
       startResendTimer();
     } catch (err: any) {
@@ -83,7 +83,7 @@ export default function ForgotPassword() {
     setMessage({ type: "", text: "" });
     try {
       const data = await apiService.resetPassword(code, newPassword);
-      setMessage({ type: "success", text: "Password reset successfully! You can now log in with your new password." });
+      setMessage({ type: "success", text: data?.message || "Password reset successfully! You can now log in with your new password." });
       setNewPassword("");
       setConfirmPassword("");
       setStep("email");

@@ -47,6 +47,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                         // Admin endpoints - require ADMIN role
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // Allow users to change their own password and delete their account
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/users/*/password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users/*/delete-account").authenticated()
+                        // Other user endpoints require ADMIN or STAFF
                         .requestMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "STAFF")
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions

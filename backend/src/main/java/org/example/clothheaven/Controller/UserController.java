@@ -95,7 +95,28 @@ public class UserController {
     }
 
     @PutMapping("/{userId}/password")
-    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody PasswordChangeRequest req) {
+    public ResponseEntity<?> changePassword(@PathVariable Long userId, @Valid @RequestBody PasswordChangeRequest req,
+            Authentication authentication) {
+        
+        // Get the authenticated user's email from the security context
+        String authenticatedUserEmail = authentication.getName();
+        
+        // Find the authenticated user to get their ID
+        Optional<User> authenticatedUserOpt = userService.getUserByEmail(authenticatedUserEmail);
+        if (authenticatedUserOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "User not found"));
+        }
+        
+        Long authenticatedUserId = authenticatedUserOpt.get().getUserId();
+
+        // Users can only change their own password (unless they're admin)
+        if (!userId.equals(authenticatedUserId) && !authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "You can only change your own password"));
+        }
+
         boolean success = userService.changePassword(userId, req.getCurrentPassword(), req.getNewPassword());
 
         if (success) {

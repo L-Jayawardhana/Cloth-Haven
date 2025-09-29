@@ -145,7 +145,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        // Aggressive caching to prevent repeated requests
+        staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+        gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache
+        refetchOnWindowFocus: false, // Never refetch on window focus
+        refetchOnMount: false, // Never refetch on component mount
+        refetchOnReconnect: false, // Never refetch on reconnect
+        refetchInterval: false, // Never refetch on interval
+        retry: 1, // Only retry once on failure
+        retryDelay: 5000, // 5 second delay between retries
+      },
+      mutations: {
+        retry: 1, // Only retry mutations once
+        retryDelay: 2000, // 2 second delay for mutation retries
+      },
+    },
+  });
+  
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
