@@ -1,8 +1,17 @@
 package org.example.clothheaven.Model;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "inventory_logs")
@@ -15,7 +24,7 @@ public class InventoryLogs {
 
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
-    private Product product; // Ensure Product.productId is String
+    private Product product;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false)

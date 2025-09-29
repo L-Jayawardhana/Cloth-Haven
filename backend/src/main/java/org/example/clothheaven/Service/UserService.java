@@ -8,6 +8,7 @@ import org.example.clothheaven.DTO.UserResponseDTO;
 import org.example.clothheaven.Mapper.UserMapper;
 import org.example.clothheaven.Model.Staff;
 import org.example.clothheaven.Model.User;
+import org.example.clothheaven.Repository.CartRepository;
 import org.example.clothheaven.Repository.StaffRepository;
 import org.example.clothheaven.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final StaffRepository staffRepository;
+    private final CartRepository cartRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, StaffRepository staffRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, StaffRepository staffRepository, CartRepository cartRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.staffRepository = staffRepository;
+        this.cartRepository = cartRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -86,15 +89,31 @@ public class UserService {
         return false;
     }
 
+    @Transactional
     public void deleteUser(Long userId) {
+        // First delete user's cart if it exists (cascade will handle cart items)
+        Optional<org.example.clothheaven.Model.Cart> cartOpt = cartRepository.findByUser_UserId(userId);
+        if (cartOpt.isPresent()) {
+            cartRepository.deleteById(cartOpt.get().getCartId());
+        }
+        
+        // Then delete the user
         userRepository.deleteById(userId);
     }
 
+    @Transactional
     public boolean deleteUserWithPassword(Long userId, String password) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(password, user.getPw())) {
+                // First delete user's cart if it exists (cascade will handle cart items)
+                Optional<org.example.clothheaven.Model.Cart> cartOpt = cartRepository.findByUser_UserId(userId);
+                if (cartOpt.isPresent()) {
+                    cartRepository.deleteById(cartOpt.get().getCartId());
+                }
+                
+                // Then delete the user
                 userRepository.deleteById(userId);
                 return true;
             }
@@ -138,6 +157,13 @@ public class UserService {
                                     System.out.println("User is staff member, deleting staff record first (Staff ID: " + staff.getStaffId() + ")");
                                     staffRepository.delete(staff);
                                 }
+                            }
+                            
+                            // Delete user's cart if it exists (cascade will handle cart items)
+                            Optional<org.example.clothheaven.Model.Cart> cartOpt = cartRepository.findByUser_UserId(userId);
+                            if (cartOpt.isPresent()) {
+                                System.out.println("Deleting user's cart (Cart ID: " + cartOpt.get().getCartId() + ")");
+                                cartRepository.deleteById(cartOpt.get().getCartId());
                             }
                             
                             // Now delete the user record
