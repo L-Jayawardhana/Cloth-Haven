@@ -381,58 +381,90 @@ export default function Products() {
                 </div>
               </div>
               
-              <div className="p-6 space-y-6">
+              <div className="p-6 space-y-8">
                 {/* Category Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Category
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      Category
+                    </label>
                     {categories.length === 0 && (
-                      <span className="ml-2 text-xs text-red-500">(Loading from database...)</span>
+                      <div className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span className="text-xs text-amber-600 font-medium">Loading...</span>
+                      </div>
                     )}
-                  </label>
-                  <select 
-                    value={selectedCategory.toString()}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 transition-colors"
-                    disabled={categories.length === 0}
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map((category) => (
-                      <option key={category.categoryId} value={category.categoryId.toString()}>
-                        {category.categoryName}
+                  </div>
+                  <div className="relative">
+                    <select 
+                      value={selectedCategory.toString()}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className={`w-full px-4 py-3 bg-white border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 ${
+                        categories.length === 0 
+                          ? 'border-gray-200 bg-gray-50 cursor-not-allowed text-gray-400' 
+                          : 'border-gray-200 hover:border-gray-300 text-gray-900'
+                      }`}
+                      disabled={categories.length === 0}
+                    >
+                      <option value="all" className="text-gray-900">
+                         All Categories
                       </option>
-                    ))}
-                    {categories.length === 0 && (
-                      <option disabled>No categories found - Check backend connection</option>
-                    )}
-                  </select>
+                      {categories.map((category) => (
+                        <option key={category.categoryId} value={category.categoryId.toString()} className="text-gray-900">
+                          {category.categoryName}
+                        </option>
+                      ))}
+                      {categories.length === 0 && (
+                        <option disabled className="text-gray-400">Connecting to database...</option>
+                      )}
+                    </select>
+                  </div>
                 </div>
 
                 {/* SubCategory Filter - Show when category is selected */}
                 {selectedCategory !== 'all' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Sub Category
-                      {subCategories.length === 0 && (
-                        <span className="ml-2 text-xs text-orange-500">(Loading subcategories...)</span>
+                  <div className="space-y-3 border-t border-gray-100 pt-6">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-sm font-semibold text-gray-800">
+                        Sub Category
+                      </label>
+                      {subCategories.length === 0 && typeof selectedCategory === 'number' && (
+                        <div className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-amber-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span className="text-xs text-amber-600 font-medium">Loading...</span>
+                        </div>
                       )}
-                    </label>
-                    <select 
-                      value={selectedSubCategory.toString()}
-                      onChange={(e) => handleSubCategoryChange(e.target.value)}
-                      className="w-full border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 transition-colors"
-                      disabled={subCategories.length === 0}
-                    >
-                      <option value="all">All Sub Categories</option>
-                      {subCategories.map((subCategory) => (
-                        <option key={subCategory.subCategoryId} value={subCategory.subCategoryId.toString()}>
-                          {subCategory.subCategoryName}
+                    </div>
+                    <div className="relative">
+                      <select 
+                        value={selectedSubCategory.toString()}
+                        onChange={(e) => handleSubCategoryChange(e.target.value)}
+                        className={`w-full px-4 py-3 bg-white border-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 ${
+                          subCategories.length === 0 
+                            ? 'border-gray-200 bg-gray-50 cursor-not-allowed text-gray-400' 
+                            : 'border-gray-200 hover:border-gray-300 text-gray-900'
+                        }`}
+                        disabled={subCategories.length === 0}
+                      >
+                        <option value="all" className="text-gray-900">
+                          All Sub Categories
                         </option>
-                      ))}
-                      {subCategories.length === 0 && (
-                        <option disabled>Loading subcategories from database...</option>
-                      )}
-                    </select>
+                        {subCategories.map((subCategory) => (
+                          <option key={subCategory.subCategoryId} value={subCategory.subCategoryId.toString()} className="text-gray-900">
+                             {subCategory.subCategoryName}
+                          </option>
+                        ))}
+                        {subCategories.length === 0 && typeof selectedCategory === 'number' && (
+                          <option disabled className="text-gray-400">Loading subcategories...</option>
+                        )}
+                      </select>
+                    </div>
                   </div>
                 )}
               </div>

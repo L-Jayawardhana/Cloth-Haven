@@ -184,9 +184,9 @@ export default function AdminUsersPage() {
     if (!selectedUser) return
     
     console.log('Selected user for edit:', selectedUser);
-    console.log('User ID:', selectedUser.userId);
+    console.log('User ID:', selectedUser.userid);
     
-    if (!selectedUser.userId) {
+    if (!selectedUser.userid) {
       setErrorMsg('User ID is missing - cannot update user');
       return;
     }
@@ -197,12 +197,13 @@ export default function AdminUsersPage() {
         username: editFormData.username || selectedUser.username,
         email: editFormData.email || selectedUser.email,
         phoneNo: editFormData.phoneNo || selectedUser.phoneNo,
-        address: editFormData.address || selectedUser.address
+        address: editFormData.address || selectedUser.address,
+        role: selectedUser.role
       }
       
       console.log('Update data:', updateData);
       
-      await apiService.updateUser(selectedUser.userId, updateData)
+      await apiService.updateUser(selectedUser.userid, updateData)
       
       setSuccessMsg("User updated successfully")
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -231,7 +232,7 @@ export default function AdminUsersPage() {
     try {
       setIsDeleting(true)
       // Use the new admin delete endpoint with admin password
-      await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
+      await apiService.adminDeleteUser(userToDelete.userid, adminPassword)
       
       setSuccessMsg(`${userToDelete.role.toLowerCase()} deleted successfully`)
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -393,7 +394,7 @@ export default function AdminUsersPage() {
               </tr>
             ) : (
               currentUsers.map((user, i) => (
-                <tr key={user.userId} className="border-t hover:bg-amber-50/30 transition-colors">
+                <tr key={user.userid} className="border-t hover:bg-amber-50/30 transition-colors">
                   <td className="px-4 py-3 text-center">{user.username}</td>
                   <td className="px-4 py-3 text-center">{user.email}</td>
                   <td className="px-4 py-3 text-center">

@@ -180,6 +180,24 @@ public class AuthController {
                 return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
         }
 
+        @PostMapping("/validate-reset-token")
+        public ResponseEntity<?> validateResetToken(@RequestBody Map<String, String> request) {
+                String token = request.get("token");
+                if (token == null || token.trim().isEmpty()) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                        .body(Map.of("message", "Token is required", "valid", false));
+                }
+
+                Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
+                if (tokenOpt.isEmpty() || tokenOpt.get().isUsed() ||
+                                tokenOpt.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                        .body(Map.of("message", "Invalid or expired reset code", "valid", false));
+                }
+
+                return ResponseEntity.ok(Map.of("message", "Token is valid", "valid", true));
+        }
+
         private String generateResetCode() {
                 SecureRandom random = new SecureRandom();
                 int code = 100000 + random.nextInt(900000); // 6-digit code

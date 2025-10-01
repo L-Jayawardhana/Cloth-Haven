@@ -1,27 +1,36 @@
 package org.example.clothheaven.Service;
 
-import org.example.clothheaven.DTO.CategoryResponseDTO;
-import org.example.clothheaven.DTO.CategoryCreateDTO;
-import org.example.clothheaven.Mapper.CategoryMapper;
-import org.example.clothheaven.Model.Category;
-import org.example.clothheaven.Repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.example.clothheaven.DTO.CategoryCreateDTO;
+import org.example.clothheaven.DTO.CategoryResponseDTO;
+import org.example.clothheaven.Mapper.CategoryMapper;
+import org.example.clothheaven.Model.Category;
+import org.example.clothheaven.Model.User;
+import org.example.clothheaven.Repository.CategoryRepository;
+import org.example.clothheaven.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public CategoryService(CategoryRepository categoryRepository,
-                           CategoryMapper categoryMapper) {
+                           CategoryMapper categoryMapper,
+                           UserRepository userRepository,
+                           PasswordEncoder passwordEncoder) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public CategoryResponseDTO addCategory(CategoryCreateDTO categoryCreateDTO) {
@@ -149,6 +158,64 @@ public class CategoryService {
 
         } catch (Exception e) {
             return new CategoryResponseDTO(false, "Failed to delete category: " + e.getMessage());
+        }
+    }
+
+    public boolean adminDeleteCategory(Long categoryId, String adminEmail, String adminPassword) {
+        System.out.println("=== ADMIN DELETE CATEGORY DEBUG ===");
+        System.out.println("Target Category ID: " + categoryId);
+        System.out.println("Admin Email from JWT: " + adminEmail);
+        System.out.println("Admin Password provided: " + (adminPassword != null ? "[PROVIDED]" : "[NULL]"));
+        
+        // First, verify the admin user's password
+        Optional<User> adminOpt = userRepository.findByEmail(adminEmail);
+        if (adminOpt.isPresent()) {
+            User admin = adminOpt.get();
+            System.out.println("Found admin user: " + admin.getUsername());
+            System.out.println("Admin role: " + admin.getRole());
+            
+            // Check if the current user is actually an admin
+            if ("ADMIN".equals(admin.getRole())) {
+                System.out.println("Admin role verified");
+                boolean passwordMatches = passwordEncoder.matches(adminPassword, admin.getPw());
+                System.out.println("Password matches: " + passwordMatches);
+                
+                if (passwordMatches) {
+                    // Verify the target category exists
+                    Optional<Category> categoryOpt = categoryRepository.findById(categoryId);
+                    if (categoryOpt.isPresent()) {
+                        Category category = categoryOpt.get();
+                        System.out.println("Target category found: " + category.getCategoryName());
+                        
+                        try {
+                            // Check if category has associated products
+                            if (category.getProducts() != null && !category.getProducts().isEmpty()) {
+                                System.out.println("Category has " + category.getProducts().size() + " associated products, cannot delete");
+                                return false;
+                            }
+                            
+                            categoryRepository.delete(category);
+                            System.out.println("Category deleted successfully");
+                            return true;
+                        } catch (Exception e) {
+                            System.out.println("Error deleting category: " + e.getMessage());
+                            return false;
+                        }
+                    } else {
+                        System.out.println("Category not found with ID: " + categoryId);
+                        return false;
+                    }
+                } else {
+                    System.out.println("Admin password verification failed");
+                    return false;
+                }
+            } else {
+                System.out.println("User is not an admin");
+                return false;
+            }
+        } else {
+            System.out.println("Admin user not found");
+            return false;
         }
     }
 

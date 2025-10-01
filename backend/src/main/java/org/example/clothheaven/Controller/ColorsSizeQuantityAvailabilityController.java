@@ -32,6 +32,19 @@ public class ColorsSizeQuantityAvailabilityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    @PostMapping("/batch")
+    public ResponseEntity<?> createBatch(@RequestBody List<ColorsSizeQuantityAvailabilityCreateDTO> dtoList) {
+        try {
+            List<ColorsSizeQuantityAvailabilityResponseDTO> createdList = service.createBatch(dtoList);
+            if (createdList.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No valid entries were created");
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdList);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating batch: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/product/{productId}")
     public ResponseEntity<List<ColorsSizeQuantityAvailabilityResponseDTO>> getByProductId(@PathVariable Long productId) {
         return ResponseEntity.ok(service.getByProductId(productId));

@@ -136,6 +136,27 @@ class ApiService {
     });
   }
 
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  }
+
+  async validateResetToken(token: string): Promise<{ message: string; valid: boolean }> {
+    return this.request<{ message: string; valid: boolean }>('/auth/validate-reset-token', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
   // User endpoints
   async getUser(userId: number): Promise<User> {
     return this.request<User>(`/users/${userId}`);
@@ -163,6 +184,13 @@ class ApiService {
     return this.request<{ message: string }>(`/users/${userId}/delete-account`, {
       method: 'POST',
       body: JSON.stringify({ password }),
+    });
+  }
+
+  async adminDeleteUser(userId: number, adminPassword: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/users/${userId}/admin-delete`, {
+      method: 'POST',
+      body: JSON.stringify({ password: adminPassword }),
     });
   }
 }
@@ -199,6 +227,13 @@ interface CategoryResponseDTO {
   success: boolean;
   message: string;
   categoryNames?: string[];
+  categories?: CategoryCreateDTO[]; // Add support for full category data
+}
+
+// Backend CategoryCreateDTO structure
+interface CategoryCreateDTO {
+  categoryId: number;
+  categoryName: string;
 }
 
 // Backend SubCategoryResponseDTO structure
@@ -271,20 +306,34 @@ class CategoryApi {
       const response = await apiService["request"]<CategoryResponseDTO>('/categories/all');
       console.log('🏷️ Raw Categories API response:', response);
       
-      if (response.success && response.categoryNames) {
-        console.log('✅ Category names received:', response.categoryNames);
-        // Convert category names to Category objects with mock IDs
-        // Since backend only returns names, we'll create IDs based on array index + 1
-        const categories = response.categoryNames.map((name, index) => ({
-          categoryId: index + 1,
-          categoryName: name
-        }));
-        console.log('🎯 Converted to Category objects:', categories);
-        return categories;
-      } else {
-        console.warn('⚠️ API response indicates failure or no data:', response);
-        return [];
+      if (response.success) {
+        // Try to get full category data first (if backend provides it)
+        if (response.categories && Array.isArray(response.categories)) {
+          console.log('✅ Full category data received:', response.categories);
+          const categories = response.categories.map((cat: CategoryCreateDTO) => ({
+            categoryId: cat.categoryId,
+            categoryName: cat.categoryName
+          }));
+          console.log('🎯 Converted to Category objects:', categories);
+          return categories;
+        }
+        
+        // Fallback to category names only (current backend behavior)
+        if (response.categoryNames && Array.isArray(response.categoryNames)) {
+          console.log('✅ Category names received:', response.categoryNames);
+          // For now, use sequential IDs as a temporary workaround
+          // This will be fixed when backend provides full data
+          const categories = response.categoryNames.map((name, index) => ({
+            categoryId: index + 1,
+            categoryName: name
+          }));
+          console.log('🎯 Converted to Category objects (with temp IDs):', categories);
+          return categories;
+        }
       }
+      
+      console.warn('⚠️ API response indicates failure or no data:', response);
+      return [];
     } catch (error) {
       console.error('❌ Error fetching categories:', error);
       return [];
@@ -311,6 +360,93 @@ class CategoryApi {
   async getCategoriesWithSubCategories(): Promise<Category[]> {
     // For now, just return basic categories since subcategories need separate API calls
     return this.getAllCategories();
+  }
+
+  async addCategory(categoryData: { categoryName: string }): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log('🆕 Creating new category:', categoryData);
+      const response = await apiService["request"]<CategoryResponseDTO>('/categories/add-category', {
+        method: 'POST',
+        body: JSON.stringify(categoryData)
+      });
+      console.log('✅ Category creation response:', response);
+      
+      return {
+        success: response.success,
+        message: response.message || (response.success ? 'Category created successfully' : 'Failed to create category')
+      };
+    } catch (error) {
+      console.error('❌ Error creating category:', error);
+      return {
+        success: false,
+        message: 'Failed to create category'
+      };
+    }
+  }
+
+  async updateCategory(categoryId: number, categoryData: { categoryName: string }): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log(`🔄 Updating category ${categoryId}:`, categoryData);
+      const response = await apiService["request"]<CategoryResponseDTO>(`/categories/update/${categoryId}`, {
+        method: 'PUT',
+        body: JSON.stringify(categoryData)
+      });
+      console.log('✅ Category update response:', response);
+      
+      return {
+        success: response.success,
+        message: response.message || (response.success ? 'Category updated successfully' : 'Failed to update category')
+      };
+    } catch (error) {
+      console.error('Error updating category:', error);
+      return {
+        success: false,
+        message: 'Failed to update category'
+      };
+    }
+  }
+
+  async deleteCategory(categoryId: number): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log(`Deleting category ${categoryId}`);
+      const response = await apiService["request"]<CategoryResponseDTO>(`/categories/delete/${categoryId}`, {
+        method: 'DELETE'
+      });
+      console.log('Category deletion response:', response);
+      
+      return {
+        success: response.success,
+        message: response.message || (response.success ? 'Category deleted successfully' : 'Failed to delete category')
+      };
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      return {
+        success: false,
+        message: 'Failed to delete category'
+      };
+    }
+  }
+
+  async adminDeleteCategory(categoryId: number, adminPassword: string): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log(`Admin deleting category ${categoryId}`);
+      const response = await apiService["request"]<{ message: string }>(`/categories/${categoryId}/admin-delete`, {
+        method: 'POST',
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      console.log('Admin category deletion response:', response);
+      
+      return {
+        success: true,
+        message: response.message || 'Category deleted successfully'
+      };
+    } catch (error) {
+      console.error('Error admin deleting category:', error);
+      return {
+        success: false,
+        message: 'Admin password is incorrect or category cannot be deleted'
+      };
+    }
   }
 }
 

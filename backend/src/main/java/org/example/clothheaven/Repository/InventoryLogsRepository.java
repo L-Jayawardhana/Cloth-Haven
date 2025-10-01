@@ -22,5 +22,5 @@ public interface InventoryLogsRepository extends JpaRepository<InventoryLogs, Lo
     List<InventoryLogs> findByProductProductIdAndChangeType(Long productId, String changeType);
 
     List<InventoryLogs> findByProductProductIdAndChangeTypeAndInventoryLogsDateBetween(Long productId, String changeType, LocalDateTime startDate, LocalDateTime endDate);
-
+}
  

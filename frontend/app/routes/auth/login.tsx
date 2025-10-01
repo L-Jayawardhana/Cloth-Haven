@@ -35,11 +35,10 @@ export default function Login() {
       
       localStorage.setItem("user", JSON.stringify(data));
       
-      // Use redirectUrl from backend if available, otherwise default to home
-      const redirectUrl = data.redirectUrl || "/";
-      console.log("Redirecting to:", redirectUrl);
+      // Redirect to home page after successful login
+      console.log("Redirecting to home page");
       
-      window.location.href = redirectUrl;
+      window.location.href = "/";
     } catch (err: any) {
       console.error("Login error:", err);
       setServerError(err.message || "Login failed");
@@ -78,7 +77,7 @@ export default function Login() {
               />
             </div>
             <div>
-              
+              <label className="block text-sm text-gray-700">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}

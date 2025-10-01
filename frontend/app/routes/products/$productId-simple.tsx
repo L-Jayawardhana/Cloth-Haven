@@ -267,9 +267,9 @@ export default function ProductDetails() {
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Product Images */}
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-md mx-auto lg:mx-0">
             {/* Main Image */}
-            <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div className="relative aspect-[4/5] bg-gray-100 rounded-lg overflow-hidden">
               <img
                 src={displayImages[selectedImageIndex]?.imageUrl || defaultImageUrl}
                 alt={product.name}
@@ -508,8 +508,8 @@ export default function ProductDetails() {
 
       {/* Size Chart Modal */}
       {showSizeChart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-lg border border-gray-200">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">{product?.name || 'Product'}</h2>

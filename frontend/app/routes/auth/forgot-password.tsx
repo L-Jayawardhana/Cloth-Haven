@@ -53,13 +53,30 @@ export default function ForgotPassword() {
     }
   };
 
-  const handleOk = () => {
+  const handleOk = async () => {
     if (!code || code.length < 6) {
       setMessage({ type: "error", text: "Please enter the 6-digit verification code" });
       return;
     }
+    
+    // Validate the code with the backend before proceeding
+    setLoading(true);
     setMessage({ type: "", text: "" });
-    setStep("password");
+    try {
+      const response = await apiService.validateResetToken(code);
+      if (response.valid) {
+        // Code is valid, proceed to password reset
+        setMessage({ type: "", text: "" });
+        setStep("password");
+      } else {
+        // Code is invalid
+        setMessage({ type: "error", text: response.message || "Invalid verification code" });
+      }
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message || "Invalid or expired verification code. Please check your code or request a new one." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChangePassword = async () => {

@@ -1,5 +1,10 @@
 package org.example.clothheaven.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityCreateDTO;
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.Mapper.ColorsSizeQuantityAvailabilityMapper;
@@ -9,9 +14,6 @@ import org.example.clothheaven.Repository.ColorsSizeQuantityAvailabilityReposito
 import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ColorsSizeQuantityAvailabilityService {
@@ -28,6 +30,26 @@ public class ColorsSizeQuantityAvailabilityService {
         ColorsSizeQuantityAvailability entity = mapper.toEntity(dto, productOpt.get());
         ColorsSizeQuantityAvailability saved = repository.save(entity);
         return mapper.toResponseDTO(saved);
+    }
+
+    public List<ColorsSizeQuantityAvailabilityResponseDTO> createBatch(List<ColorsSizeQuantityAvailabilityCreateDTO> dtoList) {
+        List<ColorsSizeQuantityAvailabilityResponseDTO> results = new ArrayList<>();
+        
+        for (ColorsSizeQuantityAvailabilityCreateDTO dto : dtoList) {
+            try {
+                Optional<Product> productOpt = productRepository.findById(dto.getProductId());
+                if (productOpt.isPresent()) {
+                    ColorsSizeQuantityAvailability entity = mapper.toEntity(dto, productOpt.get());
+                    ColorsSizeQuantityAvailability saved = repository.save(entity);
+                    results.add(mapper.toResponseDTO(saved));
+                }
+            } catch (Exception e) {
+                // Log error but continue with other entries
+                System.err.println("Error creating color-size entry: " + e.getMessage());
+            }
+        }
+        
+        return results;
     }
 
     public List<ColorsSizeQuantityAvailabilityResponseDTO> getByProductId(Long productId) {
