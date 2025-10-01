@@ -1,0 +1,28 @@
+{
+  "name": "cloth-haven",
+  "version": "1.0.0",
+  "description": "update the sql user name and password in apllication.properties when u clone this according to ur deatils",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/L-Jayawardhana/Cloth-Haven.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/L-Jayawardhana/Cloth-Haven/issues"
+  },
+  "homepage": "https://github.com/L-Jayawardhana/Cloth-Haven#readme",
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "vite": "^7.1.6"
+  }
+}
