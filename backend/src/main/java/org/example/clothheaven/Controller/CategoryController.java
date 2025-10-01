@@ -2,8 +2,8 @@ package org.example.clothheaven.Controller;
 
 import java.util.List;
 
-import org.example.clothheaven.DTO.CategoryCreateDTO;
 import org.example.clothheaven.DTO.CategoryResponseDTO;
+import org.example.clothheaven.DTO.CategoryCreateDTO;
 import org.example.clothheaven.Service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -76,7 +76,7 @@ public class CategoryController {
                 CategoryResponseDTO response = new CategoryResponseDTO(
                         true,
                         "Category retrieved successfully",
-                        category
+                        List.of(category.getCategoryName())
                 );
                 return ResponseEntity.ok(response);
             } else {

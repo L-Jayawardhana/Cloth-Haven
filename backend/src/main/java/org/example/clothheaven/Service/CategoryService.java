@@ -50,7 +50,7 @@ public class CategoryService {
             Category savedCategory = categoryRepository.save(category);
             CategoryCreateDTO savedDTO = categoryMapper.toDTO(savedCategory);
 
-            return new CategoryResponseDTO(true, "Category added successfully", savedDTO);
+            return new CategoryResponseDTO(true, "Category added successfully", List.of(savedDTO.getCategoryName()));
 
         } catch (Exception e) {
             return new CategoryResponseDTO(false, "Failed to add category: " + e.getMessage());
@@ -117,7 +117,7 @@ public class CategoryService {
             Category updatedCategory = categoryRepository.save(existingCategory);
             CategoryCreateDTO updatedDTO = categoryMapper.toDTO(updatedCategory);
 
-            return new CategoryResponseDTO(true, "Category updated successfully", updatedDTO);
+            return new CategoryResponseDTO(true, "Category updated successfully", List.of(updatedDTO.getCategoryName()));
 
         } catch (Exception e) {
             return new CategoryResponseDTO(false, "Failed to update category: " + e.getMessage());

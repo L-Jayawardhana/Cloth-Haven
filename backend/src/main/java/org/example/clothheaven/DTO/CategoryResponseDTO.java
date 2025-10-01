@@ -1,23 +1,18 @@
 package org.example.clothheaven.DTO;
 
+import java.util.List;
+
 public class CategoryResponseDTO {
     private boolean success;
     private String message;
-    private Object data;
+    private List<String> categoryNames;
 
-    public CategoryResponseDTO() {
-    }
+    public CategoryResponseDTO() {}
 
-    public CategoryResponseDTO(boolean success, String message) {
+    public CategoryResponseDTO(boolean success, String message, List<String> categoryNames) {
         this.success = success;
         this.message = message;
-        this.data = null;
-    }
-
-    public CategoryResponseDTO(boolean success, String message, Object data) {
-        this.success = success;
-        this.message = message;
-        this.data = data;
+        this.categoryNames = categoryNames;
     }
 
     public boolean isSuccess() {
@@ -36,11 +31,11 @@ public class CategoryResponseDTO {
         this.message = message;
     }
 
-    public Object getData() {
-        return data;
+    public List<String> getCategoryNames() {
+        return categoryNames;
     }
 
-    public void setData(Object data) {
-        this.data = data;
+    public void setCategoryNames(List<String> categoryNames) {
+        this.categoryNames = categoryNames;
     }
 }
