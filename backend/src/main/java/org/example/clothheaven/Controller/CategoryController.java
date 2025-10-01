@@ -52,11 +52,11 @@ public class CategoryController {
     @GetMapping("/all")
     public ResponseEntity<CategoryResponseDTO> getAllCategories() {
         try {
-            List<String> categoryNames = categoryService.getAllCategoryNames();
+            List<CategoryCreateDTO> categories = categoryService.getAllCategories();
             CategoryResponseDTO response = new CategoryResponseDTO(
                     true,
                     "Categories retrieved successfully",
-                    categoryNames
+                    categories
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {

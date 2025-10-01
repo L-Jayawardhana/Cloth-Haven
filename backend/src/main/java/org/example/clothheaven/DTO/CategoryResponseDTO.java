@@ -9,11 +9,6 @@ public class CategoryResponseDTO {
 
     public CategoryResponseDTO() {}
 
-    public CategoryResponseDTO(boolean success, String message) {
-        this.success = success;
-        this.message = message;
-    }
-
     public CategoryResponseDTO(boolean success, String message, List<String> categoryNames) {
         this.success = success;
         this.message = message;
@@ -44,4 +39,3 @@ public class CategoryResponseDTO {
         this.categoryNames = categoryNames;
     }
 }
-
