@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 export interface User {
-  userid: number;
+  userId: number;
   username: string;
   email: string;
   phoneNo?: string;
@@ -515,6 +515,50 @@ class SubCategoryApi {
     } catch (error) {
       console.error(`❌ Error fetching subcategory ${subCategoryId}:`, error);
       return null;
+    }
+  }
+
+  async createSubCategory(subCategoryData: { subCategory: string; categoryId: number }): Promise<SubCategoryResponseDTO> {
+    try {
+      console.log('🆕 Creating new subcategory:', subCategoryData);
+      const response = await apiService["request"]<SubCategoryResponseDTO>('/sub-categories/add', {
+        method: 'POST',
+        body: JSON.stringify(subCategoryData)
+      });
+      console.log('✅ SubCategory created:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ Error creating subcategory:', error);
+      throw error;
+    }
+  }
+
+  async updateSubCategory(subCategoryId: number, subCategoryData: { subCategory: string; categoryId: number }): Promise<SubCategoryResponseDTO> {
+    try {
+      console.log(`🔄 Updating subcategory ${subCategoryId}:`, subCategoryData);
+      const response = await apiService["request"]<SubCategoryResponseDTO>(`/sub-categories/update/${subCategoryId}`, {
+        method: 'PUT',
+        body: JSON.stringify(subCategoryData)
+      });
+      console.log('✅ SubCategory updated:', response);
+      return response;
+    } catch (error) {
+      console.error(`❌ Error updating subcategory ${subCategoryId}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteSubCategory(subCategoryId: number): Promise<SubCategoryResponseDTO> {
+    try {
+      console.log(`🗑️ Deleting subcategory ${subCategoryId}`);
+      const response = await apiService["request"]<SubCategoryResponseDTO>(`/sub-categories/delete/${subCategoryId}`, {
+        method: 'DELETE'
+      });
+      console.log('✅ SubCategory deleted:', response);
+      return response;
+    } catch (error) {
+      console.error(`❌ Error deleting subcategory ${subCategoryId}:`, error);
+      throw error;
     }
   }
 }

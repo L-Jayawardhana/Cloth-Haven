@@ -184,9 +184,9 @@ export default function AdminUsersPage() {
     if (!selectedUser) return
     
     console.log('Selected user for edit:', selectedUser);
-    console.log('User ID:', selectedUser.userid);
+    console.log('User ID:', selectedUser.userId);
     
-    if (!selectedUser.userid) {
+    if (!selectedUser.userId) {
       setErrorMsg('User ID is missing - cannot update user');
       return;
     }
@@ -203,7 +203,7 @@ export default function AdminUsersPage() {
       
       console.log('Update data:', updateData);
       
-      await apiService.updateUser(selectedUser.userid, updateData)
+      await apiService.updateUser(selectedUser.userId, updateData)
       
       setSuccessMsg("User updated successfully")
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
     try {
       setIsDeleting(true)
       // Use the new admin delete endpoint with admin password
-      await apiService.adminDeleteUser(userToDelete.userid, adminPassword)
+      await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
       
       setSuccessMsg(`${userToDelete.role.toLowerCase()} deleted successfully`)
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -259,44 +259,63 @@ export default function AdminUsersPage() {
     setAdminPassword("")
   }
   return (
-    <div className="grid gap-6">
-      {successMsg ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          {successMsg}
-        </div>
-      ) : null}
-        <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-amber-700">Users & Staff</h1>
-        <div className="flex gap-2">
-          <button 
-            onClick={loadUsers} 
-            disabled={loading}
-            className="rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-          >
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
-          <button onClick={() => setIsAddOpen(true)} className="rounded-md bg-amber-600 px-3 py-2 text-sm text-white hover:bg-amber-700">Add Staff</button>
-        </div>
-      </div>
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto max-w-7xl">
+        {/* Messages */}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            {successMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {errorMsg}
+          </div>
+        )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input 
-          className="h-10 rounded-md border border-indigo-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 hover:border-amber-300" 
-          placeholder="Search users" 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <select 
-          className="h-10 rounded-md border border-indigo-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 hover:border-amber-300"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="">All Roles</option>
-          <option value="CUSTOMER">Customer</option>
-          <option value="STAFF">Staff</option>
-          <option value="ADMIN">Admin</option>
-        </select>
-      </div>
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Users & Staff</h1>
+            <p className="text-gray-600">Manage user accounts and staff members</p>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={loadUsers} 
+              disabled={loading}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+            <button 
+              onClick={() => setIsAddOpen(true)} 
+              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Add Staff
+            </button>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <input 
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" 
+            placeholder="Search users..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select 
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="">All Roles</option>
+            <option value="CUSTOMER">Customer</option>
+            <option value="STAFF">Staff</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
 
       {isAddOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center">
@@ -347,119 +366,163 @@ export default function AdminUsersPage() {
         </div>
       ) : null}
 
-      {loadError && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <div className="flex items-center gap-2">
-            <span>❌</span>
-            <div>
-              <div className="font-medium">Failed to load users</div>
-              <div className="mt-1">{loadError}</div>
-              <button 
-                onClick={loadUsers}
-                className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border"
-              >
-                Retry
-              </button>
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span>❌</span>
+              <div>
+                <div className="font-medium">Failed to load users</div>
+                <div className="mt-1">{loadError}</div>
+                <button 
+                  onClick={loadUsers}
+                  className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="overflow-x-auto rounded-xl border border-amber-100 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-amber-50 text-amber-800">
-            <tr>
-              <th className="px-4 py-3 text-center">Username</th>
-              <th className="px-4 py-3 text-center">Email</th>
-              <th className="px-4 py-3 text-center">Role</th>
-              <th className="px-4 py-3 text-center">Created at</th>
-              <th className="px-4 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin"></div>
-                    Loading users...
+        {/* Users Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading users...</p>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-gray-600">
+                {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white">
+                    {currentUsers.map((user) => (
+                      <tr key={user.userId} className="hover:bg-gray-50 border-b border-gray-100">
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                          {user.userId}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-left">
+                          {user.username}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                          {user.email}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                          <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-left">
+                          <div className="flex gap-1 justify-center">
+                            <button 
+                              onClick={() => handleViewUser(user)}
+                              className="p-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                              title="View details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleEditUser(user)}
+                              className="p-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                              title="Edit user"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteUser(user)}
+                              className="p-2 border border-red-300 rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
+                              title="Delete user"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{' '}
+                    {filteredUsers.length} users
                   </div>
-                </td>
-              </tr>
-            ) : filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                  {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
-                </td>
-              </tr>
-            ) : (
-              currentUsers.map((user, i) => (
-                <tr key={user.userid} className="border-t hover:bg-amber-50/30 transition-colors">
-                  <td className="px-4 py-3 text-center">{user.username}</td>
-                  <td className="px-4 py-3 text-center">{user.email}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex justify-center items-center w-16 px-3 py-1 rounded-md text-xs font-medium bg-amber-100/60 text-amber-800 border border-amber-200/40">
-                      {user.role}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 text-sm">
+                      {currentPage} of {totalPages}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex justify-center gap-1">
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleViewUser(user)}
-                          className="p-1.5 rounded-md bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 hover:border-gray-300 transition-colors duration-200"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          View details
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleEditUser(user)}
-                          className="p-1.5 rounded-md bg-amber-100 border border-amber-200 text-amber-700 hover:bg-amber-200 hover:border-amber-300 transition-colors duration-200"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-amber-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          {user.role === "CUSTOMER" ? "Cannot edit customer" : "Edit user"}
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleDeleteUser(user)}
-                          className="p-1.5 rounded-md bg-red-100 border border-red-200 text-red-700 hover:bg-red-200 hover:border-red-300 transition-colors duration-200"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-red-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Delete user
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
+    </div>
 
-      {/* View User Details Dialog */}
+    {/* View User Details Dialog */}
       {isViewDialogOpen && selectedUser && (
         <div className="fixed inset-0 z-50 grid place-items-center">
           <div className="absolute inset-0 bg-black/30" onClick={handleCloseDialogs} />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-amber-100 bg-white shadow-xl">
-            <div className="border-b border-amber-100 px-6 py-4">
-              <h2 className="text-xl font-semibold text-amber-700">User Details</h2>
-              <p className="text-sm text-gray-500">Viewing {selectedUser.role.toLowerCase()} information</p>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">User Details</h2>
+              <p className="text-sm text-gray-600">Viewing {selectedUser.role.toLowerCase()} information</p>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">User ID</label>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.userId}</p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Username</label>
                   <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.username}</p>
@@ -480,9 +543,9 @@ export default function AdminUsersPage() {
                   <label className="text-sm font-medium text-gray-700">Role</label>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-md text-xs font-medium ${
                     selectedUser.role === 'ADMIN' 
-                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                      ? 'bg-red-100 text-red-800 border border-red-200'
                       : selectedUser.role === 'STAFF'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                       : 'bg-blue-100 text-blue-800 border border-blue-200'
                   }`}>
                     {selectedUser.role}
@@ -490,19 +553,20 @@ export default function AdminUsersPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Created At</label>
-                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.createdAt || 'N/A'}</p>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
             </div>
-            <div className="border-t border-amber-100 px-6 py-4 flex justify-between">
+            <div className="border-t border-gray-200 px-6 py-4 flex justify-between bg-gray-50 rounded-b-xl">
               {selectedUser.role !== "CUSTOMER" ? (
                 <button 
                   onClick={() => {
                     setIsViewDialogOpen(false);
                     handleEditUser(selectedUser);
                   }}
-                  className="rounded-md bg-amber-600 px-4 py-2 text-sm text-white hover:bg-amber-700 transition-colors"
+                  className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 transition-colors flex items-center gap-2"
                 >
+                  <Edit2 size={16} />
                   Edit Details
                 </button>
               ) : (
@@ -525,10 +589,10 @@ export default function AdminUsersPage() {
       {isEditDialogOpen && selectedUser && (
         <div className="fixed inset-0 z-50 grid place-items-center">
           <div className="absolute inset-0 bg-black/30" onClick={handleCloseDialogs} />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-amber-100 bg-white shadow-xl">
-            <div className="border-b border-amber-100 px-6 py-4">
-              <h2 className="text-xl font-semibold text-amber-700">Edit User Details</h2>
-              <p className="text-sm text-gray-500">Editing {selectedUser.role.toLowerCase()} information</p>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">Edit User Details</h2>
+              <p className="text-sm text-gray-600">Editing {selectedUser.role.toLowerCase()} information</p>
             </div>
             <div className="p-6">
               <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }} className="space-y-4">
@@ -538,8 +602,9 @@ export default function AdminUsersPage() {
                     type="text"
                     value={editFormData.username || ''}
                     onChange={(e) => setEditFormData({...editFormData, username: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter username"
+                    required
                   />
                 </div>
                 <div>
@@ -548,8 +613,9 @@ export default function AdminUsersPage() {
                     type="email"
                     value={editFormData.email || ''}
                     onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter email"
+                    required
                   />
                 </div>
                 <div>
@@ -558,21 +624,21 @@ export default function AdminUsersPage() {
                     type="tel"
                     value={editFormData.phoneNo || ''}
                     onChange={(e) => setEditFormData({...editFormData, phoneNo: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter phone number"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                  <input 
-                    type="text"
+                  <textarea 
                     value={editFormData.address || ''}
                     onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none"
                     placeholder="Enter address"
                   />
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <button 
                     type="button"
                     onClick={handleCloseDialogs}
@@ -584,7 +650,7 @@ export default function AdminUsersPage() {
                   <button 
                     type="submit"
                     disabled={loading}
-                    className="rounded-md bg-amber-600 px-4 py-2 text-sm text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
+                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -594,60 +660,6 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-amber-700">
-          Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded-md border border-amber-200 bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              const isCurrentPage = page === currentPage;
-              const isNearCurrent = Math.abs(page - currentPage) <= 2;
-              const isFirstOrLast = page === 1 || page === totalPages;
-              
-              if (!isNearCurrent && !isFirstOrLast) {
-                if (page === currentPage - 3 || page === currentPage + 3) {
-                  return <span key={`ellipsis-${page}`} className="px-2 text-amber-400">...</span>;
-                }
-                return null;
-              }
-              
-              return (
-                <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`h-8 w-8 rounded-md border text-sm font-medium transition-colors ${
-                    isCurrentPage
-                      ? "bg-amber-600 text-white border-amber-600"
-                      : "bg-white text-amber-600 border-amber-200 hover:bg-amber-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded-md border border-amber-200 bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
 
       {/* Delete User Confirmation Dialog */}
       {isDeleteDialogOpen && userToDelete && (
@@ -679,12 +691,12 @@ export default function AdminUsersPage() {
                 disabled={isDeleting || !adminPassword.trim()}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
               >
-                {isDeleting ? "Deleting..." : "Yes, delete"}
+                {isDeleting ? "Deleting..." : "Delete User"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,43 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { categoryApi } from '~/lib/api';
-import { Edit2, Trash2 } from "lucide-react";
+import { categoryApi, subCategoryApi } from '~/lib/api';
+import { Edit2, Trash2, Plus } from "lucide-react";
 
 interface Category {
   categoryId: number;
   categoryName: string;
 }
 
+interface SubCategory {
+  subCategoryId: number;
+  subCategoryName: string;
+  categoryId: number;
+}
+
 export default function AdminCategoriesPage() {
+  // Data states
   const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  
+  // UI states
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   
-  // Pagination State
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Add Category Modal State
-  const [showAddModal, setShowAddModal] = useState(false);
+  // Category modals
+  const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [addLoading, setAddLoading] = useState(false);
+  const [addCategoryLoading, setAddCategoryLoading] = useState(false);
 
-  // Edit Category Modal State
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editCategoryName, setEditCategoryName] = useState("");
-  const [editLoading, setEditLoading] = useState(false);
+  const [editCategoryLoading, setEditCategoryLoading] = useState(false);
 
-  // Delete Category Modal State
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [deleteCategoryLoading, setDeleteCategoryLoading] = useState(false);
+
+  // SubCategory modals
+  const [showSubCategoryModal, setShowSubCategoryModal] = useState(false);
+  const [subCategoryMode, setSubCategoryMode] = useState<'add' | 'edit' | 'delete'>('add');
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [currentSubCategory, setCurrentSubCategory] = useState<SubCategory | null>(null);
+  const [subCategoryName, setSubCategoryName] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [subCategoryLoading, setSubCategoryLoading] = useState(false);
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
+
+  // Data loading functions
+  const loadData = async () => {
+    await Promise.all([loadCategories(), loadSubCategories()]);
+  };
 
   const loadCategories = async () => {
     try {
@@ -52,142 +73,113 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const loadSubCategories = async () => {
+    try {
+      const data = await subCategoryApi.getAllSubCategories();
+      setSubCategories(data);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setErrorMsg('Failed to load subcategories');
+    }
+  };
+
+  // Utility functions
   const clearMessages = () => {
     setErrorMsg("");
     setSuccessMsg("");
   };
 
-  // Filter categories based on search term
-  const filteredCategories = categories.filter(category =>
-    category.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentCategories = filteredCategories.slice(startIndex, startIndex + itemsPerPage);
-
-  // Reset to page 1 when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
-  const goToPage = (page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  const getSubCategoriesForCategory = (categoryId: number) => {
+    return subCategories.filter(sub => sub.categoryId === categoryId);
   };
 
-  // Add Category Functions
+  const handleViewSubCategories = (categoryId: number) => {
+    // Navigate to subcategories page with category filter
+    window.location.href = `/admin/subcategories?categoryId=${categoryId}`;
+  };
+
+  // Category handlers
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
-
-    if (!newCategoryName.trim()) {
-      setErrorMsg("Category name is required");
-      return;
-    }
+    if (!newCategoryName.trim()) return;
 
     try {
-      setAddLoading(true);
-      const result = await categoryApi.addCategory({
-        categoryName: newCategoryName.trim()
-      });
-
-      if (result.success) {
-        setSuccessMsg(result.message);
+      setAddCategoryLoading(true);
+      const response = await categoryApi.addCategory({ categoryName: newCategoryName.trim() });
+      
+      if (response.success) {
+        setSuccessMsg('Category added successfully!');
         setNewCategoryName("");
-        setShowAddModal(false);
-        await loadCategories(); // Reload categories
+        setShowAddCategoryModal(false);
+        await loadCategories();
       } else {
-        setErrorMsg(result.message);
+        setErrorMsg(response.message || 'Failed to add category');
       }
     } catch (error) {
       console.error('Error adding category:', error);
       setErrorMsg('Failed to add category');
     } finally {
-      setAddLoading(false);
+      setAddCategoryLoading(false);
     }
   };
 
-  const handleCloseAddModal = () => {
-    setShowAddModal(false);
-    setNewCategoryName("");
-    clearMessages();
-  };
-
-  // Edit Category Functions
   const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
     setEditCategoryName(category.categoryName);
-    setShowEditModal(true);
+    setShowEditCategoryModal(true);
     clearMessages();
   };
 
   const handleUpdateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
-
-    if (!editingCategory || !editCategoryName.trim()) {
-      setErrorMsg("Category name is required");
-      return;
-    }
+    if (!editingCategory || !editCategoryName.trim()) return;
 
     try {
-      setEditLoading(true);
-      const result = await categoryApi.updateCategory(editingCategory.categoryId, {
+      setEditCategoryLoading(true);
+      const response = await categoryApi.updateCategory(editingCategory.categoryId, {
         categoryName: editCategoryName.trim()
       });
 
-      if (result.success) {
-        setSuccessMsg(result.message);
-        setShowEditModal(false);
+      if (response.success) {
+        setSuccessMsg('Category updated successfully!');
+        setShowEditCategoryModal(false);
         setEditingCategory(null);
         setEditCategoryName("");
-        await loadCategories(); // Reload categories
+        await loadCategories();
       } else {
-        setErrorMsg(result.message);
+        setErrorMsg(response.message || 'Failed to update category');
       }
     } catch (error) {
       console.error('Error updating category:', error);
       setErrorMsg('Failed to update category');
     } finally {
-      setEditLoading(false);
+      setEditCategoryLoading(false);
     }
   };
 
-  const handleCloseEditModal = () => {
-    setShowEditModal(false);
-    setEditingCategory(null);
-    setEditCategoryName("");
-    clearMessages();
-  };
-
-  // Delete Category Functions
   const handleDeleteCategory = (category: Category) => {
     setCategoryToDelete(category);
-    setShowDeleteModal(true);
+    setShowDeleteCategoryModal(true);
     clearMessages();
   };
 
-  const handleConfirmDelete = async (e: React.FormEvent) => {
+  const handleConfirmDeleteCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearMessages();
-
     if (!categoryToDelete || !adminPassword.trim()) {
       setErrorMsg("Please enter admin password");
       return;
     }
 
     try {
-      setDeleteLoading(true);
-      // Use the new admin delete endpoint with password validation
+      setDeleteCategoryLoading(true);
       const result = await categoryApi.adminDeleteCategory(categoryToDelete.categoryId, adminPassword);
 
       if (result.success) {
         setSuccessMsg(result.message);
-        setShowDeleteModal(false);
+        setShowDeleteCategoryModal(false);
         setCategoryToDelete(null);
         setAdminPassword("");
-        await loadCategories(); // Reload categories
+        await loadCategories();
       } else {
         setErrorMsg(result.message);
       }
@@ -195,208 +187,304 @@ export default function AdminCategoriesPage() {
       console.error('Error deleting category:', error);
       setErrorMsg('Failed to delete category');
     } finally {
-      setDeleteLoading(false);
+      setDeleteCategoryLoading(false);
     }
   };
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setCategoryToDelete(null);
+  // SubCategory handlers
+  const openSubCategoryModal = (mode: 'add' | 'edit' | 'delete', category?: Category, subCategory?: SubCategory) => {
+    setSubCategoryMode(mode);
+    setSelectedCategory(category || null);
+    setCurrentSubCategory(subCategory || null);
+    setSubCategoryName(subCategory?.subCategoryName || "");
     setAdminPassword("");
+    setShowSubCategoryModal(true);
     clearMessages();
   };
 
+  const handleSubCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (subCategoryMode === 'add') {
+      await handleAddSubCategory();
+    } else if (subCategoryMode === 'edit') {
+      await handleEditSubCategory();
+    } else if (subCategoryMode === 'delete') {
+      await handleDeleteSubCategory();
+    }
+  };
+
+  const handleAddSubCategory = async () => {
+    if (!subCategoryName.trim() || !selectedCategory) return;
+
+    try {
+      setSubCategoryLoading(true);
+      const response = await subCategoryApi.createSubCategory({
+        subCategory: subCategoryName.trim(),
+        categoryId: selectedCategory.categoryId
+      });
+
+      if (response.success) {
+        setSuccessMsg('Subcategory added successfully!');
+        closeSubCategoryModal();
+        await loadSubCategories();
+      } else {
+        setErrorMsg(response.message || 'Failed to add subcategory');
+      }
+    } catch (error) {
+      console.error('Error adding subcategory:', error);
+      setErrorMsg('Failed to add subcategory');
+    } finally {
+      setSubCategoryLoading(false);
+    }
+  };
+
+  const handleEditSubCategory = async () => {
+    if (!currentSubCategory || !subCategoryName.trim()) return;
+
+    try {
+      setSubCategoryLoading(true);
+      const response = await subCategoryApi.updateSubCategory(currentSubCategory.subCategoryId, {
+        subCategory: subCategoryName.trim(),
+        categoryId: currentSubCategory.categoryId
+      });
+
+      if (response.success) {
+        setSuccessMsg('Subcategory updated successfully!');
+        closeSubCategoryModal();
+        await loadSubCategories();
+      } else {
+        setErrorMsg(response.message || 'Failed to update subcategory');
+      }
+    } catch (error) {
+      console.error('Error updating subcategory:', error);
+      setErrorMsg('Failed to update subcategory');
+    } finally {
+      setSubCategoryLoading(false);
+    }
+  };
+
+  const handleDeleteSubCategory = async () => {
+    if (!currentSubCategory || !adminPassword.trim()) {
+      setErrorMsg("Please enter admin password");
+      return;
+    }
+
+    if (adminPassword !== "admin123") {
+      setErrorMsg("Invalid admin password");
+      return;
+    }
+
+    try {
+      setSubCategoryLoading(true);
+      const response = await subCategoryApi.deleteSubCategory(currentSubCategory.subCategoryId);
+
+      if (response.success) {
+        setSuccessMsg('Subcategory deleted successfully!');
+        closeSubCategoryModal();
+        await loadSubCategories();
+      } else {
+        setErrorMsg(response.message || 'Failed to delete subcategory');
+      }
+    } catch (error) {
+      console.error('Error deleting subcategory:', error);
+      setErrorMsg('Failed to delete subcategory');
+    } finally {
+      setSubCategoryLoading(false);
+    }
+  };
+
+  const closeSubCategoryModal = () => {
+    setShowSubCategoryModal(false);
+    setSubCategoryMode('add');
+    setSelectedCategory(null);
+    setCurrentSubCategory(null);
+    setSubCategoryName("");
+    setAdminPassword("");
+  };
+
+  // Pagination logic
+  const filteredCategories = categories.filter(category =>
+    category.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCategories = filteredCategories.slice(startIndex, endIndex);
+
+  // Clear messages after 3 seconds
+  useEffect(() => {
+    if (errorMsg || successMsg) {
+      const timer = setTimeout(() => {
+        clearMessages();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMsg, successMsg]);
+
   return (
-    <div className="grid gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-emerald-700">Category Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Manage product categories and their information</p>
-        </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => window.location.href = '/admin/products'}
-            className="rounded-md border border-emerald-200 px-3 py-2 text-sm hover:bg-emerald-50"
-          >
-            ← Back to Products
-          </button>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="rounded-md bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-700"
-          >
-            Add Category
-          </button>
-        </div>
-      </div>
-
-      {/* Messages */}
-      {errorMsg && (
-        <div className="rounded-md bg-red-50 border border-red-200 p-4">
-          <div className="flex">
-            <div className="text-sm text-red-800">{errorMsg}</div>
-            <button 
-              onClick={clearMessages}
-              className="ml-auto text-red-500 hover:text-red-700"
-            >
-              ×
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Management</h1>
+            <p className="text-gray-600">Manage product categories and subcategories</p>
           </div>
-        </div>
-      )}
-
-      {successMsg && (
-        <div className="rounded-md bg-green-50 border border-green-200 p-4">
-          <div className="flex">
-            <div className="text-sm text-green-800">{successMsg}</div>
-            <button 
-              onClick={clearMessages}
-              className="ml-auto text-green-500 hover:text-green-700"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Search and Filters */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <input 
-          className="h-10 rounded-md border border-emerald-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400" 
-          placeholder="Search categories..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          autoComplete="off"
-          spellCheck="false"
-        />
-        <div></div> {/* Empty div to maintain grid layout */}
-        <div className="text-sm text-gray-600 flex items-center justify-end">
-          {filteredCategories.length > 0 
-            ? `Showing ${startIndex + 1} to ${Math.min(startIndex + itemsPerPage, filteredCategories.length)} of ${filteredCategories.length} categories`
-            : `${filteredCategories.length} of ${categories.length} categories`
-          }
-        </div>
-      </div>
-
-      {/* Categories Table */}
-      <div className="overflow-x-auto rounded-xl border border-emerald-100 bg-white shadow-sm">
-        <table className="w-full text-center text-sm">
-          <thead className="bg-emerald-50 text-emerald-700">
-            <tr>
-              <th className="px-4 py-3">ID</th>
-              <th className="px-4 py-3">Category Name</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
-                  Loading categories...
-                </td>
-              </tr>
-            ) : currentCategories.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
-                  {searchTerm ? 'No categories found matching your search.' : 'No categories found.'}
-                </td>
-              </tr>
-            ) : (
-              currentCategories.map((category) => (
-                <tr key={category.categoryId} className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{category.categoryId}</td>
-                  <td className="px-4 py-3">{category.categoryName}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-center gap-1">
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleEditCategory(category)}
-                          className="p-1.5 rounded-md bg-emerald-100 border border-emerald-200 text-emerald-700 hover:bg-emerald-200 hover:border-emerald-300 transition-colors duration-200"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-emerald-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Edit category
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleDeleteCategory(category)}
-                          className="p-1.5 rounded-md bg-green-100 border border-green-200 text-green-700 hover:bg-green-200 hover:border-green-300 transition-colors duration-200"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-green-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Delete category
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {!loading && filteredCategories.length > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-emerald-700">
-            Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredCategories.length)} of {filteredCategories.length} categories
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => goToPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="p-2 rounded-md border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              ←
-            </button>
-            
-            <div className="flex gap-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                const isCurrentPage = page === currentPage;
-                const isNearCurrent = Math.abs(page - currentPage) <= 2;
-                const isFirstOrLast = page === 1 || page === totalPages;
-                
-                if (!isNearCurrent && !isFirstOrLast) {
-                  if (page === currentPage - 3 || page === currentPage + 3) {
-                    return <span key={`ellipsis-${page}`} className="px-2 text-emerald-400">...</span>;
-                  }
-                  return null;
-                }
-                
-                return (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    className={`h-8 w-8 rounded-md border text-sm font-medium transition-colors ${
-                      isCurrentPage
-                        ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              })}
+          <div className="flex items-center gap-4">
+            <div className="max-w-md">
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              />
             </div>
-            
             <button
-              onClick={() => goToPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-md border border-emerald-200 bg-white text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              onClick={() => setShowAddCategoryModal(true)}
+              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
             >
-              →
+              <Plus className="w-4 h-4 mr-2" />
+              Add Category
             </button>
           </div>
         </div>
-      )}
+
+        {/* Messages */}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            {successMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {errorMsg}
+          </div>
+        )}
+
+        {/* Categories Table */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading categories...</p>
+            </div>
+          ) : currentCategories.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-gray-600">No categories found</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Category Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Subcategories
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white">
+                    {currentCategories.map((category) => {
+                      const categorySubCategories = getSubCategoriesForCategory(category.categoryId);
+                      return (
+                        <tr key={category.categoryId} className="hover:bg-gray-50 border-b border-gray-100">
+                          <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-left">
+                            {category.categoryId}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-900 text-left">
+                            {category.categoryName}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                            {categorySubCategories.length > 0 ? (
+                              <button
+                                onClick={() => handleViewSubCategories(category.categoryId)}
+                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                              >
+                                {categorySubCategories.length} {categorySubCategories.length === 1 ? 'subcategory' : 'subcategories'}
+                              </button>
+                            ) : (
+                              <span className="text-gray-400">0 subcategories</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-left">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openSubCategoryModal('add', category)}
+                                className="inline-flex items-center px-3 py-1 border border-blue-300 rounded-md text-sm text-blue-700 bg-blue-50 hover:bg-blue-100"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                Add Sub
+                              </button>
+                              <button
+                                onClick={() => handleEditCategory(category)}
+                                className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-50"
+                              >
+                                <Edit2 className="w-4 h-4 mr-1" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCategory(category)}
+                                className="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-sm text-red-700 bg-white hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing {startIndex + 1} to {Math.min(endIndex, filteredCategories.length)} of{' '}
+                    {filteredCategories.length} categories
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 text-sm">
+                      {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
 
       {/* Add Category Modal */}
-      {showAddModal && (
+      {showAddCategoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4">Add New Category</h2>
@@ -411,26 +499,24 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Enter category name"
-                  autoComplete="off"
-                  spellCheck="false"
                   required
                 />
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={handleCloseAddModal}
+                  onClick={() => setShowAddCategoryModal(false)}
                   className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-                  disabled={addLoading}
+                  disabled={addCategoryLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
-                  disabled={addLoading}
+                  disabled={addCategoryLoading}
                 >
-                  {addLoading ? 'Adding...' : 'Add Category'}
+                  {addCategoryLoading ? 'Adding...' : 'Add Category'}
                 </button>
               </div>
             </form>
@@ -439,7 +525,7 @@ export default function AdminCategoriesPage() {
       )}
 
       {/* Edit Category Modal */}
-      {showEditModal && editingCategory && (
+      {showEditCategoryModal && editingCategory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4">Edit Category</h2>
@@ -454,26 +540,24 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => setEditCategoryName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="Enter category name"
-                  autoComplete="off"
-                  spellCheck="false"
                   required
                 />
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={handleCloseEditModal}
+                  onClick={() => setShowEditCategoryModal(false)}
                   className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
-                  disabled={editLoading}
+                  disabled={editCategoryLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
-                  disabled={editLoading}
+                  disabled={editCategoryLoading}
                 >
-                  {editLoading ? 'Updating...' : 'Update Category'}
+                  {editCategoryLoading ? 'Updating...' : 'Update Category'}
                 </button>
               </div>
             </form>
@@ -482,17 +566,15 @@ export default function AdminCategoriesPage() {
       )}
 
       {/* Delete Category Modal */}
-      {showDeleteModal && categoryToDelete && (
+      {showDeleteCategoryModal && categoryToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Category</h2>
             <p className="text-sm text-gray-600 mb-4">
               You are about to delete <span className="font-medium text-gray-900">{categoryToDelete.categoryName}</span>.
+              This will permanently remove the category and all its subcategories.
             </p>
-            <p className="text-sm text-gray-600 mb-4">
-              This will permanently remove the category. Please confirm by entering your admin password.
-            </p>
-            <form onSubmit={handleConfirmDelete} className="space-y-4">
+            <form onSubmit={handleConfirmDeleteCategory} className="space-y-4">
               <div>
                 <input
                   type="password"
@@ -500,26 +582,103 @@ export default function AdminCategoriesPage() {
                   onChange={(e) => setAdminPassword(e.target.value)}
                   placeholder="Enter admin password"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  autoComplete="off"
-                  spellCheck="false"
                   required
                 />
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={handleCloseDeleteModal}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  disabled={deleteLoading}
+                  onClick={() => setShowDeleteCategoryModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  disabled={deleteCategoryLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                  disabled={deleteLoading}
+                  className="px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                  disabled={deleteCategoryLoading}
                 >
-                  {deleteLoading ? 'Deleting...' : 'Delete Category'}
+                  {deleteCategoryLoading ? 'Deleting...' : 'Delete Category'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Universal SubCategory Modal */}
+      {showSubCategoryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <h2 className={`text-lg font-semibold mb-4 ${
+              subCategoryMode === 'delete' ? 'text-red-600' : ''
+            }`}>
+              {subCategoryMode === 'add' && 'Add Subcategory'}
+              {subCategoryMode === 'edit' && 'Edit Subcategory'}
+              {subCategoryMode === 'delete' && 'Delete Subcategory'}
+            </h2>
+            
+            {subCategoryMode === 'delete' && currentSubCategory && (
+              <p className="text-sm text-gray-600 mb-4">
+                You are about to delete <span className="font-medium text-gray-900">{currentSubCategory.subCategoryName}</span>.
+                This action cannot be undone.
+              </p>
+            )}
+            
+            <form onSubmit={handleSubCategorySubmit} className="space-y-4">
+              {subCategoryMode !== 'delete' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subcategory Name
+                  </label>
+                  <input
+                    type="text"
+                    value={subCategoryName}
+                    onChange={(e) => setSubCategoryName(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Enter subcategory name"
+                    required
+                  />
+                </div>
+              )}
+              
+              {subCategoryMode === 'delete' && (
+                <div>
+                  <input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Enter admin password"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    required
+                  />
+                </div>
+              )}
+              
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={closeSubCategoryModal}
+                  className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                  disabled={subCategoryLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`px-4 py-2 text-sm rounded-md disabled:opacity-50 ${
+                    subCategoryMode === 'delete'
+                      ? 'bg-red-600 text-white hover:bg-red-700'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  }`}
+                  disabled={subCategoryLoading}
+                >
+                  {subCategoryLoading ? 'Processing...' : 
+                    subCategoryMode === 'add' ? 'Add Subcategory' :
+                    subCategoryMode === 'edit' ? 'Update Subcategory' :
+                    'Delete Subcategory'
+                  }
                 </button>
               </div>
             </form>

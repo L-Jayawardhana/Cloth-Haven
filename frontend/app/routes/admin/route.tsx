@@ -60,7 +60,9 @@ export default function AdminLayout() {
           </Section>
           <Section title="Management">
             <NavItem to="/admin/users">Users & Staff</NavItem>
-            <NavItem to="/admin/products">Products & Categories</NavItem>
+            <NavItem to="/admin/products">Products</NavItem>
+            <NavItem to="/admin/categories">Categories</NavItem>
+            <NavItem to="/admin/subcategories">Subcategories</NavItem>
             <NavItem to="/admin/inventory">Inventory</NavItem>
             <NavItem to="/admin/orders">Orders</NavItem>
           </Section>
