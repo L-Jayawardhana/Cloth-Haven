@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { categoryApi, subCategoryApi } from '~/lib/api';
-import { Edit2, Trash2, Plus } from "lucide-react";
+import { Edit2, Trash2, Plus, ArrowLeft } from "lucide-react";
 
 interface Category {
   categoryId: number;
@@ -26,7 +26,7 @@ export default function AdminCategoriesPage() {
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
 
   // Category modals
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
@@ -327,28 +327,39 @@ export default function AdminCategoriesPage() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Management</h1>
-            <p className="text-gray-600">Manage product categories and subcategories</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="max-w-md">
-              <input
-                type="text"
-                placeholder="Search categories..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-            </div>
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
             <button
-              onClick={() => setShowAddCategoryModal(true)}
-              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              onClick={() => window.location.href = '/admin/products'}
+              className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Category
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Products
             </button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Management</h1>
+              <p className="text-gray-600">Manage product categories and subcategories</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="max-w-md">
+                <input
+                  type="text"
+                  placeholder="Search categories..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+              <button
+                onClick={() => setShowAddCategoryModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Category
+              </button>
+            </div>
           </div>
         </div>
 

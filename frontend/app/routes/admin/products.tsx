@@ -13,7 +13,7 @@ export default function AdminProductsPage() {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
 
   useEffect(() => {
     loadProducts();

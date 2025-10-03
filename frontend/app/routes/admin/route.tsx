@@ -52,25 +52,56 @@ export default function AdminLayout() {
     return null; // Will redirect, so don't render anything
   }
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-      <aside className="lg:sticky lg:top-20 h-max rounded-xl border border-indigo-100 bg-white shadow-sm">
-        <nav className="p-2 text-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+      <aside className="lg:sticky lg:top-20 h-max rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div className="p-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Admin Panel</h2>
+          <p className="text-sm text-gray-600">Cloth Haven Management</p>
+        </div>
+        <nav className="p-3 text-sm">
           <Section title="Dashboard">
-            <NavItem to="/admin" end>Overview</NavItem>
+            <NavItem to="/admin" end accent="emerald">
+              Dashboard Overview
+            </NavItem>
           </Section>
-          <Section title="Management">
-            <NavItem to="/admin/users">Users & Staff</NavItem>
-            <NavItem to="/admin/products">Products</NavItem>
-            <NavItem to="/admin/categories">Categories</NavItem>
-            <NavItem to="/admin/subcategories">Subcategories</NavItem>
-            <NavItem to="/admin/inventory">Inventory</NavItem>
-            <NavItem to="/admin/orders">Orders</NavItem>
+          
+          <Section title="User Management">
+            <NavItem to="/admin/users" accent="blue">
+              Users & Staff
+            </NavItem>
           </Section>
-          <Section title="Analytics">
-            <NavItem to="/admin/reports">Sales Reports</NavItem>
+          
+          <Section title="Product Management">
+            <NavItem to="/admin/products" accent="purple">
+              Products
+            </NavItem>
+            <NavItem to="/admin/categories" accent="indigo">
+              Categories
+            </NavItem>
+            <NavItem to="/admin/subcategories" accent="violet">
+              Subcategories
+            </NavItem>
+            <NavItem to="/admin/inventory" accent="orange">
+              Inventory
+            </NavItem>
           </Section>
-          <Section title="Account">
-            <NavItem to="/admin/settings">Settings</NavItem>
+          
+          <Section title="Order Management">
+            <NavItem to="/admin/orders" accent="green">
+              Orders
+            </NavItem>
+          </Section>
+          
+          <Section title="Analytics & Reports">
+            <NavItem to="/admin/reports" accent="cyan">
+              Sales Reports
+            </NavItem>
+          </Section>
+          
+          <Section title="System">
+            <NavItem to="/admin/settings" accent="gray">
+              Settings
+            </NavItem>
           </Section>
         </nav>
       </aside>
@@ -82,11 +113,14 @@ export default function AdminLayout() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, icon, children }: { title: string; icon?: string; children: React.ReactNode }) {
   return (
-    <div className="mb-4">
-      <p className="px-2 pb-2 text-xs font-medium text-indigo-900/80">{title}</p>
-      <div className="grid">
+    <div className="mb-6">
+      <div className="flex items-center gap-2 px-3 pb-3">
+        {icon && <span className="text-base">{icon}</span>}
+        <p className="text-xs font-semibold text-gray-800 uppercase tracking-wider">{title}</p>
+      </div>
+      <div className="grid gap-1">
         {children}
       </div>
     </div>
@@ -94,50 +128,82 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function NavItem(
-  { to, end, children }: { to: string; end?: boolean; children: React.ReactNode }
+  { to, end, accent = "gray", children }: { to: string; end?: boolean; accent?: string; children: React.ReactNode }
 ) {
-  // Determine colors based on the route
-  const isUsersPage = to === "/admin/users";
-  const isOverviewPage = to === "/admin";
-  
   const getColors = (isActive: boolean) => {
-    if (isUsersPage) {
-      // Orange/amber theme for Users & Staff
-      return isActive
-        ? "bg-amber-100 text-amber-900 font-medium"
-        : "text-gray-700 hover:bg-amber-50 hover:text-amber-800";
-    } else if (isOverviewPage) {
-      // Light blue theme for Overview (matching indigo KPI cards)
-      return isActive
-        ? "bg-indigo-100 text-indigo-900 font-medium"
-        : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700";
-    } else {
-      // Default theme for other pages
-      return isActive
-        ? "bg-gray-100 text-gray-900 font-medium"
-        : "text-gray-700 hover:bg-gray-50";
-    }
-  };
+    const colorMap: { [key: string]: { active: string; inactive: string; dot: string } } = {
+      emerald: {
+        active: "bg-emerald-100 text-emerald-800 border-emerald-200",
+        inactive: "text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-transparent hover:border-emerald-100",
+        dot: "bg-emerald-500"
+      },
+      blue: {
+        active: "bg-blue-100 text-blue-800 border-blue-200",
+        inactive: "text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-transparent hover:border-blue-100",
+        dot: "bg-blue-500"
+      },
+      purple: {
+        active: "bg-purple-100 text-purple-800 border-purple-200",
+        inactive: "text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent hover:border-purple-100",
+        dot: "bg-purple-500"
+      },
+      indigo: {
+        active: "bg-indigo-100 text-indigo-800 border-indigo-200",
+        inactive: "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 border-transparent hover:border-indigo-100",
+        dot: "bg-indigo-500"
+      },
+      violet: {
+        active: "bg-violet-100 text-violet-800 border-violet-200",
+        inactive: "text-gray-700 hover:bg-violet-50 hover:text-violet-700 border-transparent hover:border-violet-100",
+        dot: "bg-violet-500"
+      },
+      orange: {
+        active: "bg-orange-100 text-orange-800 border-orange-200",
+        inactive: "text-gray-700 hover:bg-orange-50 hover:text-orange-700 border-transparent hover:border-orange-100",
+        dot: "bg-orange-500"
+      },
+      green: {
+        active: "bg-green-100 text-green-800 border-green-200",
+        inactive: "text-gray-700 hover:bg-green-50 hover:text-green-700 border-transparent hover:border-green-100",
+        dot: "bg-green-500"
+      },
+      cyan: {
+        active: "bg-cyan-100 text-cyan-800 border-cyan-200",
+        inactive: "text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border-transparent hover:border-cyan-100",
+        dot: "bg-cyan-500"
+      },
+      gray: {
+        active: "bg-gray-100 text-gray-800 border-gray-200",
+        inactive: "text-gray-700 hover:bg-gray-50 hover:text-gray-800 border-transparent hover:border-gray-100",
+        dot: "bg-gray-500"
+      }
+    };
 
-  const getDotColor = () => {
-    if (isUsersPage) {
-      return "bg-amber-500";
-    } else if (isOverviewPage) {
-      return "bg-indigo-500";
-    }
-    return "bg-gray-400";
+    const colors = colorMap[accent] || colorMap.gray;
+    return {
+      className: isActive ? colors.active : colors.inactive,
+      dotColor: colors.dot
+    };
   };
 
   return (
     <NavLink
       to={to}
       end={end}
-      className={({ isActive }: { isActive: boolean }) =>
-        `flex items-center gap-2 rounded-md px-3 py-2 transition-colors ${getColors(isActive)}`
-      }
+      className={({ isActive }: { isActive: boolean }) => {
+        const { className } = getColors(isActive);
+        return `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 border font-medium ${className}`;
+      }}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${getDotColor()}`} />
-      {children}
+      {({ isActive }: { isActive: boolean }) => {
+        const { dotColor } = getColors(isActive);
+        return (
+          <>
+            <span className={`h-2 w-2 rounded-full transition-colors ${dotColor}`} />
+            <span className="text-sm">{children}</span>
+          </>
+        );
+      }}
     </NavLink>
   );
 }

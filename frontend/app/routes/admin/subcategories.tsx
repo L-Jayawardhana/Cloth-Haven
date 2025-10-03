@@ -21,10 +21,10 @@ export default function AdminSubCategoriesPage() {
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<number | "">("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8;
+  const itemsPerPage =11;
 
   // Add SubCategory Modal State
   const [showAddModal, setShowAddModal] = useState(false);

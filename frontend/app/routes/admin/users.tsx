@@ -28,7 +28,7 @@ export default function AdminUsersPage() {
   const [adminPassword, setAdminPassword] = React.useState("")
   const [isDeleting, setIsDeleting] = React.useState(false)
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
   
   // Load users on component mount
   React.useEffect(() => {
@@ -322,46 +322,105 @@ export default function AdminUsersPage() {
           {/* Overlay */}
           <div className="absolute inset-0 bg-black/30" onClick={() => setIsAddOpen(false)} />
           {/* Dialog */}
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-indigo-100 bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-medium text-amber-700">Add Staff</h2>
-            <p className="mt-1 text-xs text-gray-500">Create a new staff account</p>
-            {errorMsg ? (
-              <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMsg}</div>
-            ) : null}
-            <form className="mt-4 grid gap-3" onSubmit={handleSave}>
-              <label className="grid gap-1 text-sm">
-                <span>Username</span>
-                <input value={username} onChange={(e) => setUsername(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. alex_johnson" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Email</span>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. alex@clothhaven.com" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Phone</span>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. +1 555 123 4567" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Address</span>
-                <input value={address} onChange={(e) => setAddress(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. 123 Main St, City, State" />
-              </label>
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                <label className="grid gap-1 text-sm">
-                  <span>Password</span>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-                </label>
-                <label className="grid gap-1 text-sm">
-                  <span>Confirm Password</span>
-                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-                </label>
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-2">
-                <button type="button" onClick={clearForm} disabled={loading} className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">Clear</button>
-                <button type="submit" disabled={loading} className="rounded-md bg-amber-600 px-3 py-2 text-sm text-white hover:bg-amber-700 disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Save'}
-                </button>
-              </div>
-            </form>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
+              <p className="text-sm text-gray-600">Create a new staff account</p>
+            </div>
+            <div className="p-6">
+              {errorMsg ? (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMsg}</div>
+              ) : null}
+              <form className="space-y-4" onSubmit={handleSave}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                  <input 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. alex_johnson" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. alex@clothhaven.com" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input 
+                    type="tel" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. +1 555 123 4567" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <textarea 
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none" 
+                    placeholder="e.g. 123 Main St, City, State" 
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input 
+                      type="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                      placeholder="Minimum 6 characters"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input 
+                      type="password" 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                      placeholder="Repeat password"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setIsAddOpen(false);
+                      clearForm();
+                    }} 
+                    disabled={loading} 
+                    className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loading ? 'Creating...' : 'Create Staff'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       ) : null}
