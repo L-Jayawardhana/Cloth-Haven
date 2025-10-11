@@ -12,10 +12,12 @@ import org.example.clothheaven.Model.Cart;
 import org.example.clothheaven.Model.CartItem;
 import org.example.clothheaven.Repository.CartItemRepository;
 import org.example.clothheaven.Repository.CartRepository;
+import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -47,12 +49,18 @@ public class CartService {
                                         return cartRepository.save(newCart);
                                 });
 
-                // Check if item already exists in cart
+                // Check if item already exists in cart with same size and color
                 Product product = productRepository.findById(addToCartDTO.getProductId())
                                 .orElseThrow(() -> new CartItemNotFoundException(
                                                 "Product not found with id: " + addToCartDTO.getProductId()));
-                Optional<CartItem> existingItem = cartItemRepository
-                                .findByCartCartIdAndProduct_ProductId(cart.getCartId(), product.getProductId());
+
+                // Find existing item with matching product, size, and color
+                Optional<CartItem> existingItem = cartItemRepository.findAll().stream()
+                                .filter(item -> item.getCart().getCartId().equals(cart.getCartId()) &&
+                                                item.getProduct().getProductId().equals(product.getProductId()) &&
+                                                Objects.equals(item.getSize(), addToCartDTO.getSize()) &&
+                                                Objects.equals(item.getColor(), addToCartDTO.getColor()))
+                                .findFirst();
 
                 if (existingItem.isPresent()) {
                         // Update quantity if item exists
@@ -60,8 +68,9 @@ public class CartService {
                         item.setCartItemsQuantity(item.getCartItemsQuantity() + addToCartDTO.getQuantity());
                         cartItemRepository.save(item);
                 } else {
-                        // Create new cart item
-                        CartItem newItem = new CartItem(cart, product, addToCartDTO.getQuantity());
+                        // Create new cart item with size and color
+                        CartItem newItem = new CartItem(cart, product, addToCartDTO.getQuantity(),
+                                        addToCartDTO.getSize(), addToCartDTO.getColor());
                         cartItemRepository.save(newItem);
                 }
 

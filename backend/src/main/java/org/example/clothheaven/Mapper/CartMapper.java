@@ -36,6 +36,8 @@ public class CartMapper {
         return new CartItemResponseDTO(
                 cartItem.getCartItemId(),
                 cartItem.getProduct() != null ? cartItem.getProduct().getProductId() : null,
-                cartItem.getCartItemsQuantity());
+                cartItem.getCartItemsQuantity(),
+                cartItem.getSize(),
+                cartItem.getColor());
     }
 }

@@ -9,6 +9,8 @@ import {
 
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { unifiedCartService } from "./lib/unifiedCart";
+import { useAuthCartSync } from "./hooks/useAuthCartSync";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -30,15 +32,46 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   const [user, setUser] = useState<any>(null);
+  const [cartCount, setCartCount] = useState(0);
+  const { syncCart } = useAuthCartSync();
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
       setUser(JSON.parse(userData));
     }
+    
+    // Load initial cart count
+    updateCartCount();
+    
+    // Listen for storage changes to update cart count
+    const handleStorageChange = () => {
+      updateCartCount();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cartUpdated', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cartUpdated', handleStorageChange);
+    };
   }, []);
 
-  const handleLogout = () => {
+  const updateCartCount = async () => {
+    try {
+      const count = await unifiedCartService.getTotalItems();
+      setCartCount(count);
+    } catch (error) {
+      console.error('Error updating cart count:', error);
+      setCartCount(0);
+    }
+  };
+
+  const handleLogout = async () => {
+    // Sync cart before logout
+    await syncCart();
+    
     localStorage.removeItem("user");
     setUser(null);
     window.location.href = "/";
@@ -65,7 +98,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ) : (
               <nav className="hidden md:flex items-center gap-6 text-sm">
                 <a href="/products" className="hover:text-gray-700">Products</a>
-                <a href="/cart" className="hover:text-gray-700">Cart</a>
+                <a href="/cart" className="hover:text-gray-700 relative">
+                  Cart
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                      {cartCount > 99 ? '99+' : cartCount}
+                    </span>
+                  )}
+                </a>
                 {user && <a href="/profile" className="hover:text-gray-700">Profile</a>}
               </nav>
             )}
