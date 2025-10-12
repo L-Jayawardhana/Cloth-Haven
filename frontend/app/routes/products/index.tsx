@@ -11,6 +11,7 @@ import {
   type SubCategory 
 } from '../../lib/api';
 import { ProductCard } from '../../components/ProductCard';
+import { cartApi } from '../../lib/api';
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -45,14 +46,16 @@ export default function Products() {
   // Handle adding product to cart
   const handleAddToCart = async (productId: number) => {
     try {
-      // TODO: Implement actual cart API call
-      console.log('Adding product to cart:', productId);
-      
-      // For now, just show a success message
-      const product = products.find(p => p.productId === productId);
-      if (product) {
-        alert(`${product.name} added to cart!`);
+      const raw = localStorage.getItem('user');
+      const user = raw ? JSON.parse(raw) : null;
+      const resolvedUserId = user ? (user.userId ?? user.userid ?? user.id ?? null) : null;
+      if (!resolvedUserId) {
+        alert('Please sign in to add items to cart.');
+        return;
       }
+      await cartApi.addItemToCart({ userId: resolvedUserId, productId, quantity: 1 });
+      const product = products.find(p => p.productId === productId);
+      alert(`${product?.name ?? 'Product'} added to cart!`);
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add product to cart');

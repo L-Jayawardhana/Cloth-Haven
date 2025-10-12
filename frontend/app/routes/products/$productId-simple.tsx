@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
-import { productApi, imageApi, colorSizeApi, type Product, type ProductImage, type ColorsSizeQuantityAvailability } from '../../lib/api';
+import { productApi, imageApi, colorSizeApi, cartApi, type Product, type ProductImage, type ColorsSizeQuantityAvailability } from '../../lib/api';
 
 export default function ProductDetails() {
   const { productId } = useParams();
@@ -238,9 +238,22 @@ export default function ProductDetails() {
     );
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!isInStock) return;
-    alert(`Added ${quantity} x ${product.name} (${selectedColor}, ${selectedSize}) to cart!`);
+    const raw = localStorage.getItem('user');
+    const user = raw ? JSON.parse(raw) : null;
+    const resolvedUserId = user ? (user.userId ?? user.userid ?? user.id ?? null) : null;
+    if (!resolvedUserId) {
+      alert('Please sign in to add items to cart.');
+      return;
+    }
+    try {
+      await cartApi.addItemToCart({ userId: resolvedUserId, productId: product!.productId, quantity });
+      alert(`Added ${quantity} x ${product!.name} (${selectedColor}, ${selectedSize}) to cart!`);
+    } catch (err) {
+      console.error('Add to cart failed', err);
+      alert('Failed to add to cart');
+    }
   };
 
   const handleQuantityChange = (newQuantity: number) => {
