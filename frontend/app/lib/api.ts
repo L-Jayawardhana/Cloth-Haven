@@ -14,7 +14,8 @@ export interface User {
 export interface CartItem {
   cartItemId: number;
   productId: number;
-  quantity: number;
+  quantity?: number;
+  cartItemsQuantity?: number; // backend field name
   productName?: string;
   productImage?: string;
   price?: number;
@@ -28,22 +29,29 @@ export interface Cart {
 
 class CartApi {
   async getCartByUserId(userId: number): Promise<Cart> {
-    return apiService["request"](`/cart/user/${userId}`);
+    return apiService.request<Cart>(`/cart/user/${userId}`);
   }
 
   async removeItemFromCart(userId: number, productId: number): Promise<void> {
-    await apiService["request"](`/cart/user/${userId}/product/${productId}`, { method: "DELETE" });
+    await apiService.request<void>(`/cart/user/${userId}/product/${productId}`, { method: "DELETE" });
   }
 
   async updateCartItemQuantity(cartItemId: number, quantity: number): Promise<Cart> {
-    return apiService["request"](`/cart/item/${cartItemId}`, {
+    return apiService.request<Cart>(`/cart/item/${cartItemId}`, {
       method: "PUT",
       body: JSON.stringify({ quantity }),
     });
   }
 
   async clearCart(userId: number): Promise<void> {
-    await apiService["request"](`/cart/user/${userId}/clear`, { method: "DELETE" });
+    await apiService.request<void>(`/cart/user/${userId}/clear`, { method: "DELETE" });
+  }
+
+  async addItemToCart(payload: { userId: number; productId: number; quantity: number }): Promise<Cart> {
+    return apiService.request<Cart>(`/cart/add`, {
+      method: 'POST',
+      body: JSON.stringify({ userId: payload.userId, productId: payload.productId, quantity: payload.quantity }),
+    });
   }
 }
 
@@ -77,7 +85,7 @@ export interface PasswordChangeRequest {
 }
 
 class ApiService {
-  private async request<T>(
+  public async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
