@@ -72,7 +72,7 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+  <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
         <Kpi title="Total Sales" value="$12,480" sub="Today / This Month" accent="amber" />
         <Kpi title="Total Orders" value="324" sub="Today / This Month" accent="indigo" />
         <Kpi 
@@ -217,30 +217,13 @@ export default function AdminDashboard() {
 function Kpi({ title, value, sub, accent = "indigo" }: { title: string; value: string; sub: string; accent?: "indigo" | "emerald" | "teal" | "amber" | "rose" }) {
   const isLoading = value === "...";
   
-  const accentColors = {
-    indigo: "bg-indigo-50 text-indigo-600 border-indigo-200",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-200", 
-    teal: "bg-teal-50 text-teal-600 border-teal-200",
-    amber: "bg-amber-50 text-amber-600 border-amber-200",
-    rose: "bg-rose-50 text-rose-600 border-rose-200"
-  };
-  
   return (
     <Card className="border-slate-200 hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-slate-600">{title}</p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
-            <p className="text-xs text-slate-500 mt-1">{sub}</p>
-          </div>
-          <div className={`p-3 rounded-lg border ${accentColors[accent]}`}>
-            {isLoading ? (
-              <div className="w-6 h-6 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <div className="w-6 h-6 bg-current rounded-full opacity-20"></div>
-            )}
-          </div>
+      <CardContent className="p-4">
+        <div>
+          <p className="text-sm font-medium text-slate-600">{title}</p>
+          <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+          <p className="text-xs text-slate-500 mt-1">{sub}</p>
         </div>
       </CardContent>
     </Card>
