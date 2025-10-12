@@ -605,8 +605,42 @@ class ColorsSizeQuantityAvailabilityApi {
   }
 }
 
+// Inventory Management Interfaces
+export interface InventoryStockUpdate {
+  productId: number;
+  color: string;
+  size: string;
+  changeType: 'ORDER' | 'RESTOCK' | 'CANCEL' | 'RETURN' | 'DAMAGE' | 'ADJUSTMENT';
+  quantityChange: number;
+  reason?: string;
+}
+
+export interface ColorsSizeQuantityAvailability {
+  id: number;
+  productId: number;
+  color: string;
+  size: string;
+  quantity: number;
+  availability: boolean;
+}
+
+// Inventory Management API
+class InventoryApi {
+  async updateStock(updateData: InventoryStockUpdate): Promise<ColorsSizeQuantityAvailability> {
+    return apiService.request<ColorsSizeQuantityAvailability>('/inventoryLogs/updateStock', {
+      method: 'POST',
+      body: JSON.stringify(updateData),
+    });
+  }
+
+  async getProductVariants(productId: number): Promise<ColorsSizeQuantityAvailability[]> {
+    return apiService.request<ColorsSizeQuantityAvailability[]>(`/colors-size-quantity-availability/product/${productId}`);
+  }
+}
+
 export const productApi = new ProductApi();
 export const categoryApi = new CategoryApi();
 export const subCategoryApi = new SubCategoryApi();
 export const imageApi = new ImageApi();
 export const colorSizeApi = new ColorsSizeQuantityAvailabilityApi();
+export const inventoryApi = new InventoryApi();

@@ -3,8 +3,10 @@ package org.example.clothheaven.Controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.DTO.InventoryLogsCreateDTO;
 import org.example.clothheaven.DTO.InventoryLogsResponseDTO;
+import org.example.clothheaven.DTO.InventoryStockUpdateDTO;
 import org.example.clothheaven.Service.InventoryLogsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -101,5 +103,18 @@ public class InventoryLogsController {
             @RequestParam LocalDateTime endDate) {
         List<InventoryLogsResponseDTO> logList = inventoryLogsService.getLogsByProductIdAndChangeTypeAndDateRange(productId, changeType, startDate, endDate);
         return ResponseEntity.ok(logList);
+    }
+
+    @PostMapping("/updateStock")
+    public ResponseEntity<?> updateStock(@RequestBody InventoryStockUpdateDTO updateDTO) {
+        try {
+            ColorsSizeQuantityAvailabilityResponseDTO updatedVariant = inventoryLogsService.updateStock(updateDTO);
+            if (updatedVariant == null) {
+                return ResponseEntity.badRequest().body("Product variant not found or could not be updated");
+            }
+            return ResponseEntity.ok(updatedVariant);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error updating stock: " + e.getMessage());
+        }
     }
 }

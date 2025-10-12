@@ -103,5 +103,29 @@ public class ColorsSizeQuantityAvailabilityService {
         List<ColorsSizeQuantityAvailability> list = repository.findAll();
         return list.stream().map(mapper::toResponseDTO).collect(Collectors.toList());
     }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO findByProductIdColorAndSize(Long productId, String color, String size) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        for (ColorsSizeQuantityAvailability variant : variants) {
+            if (variant.getColor().equals(color) && variant.getSize().equals(size)) {
+                return mapper.toResponseDTO(variant);
+            }
+        }
+        return null;
+    }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO updateQuantity(Long productId, String color, String size, int quantityChange) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        for (ColorsSizeQuantityAvailability variant : variants) {
+            if (variant.getColor().equals(color) && variant.getSize().equals(size)) {
+                int newQuantity = variant.getQuantity() + quantityChange;
+                variant.setQuantity(Math.max(0, newQuantity)); // Don't allow negative quantities
+                variant.setAvailability(variant.getQuantity() > 0);
+                ColorsSizeQuantityAvailability saved = repository.save(variant);
+                return mapper.toResponseDTO(saved);
+            }
+        }
+        return null;
+    }
 }
 

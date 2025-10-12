@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/images/**").permitAll()
                         // Color/Size/Quantity endpoints - allow all access
                         .requestMatchers("/api/v1/colors-size-quantity-availability/**").permitAll()
+                        // Inventory logs endpoints - allow all access for now (TODO: Add admin auth)
+                        .requestMatchers("/api/v1/inventoryLogs/**").permitAll()
                         // Admin endpoints - require ADMIN role
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").permitAll()

@@ -8,9 +8,14 @@ export default function AdminDashboard() {
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [customerError, setCustomerError] = useState("");
 
-  // Load customer count on component mount
+  const [newCustomersCount, setNewCustomersCount] = useState<number | null>(null);
+  const [loadingNewCustomers, setLoadingNewCustomers] = useState(true);
+  const [newCustomersError, setNewCustomersError] = useState("");
+
+  // Load customer and new customer counts on component mount
   useEffect(() => {
     loadCustomerCount();
+    loadNewCustomersCount();
   }, []);
 
   const loadCustomerCount = async () => {
@@ -27,6 +32,28 @@ export default function AdminDashboard() {
       setCustomerCount(null);
     } finally {
       setLoadingCustomers(false);
+    }
+  };
+
+  const loadNewCustomersCount = async () => {
+    try {
+      setLoadingNewCustomers(true);
+      setNewCustomersError("");
+      const users = await apiService.getAllUsers();
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const newCustomers = users.filter(user => {
+        if (user.role !== "CUSTOMER" || !user.createdAt) return false;
+        const created = new Date(user.createdAt);
+        return created >= sevenDaysAgo && created <= now;
+      });
+      setNewCustomersCount(newCustomers.length);
+    } catch (error: any) {
+      console.error("Failed to load new customers count:", error);
+      setNewCustomersError("Failed to load");
+      setNewCustomersCount(null);
+    } finally {
+      setLoadingNewCustomers(false);
     }
   };
   return (
@@ -66,7 +93,24 @@ export default function AdminDashboard() {
           } 
           accent={customerError ? "rose" : "emerald"}
         />
-        <Kpi title="New Customers" value="47" sub="This week" accent="teal" />
+        <Kpi 
+          title="New Customers" 
+          value={
+            loadingNewCustomers
+              ? "..."
+              : newCustomersError
+                ? "Error"
+                : newCustomersCount?.toString() || "0"
+          }
+          sub={
+            loadingNewCustomers
+              ? "Loading..."
+              : newCustomersError
+                ? "Failed to load"
+                : "Last 7 days"
+          }
+          accent={newCustomersError ? "rose" : "teal"}
+        />
         <Kpi title="Low Stock Alerts" value="8" sub="Items below threshold" accent="rose" />
       </section>
 
