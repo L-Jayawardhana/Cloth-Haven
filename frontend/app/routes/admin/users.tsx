@@ -260,37 +260,36 @@ export default function AdminUsersPage() {
   }
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
+      <div className="space-y-8">
         {/* Messages */}
         {successMsg && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg">
             {successMsg}
           </div>
         )}
         {errorMsg && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
             {errorMsg}
           </div>
         )}
 
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Users & Staff</h1>
-            <p className="text-gray-600">Manage user accounts and staff members</p>
+            <h1 className="text-3xl font-bold text-slate-900">Users & Staff</h1>
+            <p className="text-slate-600 mt-1">Manage user accounts and staff members</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button 
               onClick={loadUsers} 
               disabled={loading}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Loading...' : 'Refresh'}
             </button>
             <button 
               onClick={() => setIsAddOpen(true)} 
-              className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
             >
               Add Staff
             </button>
@@ -298,15 +297,15 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="mb-6 grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <input 
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" 
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" 
             placeholder="Search users..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <select 
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           >
@@ -444,15 +443,15 @@ export default function AdminUsersPage() {
         )}
 
         {/* Users Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading users...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
+              <p className="mt-4 text-slate-600">Loading users...</p>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="text-gray-600">
+              <p className="text-slate-600">
                 {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
               </p>
             </div>
@@ -460,67 +459,65 @@ export default function AdminUsersPage() {
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         ID
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Username
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Email
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Role
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                         Created
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-24">
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white">
                     {currentUsers.map((user) => (
-                      <tr key={user.userId} className="hover:bg-gray-50 border-b border-gray-100">
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                      <tr key={user.userId} className="hover:bg-slate-50 border-b border-slate-100">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
                           {user.userId}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-left">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
                           {user.username}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
                           {user.email}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
-                          <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                            {user.role}
-                          </span>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
+                          <RoleBadge role={user.role} />
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-600 text-left">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
                           {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-left">
-                          <div className="flex gap-1 justify-center">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-left">
+                          <div className="flex gap-2 justify-center">
                             <button 
                               onClick={() => handleViewUser(user)}
-                              className="p-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
                               title="View details"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
                             <button 
                               onClick={() => handleEditUser(user)}
-                              className="p-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
                               title="Edit user"
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button 
                               onClick={() => handleDeleteUser(user)}
-                              className="p-2 border border-red-300 rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
+                              className="p-2 border border-red-200 rounded-md text-red-600 bg-white hover:bg-red-50 transition-colors"
                               title="Delete user"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -535,8 +532,8 @@ export default function AdminUsersPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
+                <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                  <div className="text-sm text-slate-700">
                     Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{' '}
                     {filteredUsers.length} users
                   </div>
@@ -544,7 +541,7 @@ export default function AdminUsersPage() {
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
                     >
                       Previous
                     </button>
@@ -554,7 +551,7 @@ export default function AdminUsersPage() {
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
                     >
                       Next
                     </button>
@@ -565,7 +562,6 @@ export default function AdminUsersPage() {
           )}
         </div>
       </div>
-    </div>
 
     {/* View User Details Dialog */}
       {isViewDialogOpen && selectedUser && (
@@ -757,5 +753,21 @@ export default function AdminUsersPage() {
         </div>
       )}
     </>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const roleClasses = {
+    ADMIN: "bg-red-100 text-red-800 border-red-200",
+    STAFF: "bg-blue-100 text-blue-800 border-blue-200",
+    CUSTOMER: "bg-emerald-100 text-emerald-800 border-emerald-200"
+  };
+
+  return (
+    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${
+      roleClasses[role as keyof typeof roleClasses] || "bg-slate-100 text-slate-800 border-slate-200"
+    }`}>
+      {role}
+    </span>
   );
 }
