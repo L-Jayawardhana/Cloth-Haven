@@ -52,13 +52,21 @@ export default function AdminLayout() {
     return null; // Will redirect, so don't render anything
   }
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-      <aside className="lg:sticky lg:top-20 h-max rounded-xl border border-gray-200 bg-white shadow-lg">
-        <div className="p-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Admin Panel</h2>
-          <p className="text-sm text-gray-600">Cloth Haven Management</p>
-        </div>
-        <nav className="p-3 text-sm">
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex">
+        <aside className="w-72 bg-white border-r border-slate-200 shadow-sm">
+          <div className="p-6 border-b border-slate-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">CH</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Admin Panel</h2>
+                <p className="text-sm text-slate-500">Cloth Haven</p>
+              </div>
+            </div>
+          </div>
+          <nav className="p-4 space-y-2">
           <Section title="Dashboard">
             <NavItem to="/admin" end accent="emerald">
               Dashboard Overview
@@ -103,12 +111,13 @@ export default function AdminLayout() {
               Settings
             </NavItem>
           </Section>
-        </nav>
-      </aside>
+          </nav>
+        </aside>
 
-      <section className="min-h-[60vh]">
-        <Outlet />
-      </section>
+        <main className="flex-1 p-8">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
@@ -116,11 +125,10 @@ export default function AdminLayout() {
 function Section({ title, icon, children }: { title: string; icon?: string; children: React.ReactNode }) {
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-2 px-3 pb-3">
-        {icon && <span className="text-base">{icon}</span>}
-        <p className="text-xs font-semibold text-gray-800 uppercase tracking-wider">{title}</p>
+      <div className="px-3 pb-2">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</p>
       </div>
-      <div className="grid gap-1">
+      <div className="space-y-1">
         {children}
       </div>
     </div>
@@ -133,49 +141,49 @@ function NavItem(
   const getColors = (isActive: boolean) => {
     const colorMap: { [key: string]: { active: string; inactive: string; dot: string } } = {
       emerald: {
-        active: "bg-emerald-100 text-emerald-800 border-emerald-200",
-        inactive: "text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border-transparent hover:border-emerald-100",
+        active: "bg-emerald-50 text-emerald-700 border-r-2 border-emerald-500",
+        inactive: "text-slate-600 hover:bg-emerald-50 hover:text-emerald-700",
         dot: "bg-emerald-500"
       },
       blue: {
-        active: "bg-blue-100 text-blue-800 border-blue-200",
-        inactive: "text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-transparent hover:border-blue-100",
+        active: "bg-blue-50 text-blue-700 border-r-2 border-blue-500",
+        inactive: "text-slate-600 hover:bg-blue-50 hover:text-blue-700",
         dot: "bg-blue-500"
       },
       purple: {
-        active: "bg-purple-100 text-purple-800 border-purple-200",
-        inactive: "text-gray-700 hover:bg-purple-50 hover:text-purple-700 border-transparent hover:border-purple-100",
+        active: "bg-purple-50 text-purple-700 border-r-2 border-purple-500",
+        inactive: "text-slate-600 hover:bg-purple-50 hover:text-purple-700",
         dot: "bg-purple-500"
       },
       indigo: {
-        active: "bg-indigo-100 text-indigo-800 border-indigo-200",
-        inactive: "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 border-transparent hover:border-indigo-100",
+        active: "bg-indigo-50 text-indigo-700 border-r-2 border-indigo-500",
+        inactive: "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700",
         dot: "bg-indigo-500"
       },
       violet: {
-        active: "bg-violet-100 text-violet-800 border-violet-200",
-        inactive: "text-gray-700 hover:bg-violet-50 hover:text-violet-700 border-transparent hover:border-violet-100",
+        active: "bg-violet-50 text-violet-700 border-r-2 border-violet-500",
+        inactive: "text-slate-600 hover:bg-violet-50 hover:text-violet-700",
         dot: "bg-violet-500"
       },
       orange: {
-        active: "bg-orange-100 text-orange-800 border-orange-200",
-        inactive: "text-gray-700 hover:bg-orange-50 hover:text-orange-700 border-transparent hover:border-orange-100",
+        active: "bg-orange-50 text-orange-700 border-r-2 border-orange-500",
+        inactive: "text-slate-600 hover:bg-orange-50 hover:text-orange-700",
         dot: "bg-orange-500"
       },
       green: {
-        active: "bg-green-100 text-green-800 border-green-200",
-        inactive: "text-gray-700 hover:bg-green-50 hover:text-green-700 border-transparent hover:border-green-100",
+        active: "bg-green-50 text-green-700 border-r-2 border-green-500",
+        inactive: "text-slate-600 hover:bg-green-50 hover:text-green-700",
         dot: "bg-green-500"
       },
       cyan: {
-        active: "bg-cyan-100 text-cyan-800 border-cyan-200",
-        inactive: "text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border-transparent hover:border-cyan-100",
+        active: "bg-cyan-50 text-cyan-700 border-r-2 border-cyan-500",
+        inactive: "text-slate-600 hover:bg-cyan-50 hover:text-cyan-700",
         dot: "bg-cyan-500"
       },
       gray: {
-        active: "bg-gray-100 text-gray-800 border-gray-200",
-        inactive: "text-gray-700 hover:bg-gray-50 hover:text-gray-800 border-transparent hover:border-gray-100",
-        dot: "bg-gray-500"
+        active: "bg-slate-100 text-slate-700 border-r-2 border-slate-500",
+        inactive: "text-slate-600 hover:bg-slate-50 hover:text-slate-700",
+        dot: "bg-slate-500"
       }
     };
 
@@ -192,7 +200,7 @@ function NavItem(
       end={end}
       className={({ isActive }: { isActive: boolean }) => {
         const { className } = getColors(isActive);
-        return `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 border font-medium ${className}`;
+        return `flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 font-medium ${className}`;
       }}
     >
       {({ isActive }: { isActive: boolean }) => {
