@@ -26,6 +26,12 @@ public class InventoryLogs {
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
     private Product product;
 
+    @Column(name = "color")
+    private String color;
+
+    @Column(name = "size")
+    private String size;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false)
     private ChangeType changeType;
@@ -50,6 +56,22 @@ public class InventoryLogs {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 
     public ChangeType getChangeType() {
