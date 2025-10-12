@@ -145,7 +145,6 @@ export default function Register() {
           </form>
           <div className="mt-6 grid gap-3">
             <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm transition hover:bg-gray-50">Continue with Google</button>
-            <button className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm transition hover:bg-gray-50">Continue with Apple</button>
           </div>
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account? <a href="/login" className="font-medium text-gray-900 hover:underline">Sign in</a>
