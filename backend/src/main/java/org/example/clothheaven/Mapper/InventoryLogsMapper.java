@@ -15,6 +15,8 @@ public class InventoryLogsMapper {
 
         var logs = new InventoryLogs();
         logs.setProduct(dto.getProduct());
+        logs.setColor(dto.getColor());
+        logs.setSize(dto.getSize());
         logs.setChangeType(dto.getChangeType());
         logs.setQuantityChanged(dto.getQuantityChanged());
         logs.setInventoryLogsDate(dto.getInventoryLogsDate());
@@ -29,6 +31,8 @@ public class InventoryLogsMapper {
         var responseDTO = new InventoryLogsResponseDTO();
         responseDTO.setLogId(logs.getLogId());
         responseDTO.setProduct(logs.getProduct());
+        responseDTO.setColor(logs.getColor());
+        responseDTO.setSize(logs.getSize());
         responseDTO.setChangeType(logs.getChangeType());
         responseDTO.setQuantityChanged(logs.getQuantityChanged());
         responseDTO.setInventoryLogsDate(logs.getInventoryLogsDate());

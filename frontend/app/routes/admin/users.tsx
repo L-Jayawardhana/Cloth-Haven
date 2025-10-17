@@ -27,8 +27,9 @@ export default function AdminUsersPage() {
   const [userToDelete, setUserToDelete] = React.useState<User | null>(null)
   const [adminPassword, setAdminPassword] = React.useState("")
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState("")
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 11;
   
   // Load users on component mount
   React.useEffect(() => {
@@ -197,7 +198,8 @@ export default function AdminUsersPage() {
         username: editFormData.username || selectedUser.username,
         email: editFormData.email || selectedUser.email,
         phoneNo: editFormData.phoneNo || selectedUser.phoneNo,
-        address: editFormData.address || selectedUser.address
+        address: editFormData.address || selectedUser.address,
+        role: selectedUser.role
       }
       
       console.log('Update data:', updateData);
@@ -224,14 +226,16 @@ export default function AdminUsersPage() {
 
   const handleConfirmDelete = async () => {
     if (!userToDelete || !adminPassword.trim()) {
-      setErrorMsg("Please enter admin password")
+      setDeleteError("Please enter admin password")
       return
     }
     
     try {
       setIsDeleting(true)
-      // Use the new admin delete endpoint with admin password
-      await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
+      setDeleteError("") // Clear any existing errors
+      
+      // Use the admin delete endpoint with admin password verification
+      const response = await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
       
       setSuccessMsg(`${userToDelete.role.toLowerCase()} deleted successfully`)
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -240,13 +244,14 @@ export default function AdminUsersPage() {
       setIsDeleteDialogOpen(false)
       setUserToDelete(null)
       setAdminPassword("")
+      setDeleteError("")
       
       // Refresh the users list
       await loadUsers()
       
     } catch (error: any) {
       console.error("Failed to delete user:", error)
-      setErrorMsg(error.message || "Failed to delete user")
+      setDeleteError("Admin password is incorrect or user cannot be deleted")
     } finally {
       setIsDeleting(false)
     }
@@ -256,209 +261,328 @@ export default function AdminUsersPage() {
     setIsDeleteDialogOpen(false)
     setUserToDelete(null)
     setAdminPassword("")
+    setDeleteError("")
   }
   return (
-    <div className="grid gap-6">
-      {successMsg ? (
-        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          {successMsg}
-        </div>
-      ) : null}
-        <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-amber-700">Users & Staff</h1>
-        <div className="flex gap-2">
-          <button 
-            onClick={loadUsers} 
-            disabled={loading}
-            className="rounded-md bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-          >
-            {loading ? 'Loading...' : 'Refresh'}
-          </button>
-          <button onClick={() => setIsAddOpen(true)} className="rounded-md bg-amber-600 px-3 py-2 text-sm text-white hover:bg-amber-700">Add Staff</button>
-        </div>
-      </div>
+    <>
+      <div className="space-y-8">
+        {/* Messages */}
+        {successMsg && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg">
+            {successMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+            {errorMsg}
+          </div>
+        )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <input 
-          className="h-10 rounded-md border border-indigo-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 hover:border-amber-300" 
-          placeholder="Search users" 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <select 
-          className="h-10 rounded-md border border-indigo-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 hover:border-amber-300"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="">All Roles</option>
-          <option value="CUSTOMER">Customer</option>
-          <option value="STAFF">Staff</option>
-          <option value="ADMIN">Admin</option>
-        </select>
-      </div>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Users & Staff</h1>
+            <p className="text-slate-600 mt-1">Manage user accounts and staff members</p>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={loadUsers} 
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+            <button 
+              onClick={() => setIsAddOpen(true)} 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              Add Staff
+            </button>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <input 
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" 
+            placeholder="Search users..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select 
+            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="">All Roles</option>
+            <option value="CUSTOMER">Customer</option>
+            <option value="STAFF">Staff</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
 
       {isAddOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center">
           {/* Overlay */}
-          <div className="absolute inset-0 bg-black/30" onClick={() => setIsAddOpen(false)} />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsAddOpen(false)} />
           {/* Dialog */}
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-indigo-100 bg-white p-5 shadow-xl">
-            <h2 className="text-lg font-medium text-amber-700">Add Staff</h2>
-            <p className="mt-1 text-xs text-gray-500">Create a new staff account</p>
-            {errorMsg ? (
-              <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMsg}</div>
-            ) : null}
-            <form className="mt-4 grid gap-3" onSubmit={handleSave}>
-              <label className="grid gap-1 text-sm">
-                <span>Username</span>
-                <input value={username} onChange={(e) => setUsername(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. alex_johnson" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Email</span>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. alex@clothhaven.com" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Phone</span>
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. +1 555 123 4567" />
-              </label>
-              <label className="grid gap-1 text-sm">
-                <span>Address</span>
-                <input value={address} onChange={(e) => setAddress(e.target.value)} className="h-10 rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. 123 Main St, City, State" />
-              </label>
-              <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-                <label className="grid gap-1 text-sm">
-                  <span>Password</span>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-                </label>
-                <label className="grid gap-1 text-sm">
-                  <span>Confirm Password</span>
-                  <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="h-10 w-full rounded-md border border-gray-300 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-                </label>
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-2">
-                <button type="button" onClick={clearForm} disabled={loading} className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">Clear</button>
-                <button type="submit" disabled={loading} className="rounded-md bg-amber-600 px-3 py-2 text-sm text-white hover:bg-amber-700 disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Save'}
-                </button>
-              </div>
-            </form>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">Add Staff Member</h2>
+              <p className="text-sm text-gray-600">Create a new staff account</p>
+            </div>
+            <div className="p-6">
+              {errorMsg ? (
+                <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{errorMsg}</div>
+              ) : null}
+              <form className="space-y-4" onSubmit={handleSave}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                  <input 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. alex_johnson" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. alex@clothhaven.com" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input 
+                    type="tel" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                    placeholder="e.g. +1 555 123 4567" 
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                  <textarea 
+                    value={address} 
+                    onChange={(e) => setAddress(e.target.value)} 
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none" 
+                    placeholder="e.g. 123 Main St, City, State" 
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input 
+                      type="password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                      placeholder="Minimum 6 characters"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input 
+                      type="password" 
+                      value={confirmPassword} 
+                      onChange={(e) => setConfirmPassword(e.target.value)} 
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors" 
+                      placeholder="Repeat password"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setIsAddOpen(false);
+                      clearForm();
+                    }} 
+                    disabled={loading} 
+                    className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    disabled={loading} 
+                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loading ? 'Creating...' : 'Create Staff'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       ) : null}
 
-      {loadError && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          <div className="flex items-center gap-2">
-            <span>❌</span>
-            <div>
-              <div className="font-medium">Failed to load users</div>
-              <div className="mt-1">{loadError}</div>
-              <button 
-                onClick={loadUsers}
-                className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border"
-              >
-                Retry
-              </button>
+        {loadError && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            <div className="flex items-center gap-2">
+              <span>❌</span>
+              <div>
+                <div className="font-medium">Failed to load users</div>
+                <div className="mt-1">{loadError}</div>
+                <button 
+                  onClick={loadUsers}
+                  className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="overflow-x-auto rounded-xl border border-amber-100 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-amber-50 text-amber-800">
-            <tr>
-              <th className="px-4 py-3 text-center">Username</th>
-              <th className="px-4 py-3 text-center">Email</th>
-              <th className="px-4 py-3 text-center">Role</th>
-              <th className="px-4 py-3 text-center">Created at</th>
-              <th className="px-4 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-amber-200 border-t-amber-600 rounded-full animate-spin"></div>
-                    Loading users...
+        {/* Users Table */}
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
+              <p className="mt-4 text-slate-600">Loading users...</p>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="text-slate-600">
+                {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <table className="w-full">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        Created
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-24">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white">
+                    {currentUsers.map((user) => (
+                      <tr key={user.userId} className="hover:bg-slate-50 border-b border-slate-100">
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
+                          {user.userId}
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
+                          {user.username}
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
+                          <RoleBadge role={user.role} />
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
+                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                        </td>
+                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-left">
+                          <div className="flex gap-2 justify-center">
+                            <button 
+                              onClick={() => handleViewUser(user)}
+                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
+                              title="View details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleEditUser(user)}
+                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
+                              title="Edit user"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteUser(user)}
+                              className="p-2 border border-red-200 rounded-md text-red-600 bg-white hover:bg-red-50 transition-colors"
+                              title="Delete user"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+                  <div className="text-sm text-slate-700">
+                    Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{' '}
+                    {filteredUsers.length} users
                   </div>
-                </td>
-              </tr>
-            ) : filteredUsers.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                  {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
-                </td>
-              </tr>
-            ) : (
-              currentUsers.map((user, i) => (
-                <tr key={user.userId} className="border-t hover:bg-amber-50/30 transition-colors">
-                  <td className="px-4 py-3 text-center">{user.username}</td>
-                  <td className="px-4 py-3 text-center">{user.email}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex justify-center items-center w-16 px-3 py-1 rounded-md text-xs font-medium bg-amber-100/60 text-amber-800 border border-amber-200/40">
-                      {user.role}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                    >
+                      Previous
+                    </button>
+                    <span className="px-3 py-1 text-sm">
+                      {currentPage} of {totalPages}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="flex justify-center gap-1">
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleViewUser(user)}
-                          className="p-1.5 rounded-md bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200 hover:border-gray-300 transition-colors duration-200"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          View details
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleEditUser(user)}
-                          className="p-1.5 rounded-md bg-amber-100 border border-amber-200 text-amber-700 hover:bg-amber-200 hover:border-amber-300 transition-colors duration-200"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-amber-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          {user.role === "CUSTOMER" ? "Cannot edit customer" : "Edit user"}
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button 
-                          onClick={() => handleDeleteUser(user)}
-                          className="p-1.5 rounded-md bg-red-100 border border-red-200 text-red-700 hover:bg-red-200 hover:border-red-300 transition-colors duration-200"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-red-800 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                          Delete user
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      {/* View User Details Dialog */}
+    {/* View User Details Dialog */}
       {isViewDialogOpen && selectedUser && (
         <div className="fixed inset-0 z-50 grid place-items-center">
           <div className="absolute inset-0 bg-black/30" onClick={handleCloseDialogs} />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-amber-100 bg-white shadow-xl">
-            <div className="border-b border-amber-100 px-6 py-4">
-              <h2 className="text-xl font-semibold text-amber-700">User Details</h2>
-              <p className="text-sm text-gray-500">Viewing {selectedUser.role.toLowerCase()} information</p>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">User Details</h2>
+              <p className="text-sm text-gray-600">Viewing {selectedUser.role.toLowerCase()} information</p>
             </div>
             <div className="p-6 space-y-4">
               <div className="grid gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">User ID</label>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.userId}</p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Username</label>
                   <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.username}</p>
@@ -479,9 +603,9 @@ export default function AdminUsersPage() {
                   <label className="text-sm font-medium text-gray-700">Role</label>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-md text-xs font-medium ${
                     selectedUser.role === 'ADMIN' 
-                      ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                      ? 'bg-red-100 text-red-800 border border-red-200'
                       : selectedUser.role === 'STAFF'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                       : 'bg-blue-100 text-blue-800 border border-blue-200'
                   }`}>
                     {selectedUser.role}
@@ -489,19 +613,20 @@ export default function AdminUsersPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Created At</label>
-                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.createdAt || 'N/A'}</p>
+                  <p className="mt-1 text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">{selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
             </div>
-            <div className="border-t border-amber-100 px-6 py-4 flex justify-between">
+            <div className="border-t border-gray-200 px-6 py-4 flex justify-between bg-gray-50 rounded-b-xl">
               {selectedUser.role !== "CUSTOMER" ? (
                 <button 
                   onClick={() => {
                     setIsViewDialogOpen(false);
                     handleEditUser(selectedUser);
                   }}
-                  className="rounded-md bg-amber-600 px-4 py-2 text-sm text-white hover:bg-amber-700 transition-colors"
+                  className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 transition-colors flex items-center gap-2"
                 >
+                  <Edit2 size={16} />
                   Edit Details
                 </button>
               ) : (
@@ -524,10 +649,10 @@ export default function AdminUsersPage() {
       {isEditDialogOpen && selectedUser && (
         <div className="fixed inset-0 z-50 grid place-items-center">
           <div className="absolute inset-0 bg-black/30" onClick={handleCloseDialogs} />
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-amber-100 bg-white shadow-xl">
-            <div className="border-b border-amber-100 px-6 py-4">
-              <h2 className="text-xl font-semibold text-amber-700">Edit User Details</h2>
-              <p className="text-sm text-gray-500">Editing {selectedUser.role.toLowerCase()} information</p>
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
+            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
+              <h2 className="text-xl font-semibold text-gray-900">Edit User Details</h2>
+              <p className="text-sm text-gray-600">Editing {selectedUser.role.toLowerCase()} information</p>
             </div>
             <div className="p-6">
               <form onSubmit={(e) => { e.preventDefault(); handleSaveEdit(); }} className="space-y-4">
@@ -537,8 +662,9 @@ export default function AdminUsersPage() {
                     type="text"
                     value={editFormData.username || ''}
                     onChange={(e) => setEditFormData({...editFormData, username: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter username"
+                    required
                   />
                 </div>
                 <div>
@@ -547,8 +673,9 @@ export default function AdminUsersPage() {
                     type="email"
                     value={editFormData.email || ''}
                     onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter email"
+                    required
                   />
                 </div>
                 <div>
@@ -557,21 +684,21 @@ export default function AdminUsersPage() {
                     type="tel"
                     value={editFormData.phoneNo || ''}
                     onChange={(e) => setEditFormData({...editFormData, phoneNo: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                     placeholder="Enter phone number"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                  <input 
-                    type="text"
+                  <textarea 
                     value={editFormData.address || ''}
                     onChange={(e) => setEditFormData({...editFormData, address: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors resize-none"
                     placeholder="Enter address"
                   />
                 </div>
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <button 
                     type="button"
                     onClick={handleCloseDialogs}
@@ -583,7 +710,7 @@ export default function AdminUsersPage() {
                   <button 
                     type="submit"
                     disabled={loading}
-                    className="rounded-md bg-amber-600 px-4 py-2 text-sm text-white hover:bg-amber-700 disabled:opacity-50 transition-colors"
+                    className="rounded-md bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -594,67 +721,13 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-amber-700">
-          Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 rounded-md border border-amber-200 bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              const isCurrentPage = page === currentPage;
-              const isNearCurrent = Math.abs(page - currentPage) <= 2;
-              const isFirstOrLast = page === 1 || page === totalPages;
-              
-              if (!isNearCurrent && !isFirstOrLast) {
-                if (page === currentPage - 3 || page === currentPage + 3) {
-                  return <span key={`ellipsis-${page}`} className="px-2 text-amber-400">...</span>;
-                }
-                return null;
-              }
-              
-              return (
-                <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`h-8 w-8 rounded-md border text-sm font-medium transition-colors ${
-                    isCurrentPage
-                      ? "bg-amber-600 text-white border-amber-600"
-                      : "bg-white text-amber-600 border-amber-200 hover:bg-amber-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              );
-            })}
-          </div>
-          
-          <button
-            onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 rounded-md border border-amber-200 bg-white text-amber-600 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-
       {/* Delete User Confirmation Dialog */}
       {isDeleteDialogOpen && userToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Delete {userToDelete.role.toLowerCase()}?</h4>
+            <h4 className="text-lg font-semibold text-red-600 mb-2">Delete {userToDelete.role.toLowerCase()}?</h4>
             <p className="text-sm text-gray-600 mb-1">
-              You are about to delete <span className="font-medium text-gray-900">{userToDelete.username}</span> ({userToDelete.email}).
+              You are about to delete <span className="font-medium text-red-600">{userToDelete.username}</span> ({userToDelete.email}).
             </p>
             <p className="text-sm text-gray-600 mb-4">
               This will permanently remove all their data. Please confirm by entering your admin password.
@@ -662,10 +735,20 @@ export default function AdminUsersPage() {
             <input
               type="password"
               value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
+              onChange={(e) => {
+                setAdminPassword(e.target.value);
+                if (deleteError) setDeleteError(""); // Clear error when user starts typing
+              }}
               placeholder="Enter admin password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
             />
+            
+            {deleteError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                <p className="text-sm text-red-600">{deleteError}</p>
+              </div>
+            )}
+            
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCloseDeleteDialog}
@@ -678,12 +761,28 @@ export default function AdminUsersPage() {
                 disabled={isDeleting || !adminPassword.trim()}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
               >
-                {isDeleting ? "Deleting..." : "Yes, delete"}
+                {isDeleting ? "Deleting..." : "Delete User"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
+  );
+}
+
+function RoleBadge({ role }: { role: string }) {
+  const roleClasses = {
+    ADMIN: "bg-red-100 text-red-800 border-red-200",
+    STAFF: "bg-blue-100 text-blue-800 border-blue-200",
+    CUSTOMER: "bg-emerald-100 text-emerald-800 border-emerald-200"
+  };
+
+  return (
+    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium border ${
+      roleClasses[role as keyof typeof roleClasses] || "bg-slate-100 text-slate-800 border-slate-200"
+    }`}>
+      {role}
+    </span>
   );
 }

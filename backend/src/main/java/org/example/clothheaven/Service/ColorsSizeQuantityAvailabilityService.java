@@ -9,6 +9,8 @@ import org.example.clothheaven.Repository.ColorsSizeQuantityAvailabilityReposito
 import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +30,26 @@ public class ColorsSizeQuantityAvailabilityService {
         ColorsSizeQuantityAvailability entity = mapper.toEntity(dto, productOpt.get());
         ColorsSizeQuantityAvailability saved = repository.save(entity);
         return mapper.toResponseDTO(saved);
+    }
+
+    public List<ColorsSizeQuantityAvailabilityResponseDTO> createBatch(List<ColorsSizeQuantityAvailabilityCreateDTO> dtoList) {
+        List<ColorsSizeQuantityAvailabilityResponseDTO> results = new ArrayList<>();
+        
+        for (ColorsSizeQuantityAvailabilityCreateDTO dto : dtoList) {
+            try {
+                Optional<Product> productOpt = productRepository.findById(dto.getProductId());
+                if (productOpt.isPresent()) {
+                    ColorsSizeQuantityAvailability entity = mapper.toEntity(dto, productOpt.get());
+                    ColorsSizeQuantityAvailability saved = repository.save(entity);
+                    results.add(mapper.toResponseDTO(saved));
+                }
+            } catch (Exception e) {
+                // Log error but continue with other entries
+                System.err.println("Error creating color-size entry: " + e.getMessage());
+            }
+        }
+        
+        return results;
     }
 
     public List<ColorsSizeQuantityAvailabilityResponseDTO> getByProductId(Long productId) {
@@ -68,6 +90,14 @@ public class ColorsSizeQuantityAvailabilityService {
         return true;
     }
 
+    public boolean deleteByProductId(Long productId) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        if (!variants.isEmpty()) {
+            repository.deleteAll(variants);
+        }
+        return true;
+    }
+
     public boolean existsById(Long id) {
         return repository.existsById(id);
     }
@@ -80,6 +110,30 @@ public class ColorsSizeQuantityAvailabilityService {
     public List<ColorsSizeQuantityAvailabilityResponseDTO> getAll() {
         List<ColorsSizeQuantityAvailability> list = repository.findAll();
         return list.stream().map(mapper::toResponseDTO).collect(Collectors.toList());
+    }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO findByProductIdColorAndSize(Long productId, String color, String size) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        for (ColorsSizeQuantityAvailability variant : variants) {
+            if (variant.getColor().equals(color) && variant.getSize().equals(size)) {
+                return mapper.toResponseDTO(variant);
+            }
+        }
+        return null;
+    }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO updateQuantity(Long productId, String color, String size, int quantityChange) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        for (ColorsSizeQuantityAvailability variant : variants) {
+            if (variant.getColor().equals(color) && variant.getSize().equals(size)) {
+                int newQuantity = variant.getQuantity() + quantityChange;
+                variant.setQuantity(Math.max(0, newQuantity)); // Don't allow negative quantities
+                variant.setAvailability(variant.getQuantity() > 0);
+                ColorsSizeQuantityAvailability saved = repository.save(variant);
+                return mapper.toResponseDTO(saved);
+            }
+        }
+        return null;
     }
 }
 

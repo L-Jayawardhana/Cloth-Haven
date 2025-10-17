@@ -1,8 +1,11 @@
 export default function AdminOrdersPage() {
   return (
-    <div className="grid gap-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-indigo-900">Orders</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Orders</h1>
+          <p className="text-slate-600 mt-1">Manage customer orders and track shipments</p>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">

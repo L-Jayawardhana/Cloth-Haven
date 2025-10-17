@@ -1,22 +1,21 @@
 package org.example.clothheaven.Controller;
 
-import java.util.List;
-
+import jakarta.validation.Valid;
 import org.example.clothheaven.DTO.CategoryCreateDTO;
 import org.example.clothheaven.DTO.CategoryResponseDTO;
+import org.example.clothheaven.DTO.DeleteAccountRequest;
 import org.example.clothheaven.Service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -53,10 +52,14 @@ public class CategoryController {
     public ResponseEntity<CategoryResponseDTO> getAllCategories() {
         try {
             List<CategoryCreateDTO> categories = categoryService.getAllCategories();
+            List<String> categoryNames = categories.stream()
+                    .map(CategoryCreateDTO::getCategoryName)
+                    .collect(Collectors.toList());
             CategoryResponseDTO response = new CategoryResponseDTO(
                     true,
                     "Categories retrieved successfully",
-                    categories
+                    categoryNames,
+                    categories  // Include full category data
             );
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -76,7 +79,7 @@ public class CategoryController {
                 CategoryResponseDTO response = new CategoryResponseDTO(
                         true,
                         "Category retrieved successfully",
-                        category
+                        List.of(category.getCategoryName())
                 );
                 return ResponseEntity.ok(response);
             } else {
@@ -132,6 +135,26 @@ public class CategoryController {
             );
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    @PostMapping("/{categoryId}/admin-delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> adminDeleteCategory(@PathVariable Long categoryId, @Valid @RequestBody DeleteAccountRequest req) {
+        // Get the current authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        
+        System.out.println("=== CONTROLLER DEBUG ===");
+        System.out.println("Authenticated user email: " + currentUserEmail);
+        System.out.println("Target category ID: " + categoryId);
+        System.out.println("Password provided: " + (req.getPassword() != null ? "[PROVIDED]" : "[NULL]"));
+        
+        boolean deleted = categoryService.adminDeleteCategory(categoryId, currentUserEmail, req.getPassword());
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Category deleted successfully"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Admin password is incorrect or category cannot be deleted"));
     }
 
     @GetMapping("/names")

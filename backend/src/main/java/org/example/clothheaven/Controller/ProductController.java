@@ -1,22 +1,20 @@
 package org.example.clothheaven.Controller;
 
-import java.util.List;
-
+import jakarta.validation.Valid;
+import org.example.clothheaven.DTO.DeleteAccountRequest;
 import org.example.clothheaven.DTO.ProductResponseDTO;
 import org.example.clothheaven.Service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -86,6 +84,32 @@ public class ProductController {
     public ResponseEntity<Boolean> deleteProduct(@PathVariable Long productId) {
         boolean deleted = productService.deleteProduct(productId);
         return ResponseEntity.ok(deleted);
+    }
+
+    @PutMapping("/soft-delete/{productId}")
+    public ResponseEntity<Boolean> softDeleteProduct(@PathVariable Long productId) {
+        boolean deleted = productService.softDeleteProduct(productId);
+        return ResponseEntity.ok(deleted);
+    }
+
+    @PostMapping("/{productId}/admin-soft-delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> adminSoftDeleteProduct(@PathVariable Long productId, @Valid @RequestBody DeleteAccountRequest req) {
+        // Get the current authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
+        
+        System.out.println("=== CONTROLLER DEBUG ===");
+        System.out.println("Authenticated user email: " + currentUserEmail);
+        System.out.println("Target product ID: " + productId);
+        System.out.println("Password provided: " + (req.getPassword() != null ? "[PROVIDED]" : "[NULL]"));
+        
+        boolean deleted = productService.adminSoftDeleteProduct(productId, currentUserEmail, req.getPassword());
+        if (deleted) {
+            return ResponseEntity.ok(Map.of("message", "Product deleted successfully"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Admin password is incorrect or product cannot be deleted"));
     }
 
     @GetMapping("/{productId}")

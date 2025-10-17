@@ -11,6 +11,7 @@ export default [
   route("login", "routes/auth/login.tsx"),
   route("register", "routes/auth/register.tsx"),
   route("products", "routes/products/index.tsx"),
+  route("products/:productId", "routes/products/$productId-simple.tsx"),
   route("cart", "routes/cart/index.tsx"),
   route("profile", "routes/profile/index.tsx"),
   route("checkout", "routes/checkout/index.tsx"),
@@ -19,6 +20,9 @@ export default [
     index("routes/admin/index.tsx"),
     route("users", "routes/admin/users.tsx"),
     route("products", "routes/admin/products.tsx"),
+    route("categories", "routes/admin/categories.tsx"),
+      route("color-size", "routes/admin/color-size.tsx"),
+    route("subcategories", "routes/admin/subcategories.tsx"),
     route("inventory", "routes/admin/inventory.tsx"),
     route("orders", "routes/admin/orders.tsx"),
     route("reports", "routes/admin/reports.tsx"),
@@ -28,9 +32,4 @@ export default [
   route("forgot-password", "routes/auth/forgot-password.tsx"),
   route("reset-password", "routes/auth/reset-password.tsx"),
   route("login-fixed", "routes/auth/login-fixed.tsx"),
-  // Debug and test routes
-  route("debug", "routes/debug.tsx"),
-  route("simple-test", "routes/simple-test.tsx"),
-  route("browser-test", "routes/browser-test.tsx"),
-  route("test-login", "routes/test-login.tsx"),
 ] satisfies RouteConfig;

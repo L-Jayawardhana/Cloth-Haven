@@ -1,15 +1,14 @@
 package org.example.clothheaven.Mapper;
 
-import org.example.clothheaven.DTO.*;
-import org.example.clothheaven.Model.Product;
-import org.example.clothheaven.Model.Category;
-import org.example.clothheaven.Model.SubCategory;
-import org.springframework.stereotype.Component;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.example.clothheaven.DTO.ProductCreateDTO;
 import org.example.clothheaven.DTO.ProductResponseDTO;
+import org.example.clothheaven.Model.Category;
+import org.example.clothheaven.Model.Product;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ProductMapper {

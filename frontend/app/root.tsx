@@ -4,7 +4,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLocation,
 } from "react-router";
 
 import { useState, useEffect } from "react";
@@ -27,8 +26,21 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const isAdmin = location.pathname.startsWith("/admin");
+  const [currentPath, setCurrentPath] = useState("");
+  
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+    
+    // Listen for navigation changes
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+  
+  const isAdmin = currentPath.startsWith("/admin");
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {

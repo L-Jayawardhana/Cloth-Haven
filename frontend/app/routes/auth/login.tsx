@@ -35,11 +35,14 @@ export default function Login() {
       
       localStorage.setItem("user", JSON.stringify(data));
       
-      // Use redirectUrl from backend if available, otherwise default to home
-      const redirectUrl = data.redirectUrl || "/";
-      console.log("Redirecting to:", redirectUrl);
-      
-      window.location.href = redirectUrl;
+      // Check user role and redirect accordingly
+      if (data.role === "ADMIN") {
+        console.log("Admin user detected, redirecting to admin dashboard");
+        window.location.href = "/admin";
+      } else {
+        console.log("Regular user, redirecting to home page");
+        window.location.href = "/";
+      }
     } catch (err: any) {
       console.error("Login error:", err);
       setServerError(err.message || "Login failed");
@@ -78,7 +81,7 @@ export default function Login() {
               />
             </div>
             <div>
-              
+              <label className="block text-sm text-gray-700">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}

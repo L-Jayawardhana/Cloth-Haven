@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 
 public class InventoryLogsCreateDTO {
     private Product product;
+    private String color;
+    private String size;
     private ChangeType changeType;
     private Integer quantityChanged;
     private LocalDateTime inventoryLogsDate;
@@ -26,6 +28,22 @@ public class InventoryLogsCreateDTO {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 
     public ChangeType getChangeType() {

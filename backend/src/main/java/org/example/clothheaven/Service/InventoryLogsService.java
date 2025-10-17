@@ -1,17 +1,23 @@
 package org.example.clothheaven.Service;
 
+import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.DTO.InventoryLogsCreateDTO;
 import org.example.clothheaven.DTO.InventoryLogsResponseDTO;
+import org.example.clothheaven.DTO.InventoryStockUpdateDTO;
 import org.example.clothheaven.Exception.EmptyLogsException;
 import org.example.clothheaven.Exception.InventoryLogNotFoundException;
 import org.example.clothheaven.Mapper.InventoryLogsMapper;
+import org.example.clothheaven.Model.ChangeType;
 import org.example.clothheaven.Model.InventoryLogs;
+import org.example.clothheaven.Model.Product;
 import org.example.clothheaven.Repository.InventoryLogsRepository;
+import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +25,12 @@ public class InventoryLogsService {
 
     private final InventoryLogsRepository inventoryLogsRepository;
     private final InventoryLogsMapper inventoryLogsMapper;
+    
+    @Autowired
+    private ColorsSizeQuantityAvailabilityService colorsSizeQuantityService;
+    
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
     public InventoryLogsService(InventoryLogsRepository inventoryLogsRepository, InventoryLogsMapper inventoryLogsMapper) {
@@ -116,5 +128,61 @@ public class InventoryLogsService {
         return logs.stream()
                 .map(inventoryLogsMapper::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public ColorsSizeQuantityAvailabilityResponseDTO updateStock(InventoryStockUpdateDTO updateDTO) {
+        // Calculate the actual quantity change based on change type
+        int actualQuantityChange = calculateActualQuantityChange(updateDTO.getChangeType(), updateDTO.getQuantityChange());
+        
+        // Update the stock for the specific color/size combination
+        ColorsSizeQuantityAvailabilityResponseDTO updatedVariant = colorsSizeQuantityService.updateQuantity(
+            updateDTO.getProductId(),
+            updateDTO.getColor(),
+            updateDTO.getSize(),
+            actualQuantityChange
+        );
+
+        if (updatedVariant != null) {
+            // Get the Product entity for the log
+            Optional<Product> productOpt = productRepository.findById(updateDTO.getProductId());
+            if (productOpt.isPresent()) {
+                // Create an inventory log entry for this change
+                InventoryLogsCreateDTO logDTO = new InventoryLogsCreateDTO();
+                logDTO.setProduct(productOpt.get());
+                // include color/size in the log DTO
+                logDTO.setColor(updateDTO.getColor());
+                logDTO.setSize(updateDTO.getSize());
+                logDTO.setChangeType(updateDTO.getChangeType());
+                logDTO.setQuantityChanged(actualQuantityChange);
+                logDTO.setInventoryLogsDate(LocalDateTime.now());
+                
+                // Add the log entry
+                addInventoryLog(logDTO);
+            }
+        }
+
+        return updatedVariant;
+    }
+
+    /**
+     * Calculate the actual quantity change based on the change type.
+     * Some change types should always reduce stock (negative values).
+     */
+    private int calculateActualQuantityChange(ChangeType changeType, int inputQuantity) {
+        // Ensure positive input for calculation
+        int absQuantity = Math.abs(inputQuantity);
+        
+        switch (changeType) {
+            case DAMAGE:        // Items are damaged/lost - reduce stock
+            case ORDER:         // Items are sold - reduce stock
+                return -absQuantity;
+            case RESTOCK:       // Items are added - increase stock
+            case RETURN:        // Items are returned - increase stock
+            case CANCEL:        // Order canceled, items back - increase stock
+            case ADJUSTMENT:    // Manual adjustment - can be positive or negative
+                return inputQuantity; // Keep the original sign for adjustment
+            default:
+                return inputQuantity;
+        }
     }
 }

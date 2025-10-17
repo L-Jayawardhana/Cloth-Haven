@@ -117,4 +117,15 @@ public class ImageService {
         }
         return imageRepository.existsById(imageId);
     }
+
+    public boolean deleteImagesByProductId(Long productId) {
+        if (productId == null) {
+            throw new IllegalArgumentException("Product ID cannot be null");
+        }
+        List<Image> images = imageRepository.findByProductProductId(productId);
+        if (!images.isEmpty()) {
+            imageRepository.deleteAll(images);
+        }
+        return true;
+    }
 }

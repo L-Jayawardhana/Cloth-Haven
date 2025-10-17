@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 public class InventoryLogsResponseDTO {
     private Long logId;
     private Product product;
+    private String color;
+    private String size;
     private ChangeType changeType;
     private Integer quantityChanged;
     private LocalDateTime inventoryLogsDate;
@@ -15,9 +17,11 @@ public class InventoryLogsResponseDTO {
     public InventoryLogsResponseDTO() {
     }
 
-    public InventoryLogsResponseDTO(Long logId, Product product, ChangeType changeType, LocalDateTime inventoryLogsDate) {
+    public InventoryLogsResponseDTO(Long logId, Product product, String color, String size, ChangeType changeType, LocalDateTime inventoryLogsDate) {
         this.logId = logId;
         this.product = product;
+        this.color = color;
+        this.size = size;
         this.changeType = changeType;
         this.inventoryLogsDate = inventoryLogsDate;
     }
@@ -36,6 +40,22 @@ public class InventoryLogsResponseDTO {
 
     public void setProduct(Product product) {
         this.product = product;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 
     public ChangeType getChangeType() {
