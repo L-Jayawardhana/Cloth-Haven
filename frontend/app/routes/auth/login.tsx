@@ -35,10 +35,14 @@ export default function Login() {
       
       localStorage.setItem("user", JSON.stringify(data));
       
-      // Redirect to home page after successful login
-      console.log("Redirecting to home page");
-      
-      window.location.href = "/";
+      // Check user role and redirect accordingly
+      if (data.role === "ADMIN") {
+        console.log("Admin user detected, redirecting to admin dashboard");
+        window.location.href = "/admin";
+      } else {
+        console.log("Regular user, redirecting to home page");
+        window.location.href = "/";
+      }
     } catch (err: any) {
       console.error("Login error:", err);
       setServerError(err.message || "Login failed");

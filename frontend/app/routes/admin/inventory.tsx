@@ -314,9 +314,12 @@ export default function AdminInventoryPage() {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight text-sky-700">Inventory</h1>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Inventory</h1>
+          <p className="text-slate-600 mt-1">Monitor stock levels and manage inventory</p>
+        </div>
         <div className="flex gap-3">
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600">Low Stock Threshold:</label>

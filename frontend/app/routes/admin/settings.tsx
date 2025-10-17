@@ -165,10 +165,13 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
+          <p className="text-slate-600 mt-1">Manage your account and system preferences</p>
+        </div>
+        <div className="flex items-center space-x-2 text-sm text-slate-500">
           <span>Admin Dashboard</span>
           <span>•</span>
           <span>Settings</span>
@@ -177,7 +180,7 @@ export default function AdminSettingsPage() {
 
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Profile Settings */}
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-6 py-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900 flex items-center">
               <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -324,31 +324,31 @@ export default function AdminCategoriesPage() {
   }, [errorMsg, successMsg]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => window.location.href = '/admin/products'}
-              className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Products
-            </button>
+    <>
+      <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => window.location.href = '/admin/products'}
+            className="inline-flex items-center px-3 py-2 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Products
+          </button>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Category Management</h1>
+            <p className="text-slate-600 mt-1">Manage product categories and subcategories</p>
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Management</h1>
-              <p className="text-gray-600">Manage product categories and subcategories</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="max-w-md">
-                <input
-                  type="text"
-                  placeholder="Search categories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+          <div className="flex items-center gap-4">
+            <div className="max-w-md">
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
@@ -365,18 +365,18 @@ export default function AdminCategoriesPage() {
 
         {/* Messages */}
         {successMsg && (
-          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+          <div className="p-4 bg-emerald-100 border border-emerald-400 text-emerald-700 rounded-lg">
             {successMsg}
           </div>
         )}
         {errorMsg && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {errorMsg}
           </div>
         )}
 
         {/* Categories Table */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
@@ -582,7 +582,7 @@ export default function AdminCategoriesPage() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Category</h2>
             <p className="text-sm text-gray-600 mb-4">
-              You are about to delete <span className="font-medium text-gray-900">{categoryToDelete.categoryName}</span>.
+              You are about to delete <span className="font-medium text-gray-900">{categoryToDelete?.categoryName}</span>.
               This will permanently remove the category and all its subcategories.
             </p>
             <form onSubmit={handleConfirmDeleteCategory} className="space-y-4">
@@ -632,7 +632,7 @@ export default function AdminCategoriesPage() {
             
             {subCategoryMode === 'delete' && currentSubCategory && (
               <p className="text-sm text-gray-600 mb-4">
-                You are about to delete <span className="font-medium text-gray-900">{currentSubCategory.subCategoryName}</span>.
+                You are about to delete <span className="font-medium text-gray-900">{currentSubCategory?.subCategoryName}</span>.
                 This action cannot be undone.
               </p>
             )}
@@ -696,6 +696,6 @@ export default function AdminCategoriesPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

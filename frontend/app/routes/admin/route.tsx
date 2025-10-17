@@ -53,20 +53,32 @@ export default function AdminLayout() {
   }
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="flex">
-        <aside className="w-72 bg-white border-r border-slate-200 shadow-sm">
-          <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">CH</span>
+      {/* Mobile header */}
+      <div className="lg:hidden bg-white border-b border-slate-200 p-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">CH</span>
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-slate-900">Admin Panel</h2>
+          </div>
+        </div>
+      </div>
+      
+      <div className="flex min-h-screen">
+        <aside className="w-64 min-w-64 bg-white border-r border-slate-200 shadow-sm hidden lg:block">
+          <div className="p-4 border-b border-slate-200">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-slate-800 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">CH</span>
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Admin Panel</h2>
-                <p className="text-sm text-slate-500">Cloth Haven</p>
+                <h2 className="text-base font-semibold text-slate-900">Admin Panel</h2>
+                <p className="text-xs text-slate-500">Cloth Haven</p>
               </div>
             </div>
           </div>
-          <nav className="p-4 space-y-2">
+          <nav className="p-3 space-y-1">
           <Section title="Dashboard">
             <NavItem to="/admin" end accent="emerald">
               Dashboard Overview
@@ -114,8 +126,10 @@ export default function AdminLayout() {
           </nav>
         </aside>
 
-        <main className="flex-1 p-8">
-          <Outlet />
+        <main className="flex-1 min-w-0 py-4 px-1 lg:py-0 lg:px-7 lg:pr-2">
+          <div className="max-w-none">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

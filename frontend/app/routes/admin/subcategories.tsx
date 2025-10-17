@@ -232,22 +232,22 @@ export default function AdminSubCategoriesPage() {
   }, [errorMsg, successMsg]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => window.location.href = '/admin/categories'}
-              className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Categories
-            </button>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Subcategory Management</h1>
-          <p className="text-gray-600">
-            Manage product subcategories and organize your inventory
+    <>
+      <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => window.location.href = '/admin/categories'}
+            className="inline-flex items-center px-3 py-2 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Categories
+          </button>
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900">Subcategory Management</h1>
+        <p className="text-slate-600 mt-1">
+          Manage product subcategories and organize your inventory
             {selectedCategoryFilter && categories.length > 0 && (
               <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded">
                 Filtered by: {categories.find(cat => cat.categoryId === selectedCategoryFilter)?.categoryName}
@@ -532,7 +532,7 @@ export default function AdminSubCategoriesPage() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Subcategory</h2>
             <p className="text-sm text-gray-600 mb-4">
-              You are about to delete <span className="font-medium text-gray-900">{subCategoryToDelete.subCategoryName}</span>.
+              You are about to delete <span className="font-medium text-gray-900">{subCategoryToDelete?.subCategoryName}</span>.
             </p>
             <p className="text-sm text-gray-600 mb-4">
               This will permanently remove the subcategory. Please confirm by entering your admin password.
@@ -571,6 +571,6 @@ export default function AdminSubCategoriesPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }

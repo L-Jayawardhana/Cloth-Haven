@@ -457,7 +457,7 @@ export default function AdminUsersPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div>
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
