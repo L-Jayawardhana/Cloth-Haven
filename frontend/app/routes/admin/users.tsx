@@ -27,6 +27,7 @@ export default function AdminUsersPage() {
   const [userToDelete, setUserToDelete] = React.useState<User | null>(null)
   const [adminPassword, setAdminPassword] = React.useState("")
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState("")
 
   const itemsPerPage = 11;
   
@@ -225,14 +226,16 @@ export default function AdminUsersPage() {
 
   const handleConfirmDelete = async () => {
     if (!userToDelete || !adminPassword.trim()) {
-      setErrorMsg("Please enter admin password")
+      setDeleteError("Please enter admin password")
       return
     }
     
     try {
       setIsDeleting(true)
-      // Use the new admin delete endpoint with admin password
-      await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
+      setDeleteError("") // Clear any existing errors
+      
+      // Use the admin delete endpoint with admin password verification
+      const response = await apiService.adminDeleteUser(userToDelete.userId, adminPassword)
       
       setSuccessMsg(`${userToDelete.role.toLowerCase()} deleted successfully`)
       setTimeout(() => setSuccessMsg(""), 3000)
@@ -241,13 +244,14 @@ export default function AdminUsersPage() {
       setIsDeleteDialogOpen(false)
       setUserToDelete(null)
       setAdminPassword("")
+      setDeleteError("")
       
       // Refresh the users list
       await loadUsers()
       
     } catch (error: any) {
       console.error("Failed to delete user:", error)
-      setErrorMsg(error.message || "Failed to delete user")
+      setDeleteError("Admin password is incorrect or user cannot be deleted")
     } finally {
       setIsDeleting(false)
     }
@@ -257,6 +261,7 @@ export default function AdminUsersPage() {
     setIsDeleteDialogOpen(false)
     setUserToDelete(null)
     setAdminPassword("")
+    setDeleteError("")
   }
   return (
     <>
@@ -319,7 +324,7 @@ export default function AdminUsersPage() {
       {isAddOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center">
           {/* Overlay */}
-          <div className="absolute inset-0 bg-black/30" onClick={() => setIsAddOpen(false)} />
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsAddOpen(false)} />
           {/* Dialog */}
           <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
             <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
@@ -720,9 +725,9 @@ export default function AdminUsersPage() {
       {isDeleteDialogOpen && userToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-            <h4 className="text-lg font-semibold text-gray-900 mb-2">Delete {userToDelete.role.toLowerCase()}?</h4>
+            <h4 className="text-lg font-semibold text-red-600 mb-2">Delete {userToDelete.role.toLowerCase()}?</h4>
             <p className="text-sm text-gray-600 mb-1">
-              You are about to delete <span className="font-medium text-gray-900">{userToDelete.username}</span> ({userToDelete.email}).
+              You are about to delete <span className="font-medium text-red-600">{userToDelete.username}</span> ({userToDelete.email}).
             </p>
             <p className="text-sm text-gray-600 mb-4">
               This will permanently remove all their data. Please confirm by entering your admin password.
@@ -730,10 +735,20 @@ export default function AdminUsersPage() {
             <input
               type="password"
               value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
+              onChange={(e) => {
+                setAdminPassword(e.target.value);
+                if (deleteError) setDeleteError(""); // Clear error when user starts typing
+              }}
               placeholder="Enter admin password"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
             />
+            
+            {deleteError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+                <p className="text-sm text-red-600">{deleteError}</p>
+              </div>
+            )}
+            
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleCloseDeleteDialog}

@@ -30,4 +30,18 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // Find products by price range
     @Query("SELECT p FROM Product p WHERE p.productPrice BETWEEN :minPrice AND :maxPrice")
     List<Product> findByPriceRange(@Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice);
+
+    // Find non-deleted products with category details
+    @Query("SELECT p FROM Product p JOIN FETCH p.category WHERE p.deleted = false")
+    List<Product> findAllWithCategoryNotDeleted();
+
+    // Find non-deleted products by category ID
+    List<Product> findByCategoryCategoryIdAndDeletedFalse(Long categoryId);
+
+    // Find non-deleted products by sub-category ID
+    List<Product> findBySubCategory_SubCategoryIdAndDeletedFalse(Long subCategoryId);
+
+    // Find non-deleted products by price range
+    @Query("SELECT p FROM Product p WHERE p.productPrice BETWEEN :minPrice AND :maxPrice AND p.deleted = false")
+    List<Product> findByPriceRangeNotDeleted(@Param("minPrice") Double minPrice, @Param("maxPrice") Double maxPrice);
 }

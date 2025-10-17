@@ -1,8 +1,8 @@
 package org.example.clothheaven.Controller;
 
-import java.util.List;
-import java.util.Optional;
-
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.example.clothheaven.DTO.ImageCreateDTO;
 import org.example.clothheaven.DTO.ImageResponseDTO;
 import org.example.clothheaven.Model.Product;
@@ -12,19 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/images")
@@ -158,6 +149,19 @@ public class ImageController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("An error occurred while deleting the image"));
+        }
+    }
+
+    //Delete all images for a product
+    @DeleteMapping("/product/{productId}")
+    public ResponseEntity<?> deleteImagesByProductId(
+            @PathVariable("productId") @NotNull @Positive Long productId) {
+        try {
+            boolean deleted = imageService.deleteImagesByProductId(productId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while deleting images for product: " + productId));
         }
     }
 

@@ -1,8 +1,5 @@
 package org.example.clothheaven.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.example.clothheaven.DTO.StaffResponseDTO;
 import org.example.clothheaven.Exception.EmptyStaffException;
 import org.example.clothheaven.Exception.StaffMemberNotFoundException;
@@ -12,6 +9,9 @@ import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.StaffRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StaffService {

@@ -5,9 +5,12 @@ import org.example.clothheaven.DTO.SubCategoryResponseDTO;
 import org.example.clothheaven.Mapper.SubCategoryMapper;
 import org.example.clothheaven.Model.Category;
 import org.example.clothheaven.Model.SubCategory;
+import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.CategoryRepository;
 import org.example.clothheaven.Repository.SubCategoryRepository;
+import org.example.clothheaven.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,14 +21,20 @@ public class SubCategoryService {
     private final SubCategoryRepository subCategoryRepository;
     private final CategoryRepository categoryRepository;
     private final SubCategoryMapper subCategoryMapper;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public SubCategoryService(SubCategoryRepository subCategoryRepository,
                               CategoryRepository categoryRepository,
-                              SubCategoryMapper subCategoryMapper) {
+                              SubCategoryMapper subCategoryMapper,
+                              UserRepository userRepository,
+                              PasswordEncoder passwordEncoder) {
         this.subCategoryRepository = subCategoryRepository;
         this.categoryRepository = categoryRepository;
         this.subCategoryMapper = subCategoryMapper;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public SubCategoryResponseDTO addSubCategory(SubCategoryCreateDTO dto) {
@@ -129,6 +138,58 @@ public class SubCategoryService {
             return new SubCategoryResponseDTO(true, "Sub-category deleted successfully");
         } catch (Exception e) {
             return new SubCategoryResponseDTO(false, "Failed to delete sub-category: " + e.getMessage());
+        }
+    }
+
+    public boolean adminDeleteSubCategory(Long subCategoryId, String adminEmail, String adminPassword) {
+        System.out.println("=== ADMIN DELETE SUBCATEGORY DEBUG ===");
+        System.out.println("Target SubCategory ID: " + subCategoryId);
+        System.out.println("Admin Email from JWT: " + adminEmail);
+        System.out.println("Admin Password provided: " + (adminPassword != null ? "[PROVIDED]" : "[NULL]"));
+        
+        // First, verify the admin user's password
+        Optional<User> adminOpt = userRepository.findByEmail(adminEmail);
+        if (adminOpt.isPresent()) {
+            User admin = adminOpt.get();
+            System.out.println("Found admin user: " + admin.getUsername());
+            System.out.println("Admin role: " + admin.getRole());
+            
+            // Check if the current user is actually an admin
+            if ("ADMIN".equals(admin.getRole())) {
+                System.out.println("Admin role verified");
+                boolean passwordMatches = passwordEncoder.matches(adminPassword, admin.getPw());
+                System.out.println("Password matches: " + passwordMatches);
+                
+                if (passwordMatches) {
+                    // Verify the target subcategory exists
+                    Optional<SubCategory> subCategoryOpt = subCategoryRepository.findById(subCategoryId);
+                    if (subCategoryOpt.isPresent()) {
+                        SubCategory subCategory = subCategoryOpt.get();
+                        System.out.println("Target subcategory found: " + subCategory.getSubCategoryName());
+                        
+                        try {
+                            subCategoryRepository.delete(subCategory);
+                            System.out.println("Subcategory deleted successfully");
+                            return true;
+                        } catch (Exception e) {
+                            System.out.println("Error deleting subcategory: " + e.getMessage());
+                            return false;
+                        }
+                    } else {
+                        System.out.println("Subcategory not found");
+                        return false;
+                    }
+                } else {
+                    System.out.println("Admin password verification failed");
+                    return false;
+                }
+            } else {
+                System.out.println("User is not an admin: " + admin.getRole());
+                return false;
+            }
+        } else {
+            System.out.println("Admin user not found for email: " + adminEmail);
+            return false;
         }
     }
 }
