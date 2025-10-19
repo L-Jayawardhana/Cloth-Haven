@@ -78,6 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <nav className="hidden md:flex items-center gap-6 text-sm">
                 <a href="/products" className="hover:text-gray-700">Products</a>
                 <a href="/cart" className="hover:text-gray-700">Cart</a>
+                {user && <a href="/orders" className="hover:text-gray-700">Orders</a>}
                 {user && <a href="/profile" className="hover:text-gray-700">Profile</a>}
               </nav>
             )}
@@ -131,6 +132,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="grid gap-1">
                 <a href="/products" className="hover:text-gray-700">All products</a>
                 <a href="/cart" className="hover:text-gray-700">Cart</a>
+                {user && <a href="/orders" className="hover:text-gray-700">Orders</a>}
                 {user && <a href="/profile" className="hover:text-gray-700">Account</a>}
               </div>
             </div>

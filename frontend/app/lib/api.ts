@@ -917,3 +917,73 @@ export const subCategoryApi = new SubCategoryApi();
 export const imageApi = new ImageApi();
 export const colorSizeApi = new ColorsSizeQuantityAvailabilityApi();
 export const inventoryApi = new InventoryApi();
+
+// ===================== Orders API =====================
+// Aligns with backend OrderController and DTOs
+
+export type PaymentMethod = 'PAYMENT_SLIP' | 'CASH_ON_DELIVERY';
+export type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+
+export interface CreateOrderPayload {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  country: string;
+  postalCode: string;
+  phoneNumber: string;
+  homeAddress: string;
+  emailAddress: string;
+  paymentMethod: PaymentMethod;
+  paymentSlipUrl?: string | null;
+}
+
+export interface OrderItemResponse {
+  orderItemId: number;
+  productId: number;
+  quantity: number;
+  price: number; // total price for this line (qty * unit price)
+}
+
+export interface OrderResponse {
+  orderId: number;
+  userId: number;
+  orderDate: string;
+  status: OrderStatus; // backend enum OrderStatus
+  totalPrice: number;
+  firstName: string;
+  lastName: string;
+  country: string;
+  postalCode: string;
+  phoneNumber: string;
+  homeAddress: string;
+  emailAddress: string;
+  paymentMethod: PaymentMethod;
+  paymentSlipUrl?: string | null;
+  items: OrderItemResponse[];
+}
+
+class OrderApi {
+  async createOrder(payload: CreateOrderPayload): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>('/orders/create', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getUserOrders(userId: number): Promise<OrderResponse[]> {
+    return apiService.request<OrderResponse[]>(`/orders/user/${userId}`);
+  }
+
+  async getOrderById(orderId: number): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>(`/orders/${orderId}`);
+  }
+
+  async updateOrderStatus(orderId: number, status: OrderStatus): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>(`/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  }
+}
+
+export const orderApi = new OrderApi();

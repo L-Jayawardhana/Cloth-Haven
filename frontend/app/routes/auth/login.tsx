@@ -30,13 +30,15 @@ export default function Login() {
       console.log("Attempting login with:", { email, password });
       
       const credentials: LoginRequest = { email, password };
-      const data = await apiService.login(credentials);
-      console.log("Login successful:", data);
+  const data = await apiService.login(credentials);
+  console.log("Login successful:", data);
       
-      localStorage.setItem("user", JSON.stringify(data));
+  // Normalize id shape (backend returns `userid`)
+  const normalized = { ...data, userId: (data as any).userId ?? (data as any).userid };
+  localStorage.setItem("user", JSON.stringify(normalized));
       
       // Check user role and redirect accordingly
-      if (data.role === "ADMIN") {
+      if (normalized.role === "ADMIN") {
         console.log("Admin user detected, redirecting to admin dashboard");
         window.location.href = "/admin";
       } else {
