@@ -984,6 +984,45 @@ class OrderApi {
       body: JSON.stringify({ status }),
     });
   }
+
+  async uploadPaymentSlip(orderId: number, file: File): Promise<OrderResponse> {
+    const url = `${API_BASE_URL}/orders/${orderId}/payment-slip`;
+    const form = new FormData();
+    form.append('file', file);
+    const headers: Record<string, string> = {};
+    // Attach JWT if present
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { method: 'POST', body: form, headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async downloadOrderPdf(orderId: number): Promise<Blob> {
+    const url = `${API_BASE_URL}/orders/${orderId}/pdf`;
+    const headers: Record<string, string> = {};
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.blob();
+  }
 }
 
 export const orderApi = new OrderApi();

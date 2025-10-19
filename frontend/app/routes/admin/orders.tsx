@@ -8,6 +8,7 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [search, setSearch] = useState('');
+  const [slipUrl, setSlipUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -65,6 +66,22 @@ export default function AdminOrdersPage() {
       setOrders(prev => prev.map(o => (o.orderId === orderId ? updated : o)));
     } catch (e: any) {
       setError(e?.message || 'Failed to update status');
+    }
+  };
+
+  const downloadPdf = async (orderId: number) => {
+    try {
+      const blob = await orderApi.downloadOrderPdf(orderId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `order-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to download PDF');
     }
   };
 
@@ -127,7 +144,29 @@ export default function AdminOrdersPage() {
                     <td className="px-4 py-3">{u?.username ?? 'User ' + o.userId}<div className="text-xs text-slate-500">{u?.email}</div></td>
                     <td className="px-4 py-3">{itemsCount}</td>
                     <td className="px-4 py-3">Rs. {o.totalPrice?.toFixed?.(2) ?? o.totalPrice}</td>
-                    <td className="px-4 py-3">{o.paymentMethod?.replaceAll('_',' ')}</td>
+                    <td className="px-4 py-3">
+                      <div>{o.paymentMethod?.replaceAll('_',' ')}</div>
+                      {o.paymentMethod === 'PAYMENT_SLIP' && (o as any).paymentSlipUrl ? (
+                        <div className="mt-1 text-xs flex items-center gap-2">
+                          <button
+                            onClick={() => setSlipUrl((o as any).paymentSlipUrl)}
+                            className="text-blue-600 hover:underline"
+                            title="Preview payment slip"
+                          >
+                            View slip
+                          </button>
+                          <a
+                            href={(o as any).paymentSlipUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-blue-600 hover:underline"
+                            title="Open in new tab"
+                          >
+                            Open
+                          </a>
+                        </div>
+                      ) : null}
+                    </td>
                     <td className="px-4 py-3">
                       <select value={o.status} onChange={e => updateStatus(o.orderId, e.target.value as OrderStatus)} className="h-9 rounded-md border border-indigo-300 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
                         <option value="PENDING">Pending</option>
@@ -138,8 +177,9 @@ export default function AdminOrdersPage() {
                       </select>
                     </td>
                     <td className="px-4 py-3">{new Date(o.orderDate).toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right space-x-2">
                       <a href={`/orders/${o.orderId}`} className="rounded-md border border-amber-300 px-3 py-1.5 text-xs hover:bg-amber-50">View</a>
+                      <button onClick={() => downloadPdf(o.orderId)} className="rounded-md border border-indigo-300 px-3 py-1.5 text-xs hover:bg-indigo-50">Download PDF</button>
                     </td>
                   </tr>
                 );
@@ -148,6 +188,26 @@ export default function AdminOrdersPage() {
           </tbody>
         </table>
       </div>
+      {slipUrl && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => setSlipUrl(null)}>
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <h3 className="font-semibold">Payment Slip</h3>
+              <div className="flex items-center gap-3">
+                <a href={slipUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline">Open in new tab</a>
+                <button onClick={() => setSlipUrl(null)} className="rounded-md border px-2 py-1 text-sm">Close</button>
+              </div>
+            </div>
+            <div className="p-4">
+              {slipUrl.toLowerCase().endsWith('.pdf') ? (
+                <iframe src={slipUrl} className="w-full h-[70vh]" title="Payment Slip PDF" />
+              ) : (
+                <img src={slipUrl} alt="Payment Slip" className="max-h-[75vh] w-auto mx-auto" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

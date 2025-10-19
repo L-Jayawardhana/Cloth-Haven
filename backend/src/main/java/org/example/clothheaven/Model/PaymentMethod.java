@@ -1,4 +1,6 @@
 package org.example.clothheaven.Model;
 
-public class PaymentMethod {
+public enum PaymentMethod {
+    PAYMENT_SLIP,
+    CASH_ON_DELIVERY
 }

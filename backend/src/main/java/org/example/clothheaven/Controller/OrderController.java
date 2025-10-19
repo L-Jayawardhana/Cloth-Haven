@@ -1,12 +1,15 @@
 package org.example.clothheaven.Controller;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 import org.example.clothheaven.DTO.CreateOrderDTO;
 import org.example.clothheaven.DTO.OrderResponseDTO;
 import org.example.clothheaven.DTO.UpdateOrderStatusDTO;
 import org.example.clothheaven.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +48,23 @@ public class OrderController {
             @Valid @RequestBody UpdateOrderStatusDTO updateOrderStatusDTO) {
         OrderResponseDTO orderResponse = orderService.updateOrderStatus(orderId, updateOrderStatusDTO);
         return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/{orderId}/payment-slip", consumes = { "multipart/form-data" })
+    public ResponseEntity<OrderResponseDTO> uploadPaymentSlip(
+            @PathVariable Long orderId,
+            @RequestParam("file") MultipartFile file) {
+        OrderResponseDTO orderResponse = orderService.uploadPaymentSlip(orderId, file);
+        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{orderId}/pdf")
+    public ResponseEntity<byte[]> downloadOrderPdf(@PathVariable Long orderId) {
+        byte[] pdf = orderService.generateOrderPdf(orderId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=order-" + orderId + ".pdf");
+        headers.setContentLength(pdf.length);
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 }

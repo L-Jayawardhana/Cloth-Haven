@@ -19,8 +19,8 @@ export default function Checkout() {
     homeAddress: '',
     emailAddress: '',
     paymentMethod: 'CASH_ON_DELIVERY' as PaymentMethod,
-    paymentSlipUrl: '' as string,
   });
+  const [paymentFile, setPaymentFile] = useState<File | null>(null);
 
   useEffect(() => {
     try {
@@ -96,8 +96,9 @@ export default function Checkout() {
     if (!form.phoneNumber?.trim()) return 'Phone number is required';
     if (!form.homeAddress?.trim()) return 'Home address is required';
     if (!form.emailAddress?.trim()) return 'Email address is required';
-    if (form.paymentMethod === 'PAYMENT_SLIP' && !form.paymentSlipUrl?.trim()) {
-      return 'Payment slip URL is required for payment slip method';
+    // If user chooses PAYMENT_SLIP, require a file upload
+    if (form.paymentMethod === 'PAYMENT_SLIP' && !paymentFile) {
+      return 'Please upload a payment slip (PDF/PNG/JPG).';
     }
     return null;
   };
@@ -124,9 +125,17 @@ export default function Checkout() {
         homeAddress: form.homeAddress.trim(),
         emailAddress: form.emailAddress.trim(),
         paymentMethod: form.paymentMethod,
-        paymentSlipUrl: form.paymentMethod === 'PAYMENT_SLIP' ? form.paymentSlipUrl.trim() : undefined,
       };
       const order = await orderApi.createOrder(payload);
+      // If a payment slip file was provided, upload it against the created order
+      if (form.paymentMethod === 'PAYMENT_SLIP' && paymentFile) {
+        try {
+          await orderApi.uploadPaymentSlip(order.orderId, paymentFile);
+        } catch (e: any) {
+          console.error('Payment slip upload failed', e);
+          // keep going; order has been created
+        }
+      }
       setSuccessMsg(`Order #${order.orderId} placed successfully!`);
       // After successful order, consider redirecting or clearing UI
       // Backend clears the cart; we can clear local cart state too
@@ -228,15 +237,13 @@ export default function Checkout() {
 
               {form.paymentMethod === 'PAYMENT_SLIP' && (
                 <div className="mt-4">
-                  <label className="block text-sm text-gray-700">Payment slip URL</label>
+                  <label className="block text-sm text-gray-700">Upload payment slip (PDF, PNG, JPG)</label>
                   <input
-                    name="paymentSlipUrl"
-                    placeholder="https://..."
-                    value={form.paymentSlipUrl}
-                    onChange={onChange}
+                    type="file"
+                    accept=".pdf,image/png,image/jpeg,image/jpg"
+                    onChange={(e) => setPaymentFile(e.target.files?.[0] ?? null)}
                     className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Provide a link to your payment slip (hosted image) if applicable.</p>
                 </div>
               )}
             </div>

@@ -27,6 +27,15 @@ public class OrderMapper {
                 order.getOrderDate(),
                 order.getStatus(),
                 order.getOrdersPrice(),
+                order.getFirstName(),
+                order.getLastName(),
+                order.getCountry(),
+                order.getPostalCode(),
+                order.getPhoneNumber(),
+                order.getHomeAddress(),
+                order.getEmailAddress(),
+                order.getPaymentMethod(),
+                order.getPaymentSlipUrl(),
                 itemDTOs);
     }
 
