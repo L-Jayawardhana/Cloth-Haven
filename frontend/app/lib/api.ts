@@ -120,7 +120,24 @@ class ApiService {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      
+      // Handle empty responses (like 204 No Content for DELETE operations)
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      // If it's a 204 No Content or empty response, return empty object
+      if (response.status === 204 || contentLength === '0' || 
+          (!contentType || !contentType.includes('application/json'))) {
+        return {} as T;
+      }
+      
+      // Try to parse JSON, but handle empty responses gracefully
+      const text = await response.text();
+      if (!text || text.trim() === '') {
+        return {} as T;
+      }
+      
+      return JSON.parse(text);
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -220,6 +237,7 @@ export interface Product {
   availableSizes?: string[];
   availableColors?: string[];
   totalQuantity?: number;
+  deleted?: boolean;
 }
 
 // Category interfaces
@@ -303,6 +321,129 @@ class ProductApi {
 
   async getProductsByPriceRange(minPrice: number, maxPrice: number): Promise<Product[]> {
     return apiService["request"]<Product[]>(`/products/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`);
+  }
+
+  async createProduct(productData: {
+    name: string;
+    description?: string;
+    productPrice: number;
+    categoryId: number;
+    subCategoryId?: number;
+  }): Promise<Product> {
+    // Backend expects ProductResponseDTO format
+    const backendPayload = {
+      name: productData.name,
+      description: productData.description || '',
+      productPrice: productData.productPrice,
+      categoryId: productData.categoryId,
+      subCategoryId: productData.subCategoryId || null,
+      inStock: true,
+      success: false, // This will be set by backend
+      message: '', // This will be set by backend
+      data: null // This will be set by backend
+    };
+    
+    console.log('Sending product payload to backend:', backendPayload);
+    
+    const response = await apiService["request"]<any>('/products/add-product', {
+      method: 'POST',
+      body: JSON.stringify(backendPayload),
+    });
+    
+    console.log('Backend response:', response);
+    
+    // Convert backend response to frontend Product format
+    return {
+      productId: response.productId || response.data?.productId,
+      name: response.name,
+      description: response.description,
+      productPrice: response.productPrice,
+      categoryId: response.categoryId,
+      subCategoryId: response.subCategoryId,
+      inStock: response.inStock,
+      success: response.success,
+      message: response.message,
+      data: response.data
+    };
+  }
+
+  async updateProduct(productId: number, productData: {
+    name: string;
+    description?: string;
+    productPrice: number;
+    categoryId: number;
+    subCategoryId?: number;
+  }): Promise<Product> {
+    // Backend expects ProductResponseDTO format
+    const backendPayload = {
+      productId: productId,
+      name: productData.name,
+      description: productData.description || '',
+      productPrice: productData.productPrice,
+      categoryId: productData.categoryId,
+      subCategoryId: productData.subCategoryId || null,
+      inStock: true,
+      success: false, // This will be set by backend
+      message: '', // This will be set by backend
+      data: null // This will be set by backend
+    };
+    
+    console.log('Sending product update payload to backend:', backendPayload);
+    
+    const response = await apiService["request"]<any>(`/products/update/${productId}`, {
+      method: 'PUT',
+      body: JSON.stringify(backendPayload),
+    });
+    
+    console.log('Backend update response:', response);
+    
+    // Convert backend response to frontend Product format
+    return {
+      productId: response.productId || response.data?.productId,
+      name: response.name,
+      description: response.description,
+      productPrice: response.productPrice,
+      categoryId: response.categoryId,
+      subCategoryId: response.subCategoryId,
+      inStock: response.inStock,
+      success: response.success,
+      message: response.message,
+      data: response.data
+    };
+  }
+
+  async softDeleteProduct(productId: number): Promise<boolean> {
+    try {
+      const response = await apiService["request"]<boolean>(`/products/soft-delete/${productId}`, {
+        method: 'PUT'
+      });
+      return response;
+    } catch (error) {
+      console.error('Error soft deleting product:', error);
+      return false;
+    }
+  }
+
+  async adminSoftDeleteProduct(productId: number, adminPassword: string): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log(`Admin soft deleting product ${productId}`);
+      const response = await apiService["request"]<{ message: string }>(`/products/${productId}/admin-soft-delete`, {
+        method: 'POST',
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      console.log('Admin product soft deletion response:', response);
+      
+      return {
+        success: true,
+        message: response.message || 'Product deleted successfully'
+      };
+    } catch (error) {
+      console.error('Error admin soft deleting product:', error);
+      return {
+        success: false,
+        message: 'Admin password is incorrect or product cannot be deleted'
+      };
+    }
   }
 }
 
@@ -569,6 +710,28 @@ class SubCategoryApi {
       throw error;
     }
   }
+
+  async adminDeleteSubCategory(subCategoryId: number, adminPassword: string): Promise<{ success: boolean; message: string }> {
+    try {
+      console.log(`Admin deleting subcategory ${subCategoryId}`);
+      const response = await apiService["request"]<{ message: string }>(`/sub-categories/${subCategoryId}/admin-delete`, {
+        method: 'POST',
+        body: JSON.stringify({ password: adminPassword }),
+      });
+      console.log('Admin subcategory deletion response:', response);
+      
+      return {
+        success: true,
+        message: response.message || 'Subcategory deleted successfully'
+      };
+    } catch (error) {
+      console.error('Error admin deleting subcategory:', error);
+      return {
+        success: false,
+        message: 'Admin password is incorrect or subcategory cannot be deleted'
+      };
+    }
+  }
 }
 
 // Image API
@@ -583,6 +746,58 @@ class ImageApi {
       console.error(`❌ Error fetching images for product ${productId}:`, error);
       throw error;
     }
+  }
+
+  async createImage(imageData: {
+    imageUrl: string;
+    productId: number;
+  }): Promise<ProductImage> {
+    console.log('🖼️ Creating image:', imageData);
+    try {
+      const response = await apiService["request"]<ProductImage>('/images', {
+        method: 'POST',
+        body: JSON.stringify(imageData),
+      });
+      console.log('✅ Image created successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('❌ Error creating image:', error);
+      throw error;
+    }
+  }
+
+  async createImagesBatch(images: Array<{
+    imageUrl: string;
+    productId: number;
+  }>): Promise<ProductImage[]> {
+    console.log('🖼️ Creating images batch:', images);
+    const results: ProductImage[] = [];
+    
+    for (const imageData of images) {
+      try {
+        const result = await this.createImage(imageData);
+        results.push(result);
+      } catch (error) {
+        console.error('❌ Error creating image:', imageData, error);
+        // Continue with other images even if one fails
+      }
+    }
+    
+    return results;
+  }
+
+  async deleteByProductId(productId: number): Promise<void> {
+    console.log('Deleting all images for product:', productId);
+    return apiService.request<void>(`/images/product/${productId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteImage(imageId: number): Promise<void> {
+    console.log('Deleting image with ID:', imageId);
+    return apiService.request<void>(`/images/${imageId}`, {
+      method: 'DELETE',
+    });
   }
 }
 
@@ -602,6 +817,64 @@ class ColorsSizeQuantityAvailabilityApi {
       console.error('🔴 Error fetching color-size data for product:', error);
       return [];
     }
+  }
+
+  async createColorSizeEntry(data: {
+    productId: number;
+    color: string;
+    size: string;
+    quantity?: number;
+    availability?: boolean;
+  }): Promise<ColorsSizeQuantityAvailability> {
+    const payload = {
+      productId: data.productId,
+      color: data.color,
+      size: data.size,
+      quantity: data.quantity || 0,
+      availability: data.availability !== false // default to true
+    };
+    
+    return apiService.request<ColorsSizeQuantityAvailability>('/colors-size-quantity-availability', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async createColorSizeEntriesBatch(entries: Array<{
+    productId: number;
+    color: string;
+    size: string;
+    quantity?: number;
+    availability?: boolean;
+  }>): Promise<ColorsSizeQuantityAvailability[]> {
+    const payload = entries.map(data => ({
+      productId: data.productId,
+      color: data.color,
+      size: data.size,
+      quantity: data.quantity || 0,
+      availability: data.availability !== false // default to true
+    }));
+    
+    console.log('Creating color-size entries batch:', payload);
+    
+    return apiService.request<ColorsSizeQuantityAvailability[]>('/colors-size-quantity-availability/batch', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteByProductId(productId: number): Promise<void> {
+    console.log('Deleting all color-size entries for product:', productId);
+    return apiService.request<void>(`/colors-size-quantity-availability/product/${productId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async deleteVariant(id: number): Promise<void> {
+    console.log('Deleting color-size variant with ID:', id);
+    return apiService.request<void>(`/colors-size-quantity-availability/${id}`, {
+      method: 'DELETE',
+    });
   }
 }
 
@@ -644,3 +917,112 @@ export const subCategoryApi = new SubCategoryApi();
 export const imageApi = new ImageApi();
 export const colorSizeApi = new ColorsSizeQuantityAvailabilityApi();
 export const inventoryApi = new InventoryApi();
+
+// ===================== Orders API =====================
+// Aligns with backend OrderController and DTOs
+
+export type PaymentMethod = 'PAYMENT_SLIP' | 'CASH_ON_DELIVERY';
+export type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+
+export interface CreateOrderPayload {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  country: string;
+  postalCode: string;
+  phoneNumber: string;
+  homeAddress: string;
+  emailAddress: string;
+  paymentMethod: PaymentMethod;
+  paymentSlipUrl?: string | null;
+}
+
+export interface OrderItemResponse {
+  orderItemId: number;
+  productId: number;
+  quantity: number;
+  price: number; // total price for this line (qty * unit price)
+}
+
+export interface OrderResponse {
+  orderId: number;
+  userId: number;
+  orderDate: string;
+  status: OrderStatus; // backend enum OrderStatus
+  totalPrice: number;
+  firstName: string;
+  lastName: string;
+  country: string;
+  postalCode: string;
+  phoneNumber: string;
+  homeAddress: string;
+  emailAddress: string;
+  paymentMethod: PaymentMethod;
+  paymentSlipUrl?: string | null;
+  items: OrderItemResponse[];
+}
+
+class OrderApi {
+  async createOrder(payload: CreateOrderPayload): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>('/orders/create', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getUserOrders(userId: number): Promise<OrderResponse[]> {
+    return apiService.request<OrderResponse[]>(`/orders/user/${userId}`);
+  }
+
+  async getOrderById(orderId: number): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>(`/orders/${orderId}`);
+  }
+
+  async updateOrderStatus(orderId: number, status: OrderStatus): Promise<OrderResponse> {
+    return apiService.request<OrderResponse>(`/orders/${orderId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async uploadPaymentSlip(orderId: number, file: File): Promise<OrderResponse> {
+    const url = `${API_BASE_URL}/orders/${orderId}/payment-slip`;
+    const form = new FormData();
+    form.append('file', file);
+    const headers: Record<string, string> = {};
+    // Attach JWT if present
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { method: 'POST', body: form, headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async downloadOrderPdf(orderId: number): Promise<Blob> {
+    const url = `${API_BASE_URL}/orders/${orderId}/pdf`;
+    const headers: Record<string, string> = {};
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.blob();
+  }
+}
+
+export const orderApi = new OrderApi();

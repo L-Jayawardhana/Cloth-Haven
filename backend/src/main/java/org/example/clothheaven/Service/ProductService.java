@@ -1,20 +1,21 @@
 package org.example.clothheaven.Service;
 
-import org.springframework.transaction.annotation.Transactional;
-import org.example.clothheaven.DTO.ProductResponseDTO;
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
-import org.example.clothheaven.Model.Product;
-import org.example.clothheaven.Model.Category;
-import org.example.clothheaven.Repository.ProductRepository;
-import org.example.clothheaven.Repository.CategoryRepository;
-import org.example.clothheaven.Repository.SubCategoryRepository;
+import org.example.clothheaven.DTO.ProductResponseDTO;
 import org.example.clothheaven.Mapper.ProductMapper;
-import org.example.clothheaven.Service.ColorsSizeQuantityAvailabilityService;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
+import org.example.clothheaven.Model.Category;
+import org.example.clothheaven.Model.Product;
+import org.example.clothheaven.Model.User;
+import org.example.clothheaven.Repository.CategoryRepository;
+import org.example.clothheaven.Repository.ProductRepository;
+import org.example.clothheaven.Repository.SubCategoryRepository;
+import org.example.clothheaven.Repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,13 +29,17 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final SubCategoryRepository subCategoryRepository;
     private final ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService, SubCategoryRepository subCategoryRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductMapper productMapper, ColorsSizeQuantityAvailabilityService colorsSizeQuantityAvailabilityService, SubCategoryRepository subCategoryRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productMapper = productMapper;
         this.colorsSizeQuantityAvailabilityService = colorsSizeQuantityAvailabilityService;
         this.subCategoryRepository = subCategoryRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
@@ -84,7 +89,7 @@ public class ProductService {
     }
 
     public List<ProductResponseDTO> getAllProductCreateDTO() {
-        List<Product> products = productRepository.findAllWithCategory();
+        List<Product> products = productRepository.findAllWithCategoryNotDeleted();
         List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
         return dtos.stream()
                 .map(this::enrichWithStockInfo)
@@ -92,7 +97,15 @@ public class ProductService {
     }
 
     public List<ProductResponseDTO> getProductsByCategory(Long categoryId) {
-        List<Product> products = productRepository.findByCategoryCategoryId(categoryId);
+        List<Product> products = productRepository.findByCategoryCategoryIdAndDeletedFalse(categoryId);
+        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
+        return dtos.stream()
+                .map(this::enrichWithStockInfo)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductResponseDTO> getProductsBySubCategory(Long subCategoryId) {
+        List<Product> products = productRepository.findBySubCategory_SubCategoryIdAndDeletedFalse(subCategoryId);
         List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
         return dtos.stream()
                 .map(this::enrichWithStockInfo)
@@ -100,7 +113,7 @@ public class ProductService {
     }
 
     public List<ProductResponseDTO> getProductsByPriceRange(Double minPrice, Double maxPrice) {
-        List<Product> products = productRepository.findByPriceRange(minPrice, maxPrice);
+        List<Product> products = productRepository.findByPriceRangeNotDeleted(minPrice, maxPrice);
         List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
         return dtos.stream()
                 .map(this::enrichWithStockInfo)
@@ -113,6 +126,75 @@ public class ProductService {
             return true;
         } catch (Exception e) {
             log.error("Error deleting product: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean softDeleteProduct(Long productId) {
+        try {
+            Product product = productRepository.findById(productId).orElse(null);
+            if (product == null) {
+                return false;
+            }
+            product.setDeleted(true);
+            productRepository.save(product);
+            return true;
+        } catch (Exception e) {
+            log.error("Error soft deleting product: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public boolean adminSoftDeleteProduct(Long productId, String adminEmail, String adminPassword) {
+        System.out.println("=== ADMIN SOFT DELETE PRODUCT DEBUG ===");
+        System.out.println("Target Product ID: " + productId);
+        System.out.println("Admin Email from JWT: " + adminEmail);
+        System.out.println("Admin Password provided: " + (adminPassword != null ? "[PROVIDED]" : "[NULL]"));
+        
+        // First, verify the admin user's password
+        Optional<User> adminOpt = userRepository.findByEmail(adminEmail);
+        if (adminOpt.isPresent()) {
+            User admin = adminOpt.get();
+            System.out.println("Found admin user: " + admin.getUsername());
+            System.out.println("Admin role: " + admin.getRole());
+            
+            // Check if the current user is actually an admin
+            if ("ADMIN".equals(admin.getRole())) {
+                System.out.println("Admin role verified");
+                boolean passwordMatches = passwordEncoder.matches(adminPassword, admin.getPw());
+                System.out.println("Password matches: " + passwordMatches);
+                
+                if (passwordMatches) {
+                    // Verify the target product exists
+                    Optional<Product> productOpt = productRepository.findById(productId);
+                    if (productOpt.isPresent()) {
+                        Product product = productOpt.get();
+                        System.out.println("Target product found: " + product.getName());
+                        
+                        try {
+                            // Soft delete the product
+                            product.setDeleted(true);
+                            productRepository.save(product);
+                            System.out.println("Product soft deleted successfully");
+                            return true;
+                        } catch (Exception e) {
+                            System.out.println("Error soft deleting product: " + e.getMessage());
+                            return false;
+                        }
+                    } else {
+                        System.out.println("Product not found");
+                        return false;
+                    }
+                } else {
+                    System.out.println("Admin password verification failed");
+                    return false;
+                }
+            } else {
+                System.out.println("User is not an admin: " + admin.getRole());
+                return false;
+            }
+        } else {
+            System.out.println("Admin user not found for email: " + adminEmail);
             return false;
         }
     }
@@ -142,12 +224,6 @@ public class ProductService {
         Product updatedProduct = productRepository.save(product);
         ProductResponseDTO dto = productMapper.toResponseDTO(updatedProduct);
         return enrichWithStockInfo(dto);
-    }
-
-    public List<ProductResponseDTO> getProductsBySubCategory(Long subCategoryId) {
-        List<Product> products = productRepository.findBySubCategory_SubCategoryId(subCategoryId);
-        List<ProductResponseDTO> dtos = productMapper.toResponseDTOList(products);
-        return dtos.stream().map(this::enrichWithStockInfo).collect(Collectors.toList());
     }
 
     public Optional<Product> getProductEntityById(Long productId) {

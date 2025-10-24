@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { cartApi, productApi } from "../../lib/api";
+import { cartApi, productApi, imageApi } from "../../lib/api";
 import type { Cart as CartType } from "../../lib/api";
 
 export default function Cart() {
@@ -28,10 +28,12 @@ export default function Cart() {
           (data.items || []).map(async (it) => {
             try {
               const prod = await productApi.getProductById(it.productId);
+              const imgs = await imageApi.getImagesByProductId(it.productId);
               return {
                 ...it,
                 productName: prod.name,
                 price: prod.productPrice,
+                productImage: imgs?.[0]?.imageUrl,
                 quantity: it.quantity ?? it.cartItemsQuantity,
               };
             } catch {
@@ -39,6 +41,7 @@ export default function Cart() {
                 ...it,
                 productName: `Product #${it.productId}`,
                 price: undefined,
+                productImage: undefined,
                 quantity: it.quantity ?? it.cartItemsQuantity,
               };
             }
@@ -59,10 +62,12 @@ export default function Cart() {
       (items || []).map(async (it) => {
         try {
           const prod = await productApi.getProductById(it.productId);
+          const imgs = await imageApi.getImagesByProductId(it.productId);
           return {
             ...it,
             productName: prod.name,
             price: prod.productPrice,
+            productImage: imgs?.[0]?.imageUrl,
             quantity: it.quantity ?? it.cartItemsQuantity,
           };
         } catch {
@@ -70,6 +75,7 @@ export default function Cart() {
             ...it,
             productName: `Product #${it.productId}`,
             price: undefined,
+            productImage: undefined,
             quantity: it.quantity ?? it.cartItemsQuantity,
           };
         }

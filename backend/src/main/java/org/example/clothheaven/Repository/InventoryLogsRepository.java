@@ -1,11 +1,11 @@
 package org.example.clothheaven.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.example.clothheaven.Model.InventoryLogs;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface InventoryLogsRepository extends JpaRepository<InventoryLogs, Long> {

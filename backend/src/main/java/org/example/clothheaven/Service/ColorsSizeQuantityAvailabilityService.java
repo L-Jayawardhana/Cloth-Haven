@@ -1,10 +1,5 @@
 package org.example.clothheaven.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityCreateDTO;
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.Mapper.ColorsSizeQuantityAvailabilityMapper;
@@ -14,6 +9,11 @@ import org.example.clothheaven.Repository.ColorsSizeQuantityAvailabilityReposito
 import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ColorsSizeQuantityAvailabilityService {
@@ -87,6 +87,14 @@ public class ColorsSizeQuantityAvailabilityService {
         Optional<ColorsSizeQuantityAvailability> existingOpt = repository.findById(id);
         if (existingOpt.isEmpty()) return false;
         repository.delete(existingOpt.get());
+        return true;
+    }
+
+    public boolean deleteByProductId(Long productId) {
+        List<ColorsSizeQuantityAvailability> variants = repository.findByProduct_ProductId(productId);
+        if (!variants.isEmpty()) {
+            repository.deleteAll(variants);
+        }
         return true;
     }
 

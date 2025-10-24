@@ -1,8 +1,5 @@
 package org.example.clothheaven.Config;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
 import org.example.clothheaven.Model.Category;
 import org.example.clothheaven.Model.User;
 import org.example.clothheaven.Repository.CategoryRepository;
@@ -10,6 +7,9 @@ import org.example.clothheaven.Repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Component
 public class DataInitializer implements CommandLineRunner {

@@ -15,6 +15,8 @@ export default [
   route("cart", "routes/cart/index.tsx"),
   route("profile", "routes/profile/index.tsx"),
   route("checkout", "routes/checkout/index.tsx"),
+  route("orders", "routes/orders/index.tsx"),
+  route("orders/:orderId", "routes/orders/$orderId.tsx"),
   // Admin routes
   route("admin", "routes/admin/route.tsx", [
     index("routes/admin/index.tsx"),

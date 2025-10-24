@@ -1,10 +1,5 @@
 package org.example.clothheaven.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.DTO.InventoryLogsCreateDTO;
 import org.example.clothheaven.DTO.InventoryLogsResponseDTO;
@@ -19,6 +14,11 @@ import org.example.clothheaven.Repository.InventoryLogsRepository;
 import org.example.clothheaven.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class InventoryLogsService {

@@ -44,6 +44,7 @@ export default function AdminSubCategoriesPage() {
   const [subCategoryToDelete, setSubCategoryToDelete] = useState<SubCategory | null>(null);
   const [adminPassword, setAdminPassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     loadSubCategories();
@@ -172,30 +173,29 @@ export default function AdminSubCategoriesPage() {
 
   const handleConfirmDelete = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subCategoryToDelete || !adminPassword.trim()) return;
-
-    // Basic admin password check (you might want to implement proper authentication)
-    if (adminPassword !== "admin123") {
-      setErrorMsg("Invalid admin password");
+    if (!subCategoryToDelete || !adminPassword.trim()) {
+      setDeleteError("Please enter admin password");
       return;
     }
 
     try {
       setDeleteLoading(true);
-      const response = await subCategoryApi.deleteSubCategory(subCategoryToDelete.subCategoryId);
+      setDeleteError(""); // Clear any previous errors
+      const response = await subCategoryApi.adminDeleteSubCategory(subCategoryToDelete.subCategoryId, adminPassword);
 
       if (response.success) {
         setSuccessMsg('Subcategory deleted successfully!');
         setShowDeleteModal(false);
         setSubCategoryToDelete(null);
         setAdminPassword("");
+        setDeleteError("");
         loadSubCategories();
       } else {
-        setErrorMsg(response.message || 'Failed to delete subcategory');
+        setDeleteError(response.message || 'Admin password is incorrect or subcategory cannot be deleted');
       }
     } catch (error) {
       console.error('Error deleting subcategory:', error);
-      setErrorMsg('Failed to delete subcategory');
+      setDeleteError('Admin password is incorrect or subcategory cannot be deleted');
     } finally {
       setDeleteLoading(false);
     }
@@ -218,6 +218,7 @@ export default function AdminSubCategoriesPage() {
     setShowDeleteModal(false);
     setSubCategoryToDelete(null);
     setAdminPassword("");
+    setDeleteError("");
   };
 
   // Clear messages after 3 seconds
@@ -532,7 +533,7 @@ export default function AdminSubCategoriesPage() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Subcategory</h2>
             <p className="text-sm text-gray-600 mb-4">
-              You are about to delete <span className="font-medium text-gray-900">{subCategoryToDelete?.subCategoryName}</span>.
+              You are about to delete <span className="font-medium text-red-600">{subCategoryToDelete?.subCategoryName}</span>.
             </p>
             <p className="text-sm text-gray-600 mb-4">
               This will permanently remove the subcategory. Please confirm by entering your admin password.
@@ -542,7 +543,10 @@ export default function AdminSubCategoriesPage() {
                 <input
                   type="password"
                   value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onChange={(e) => {
+                    setAdminPassword(e.target.value);
+                    if (deleteError) setDeleteError(""); // Clear error when user starts typing
+                  }}
                   placeholder="Enter admin password"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   autoComplete="off"
@@ -550,6 +554,13 @@ export default function AdminSubCategoriesPage() {
                   required
                 />
               </div>
+              
+              {deleteError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{deleteError}</p>
+                </div>
+              )}
+              
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"

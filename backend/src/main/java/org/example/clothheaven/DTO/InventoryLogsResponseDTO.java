@@ -1,9 +1,9 @@
 package org.example.clothheaven.DTO;
 
-import java.time.LocalDateTime;
-
 import org.example.clothheaven.Model.ChangeType;
 import org.example.clothheaven.Model.Product;
+
+import java.time.LocalDateTime;
 
 public class InventoryLogsResponseDTO {
     private Long logId;

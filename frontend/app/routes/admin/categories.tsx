@@ -41,6 +41,7 @@ export default function AdminCategoriesPage() {
   const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
   const [deleteCategoryLoading, setDeleteCategoryLoading] = useState(false);
+  const [deleteCategoryError, setDeleteCategoryError] = useState("");
 
   // SubCategory modals
   const [showSubCategoryModal, setShowSubCategoryModal] = useState(false);
@@ -50,6 +51,7 @@ export default function AdminCategoriesPage() {
   const [subCategoryName, setSubCategoryName] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [subCategoryLoading, setSubCategoryLoading] = useState(false);
+  const [deleteSubCategoryError, setDeleteSubCategoryError] = useState("");
 
   useEffect(() => {
     loadData();
@@ -166,12 +168,13 @@ export default function AdminCategoriesPage() {
   const handleConfirmDeleteCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryToDelete || !adminPassword.trim()) {
-      setErrorMsg("Please enter admin password");
+      setDeleteCategoryError("Please enter admin password");
       return;
     }
 
     try {
       setDeleteCategoryLoading(true);
+      setDeleteCategoryError(""); // Clear any previous errors
       const result = await categoryApi.adminDeleteCategory(categoryToDelete.categoryId, adminPassword);
 
       if (result.success) {
@@ -179,13 +182,14 @@ export default function AdminCategoriesPage() {
         setShowDeleteCategoryModal(false);
         setCategoryToDelete(null);
         setAdminPassword("");
+        setDeleteCategoryError("");
         await loadCategories();
       } else {
-        setErrorMsg(result.message);
+        setDeleteCategoryError(result.message || 'Admin password is incorrect or category cannot be deleted');
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      setErrorMsg('Failed to delete category');
+      setDeleteCategoryError('Admin password is incorrect or category cannot be deleted');
     } finally {
       setDeleteCategoryLoading(false);
     }
@@ -266,29 +270,25 @@ export default function AdminCategoriesPage() {
 
   const handleDeleteSubCategory = async () => {
     if (!currentSubCategory || !adminPassword.trim()) {
-      setErrorMsg("Please enter admin password");
-      return;
-    }
-
-    if (adminPassword !== "admin123") {
-      setErrorMsg("Invalid admin password");
+      setDeleteSubCategoryError("Please enter admin password");
       return;
     }
 
     try {
       setSubCategoryLoading(true);
-      const response = await subCategoryApi.deleteSubCategory(currentSubCategory.subCategoryId);
+      setDeleteSubCategoryError(""); // Clear any previous errors
+      const result = await subCategoryApi.adminDeleteSubCategory(currentSubCategory.subCategoryId, adminPassword);
 
-      if (response.success) {
+      if (result.success) {
         setSuccessMsg('Subcategory deleted successfully!');
         closeSubCategoryModal();
         await loadSubCategories();
       } else {
-        setErrorMsg(response.message || 'Failed to delete subcategory');
+        setDeleteSubCategoryError(result.message || 'Admin password is incorrect or subcategory cannot be deleted');
       }
     } catch (error) {
       console.error('Error deleting subcategory:', error);
-      setErrorMsg('Failed to delete subcategory');
+      setDeleteSubCategoryError('Admin password is incorrect or subcategory cannot be deleted');
     } finally {
       setSubCategoryLoading(false);
     }
@@ -301,6 +301,7 @@ export default function AdminCategoriesPage() {
     setCurrentSubCategory(null);
     setSubCategoryName("");
     setAdminPassword("");
+    setDeleteSubCategoryError("");
   };
 
   // Pagination logic
@@ -582,7 +583,7 @@ export default function AdminCategoriesPage() {
           <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h2 className="text-lg font-semibold mb-4 text-red-600">Delete Category</h2>
             <p className="text-sm text-gray-600 mb-4">
-              You are about to delete <span className="font-medium text-gray-900">{categoryToDelete?.categoryName}</span>.
+              You are about to delete <span className="font-medium text-red-600">{categoryToDelete?.categoryName}</span>.
               This will permanently remove the category and all its subcategories.
             </p>
             <form onSubmit={handleConfirmDeleteCategory} className="space-y-4">
@@ -590,16 +591,30 @@ export default function AdminCategoriesPage() {
                 <input
                   type="password"
                   value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onChange={(e) => {
+                    setAdminPassword(e.target.value);
+                    if (deleteCategoryError) setDeleteCategoryError(""); // Clear error when user starts typing
+                  }}
                   placeholder="Enter admin password"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   required
                 />
               </div>
+              
+              {deleteCategoryError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{deleteCategoryError}</p>
+                </div>
+              )}
+              
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={() => setShowDeleteCategoryModal(false)}
+                  onClick={() => {
+                    setShowDeleteCategoryModal(false);
+                    setDeleteCategoryError("");
+                    setAdminPassword("");
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   disabled={deleteCategoryLoading}
                 >
@@ -659,11 +674,20 @@ export default function AdminCategoriesPage() {
                   <input
                     type="password"
                     value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onChange={(e) => {
+                      setAdminPassword(e.target.value);
+                      if (deleteSubCategoryError) setDeleteSubCategoryError(""); // Clear error when user starts typing
+                    }}
                     placeholder="Enter admin password"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   />
+                </div>
+              )}
+              
+              {subCategoryMode === 'delete' && deleteSubCategoryError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{deleteSubCategoryError}</p>
                 </div>
               )}
               

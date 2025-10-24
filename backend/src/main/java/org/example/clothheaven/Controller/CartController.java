@@ -1,6 +1,7 @@
 // CartController.java
 package org.example.clothheaven.Controller;
 
+import jakarta.validation.Valid;
 import org.example.clothheaven.DTO.AddToCartDTO;
 import org.example.clothheaven.DTO.CartResponseDTO;
 import org.example.clothheaven.DTO.UpdateCartItemDTO;
@@ -10,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/cart")
