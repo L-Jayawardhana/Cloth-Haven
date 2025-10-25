@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -71,7 +72,8 @@ public class OrderService {
         public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
                 // Get user's cart
                 Cart cart = cartRepository.findByUserIdWithItems(createOrderDTO.getUserId())
-                                .orElseThrow(() -> new CartItemNotFoundException("Cart not found for user: " + createOrderDTO.getUserId()));
+                                .orElseThrow(() -> new CartItemNotFoundException(
+                                                "Cart not found for user: " + createOrderDTO.getUserId()));
 
                 if (cart.getCartItems().isEmpty()) {
                         throw new EmptyCartException("Cannot create order from empty cart");
@@ -79,7 +81,8 @@ public class OrderService {
 
                 // Fetch user entity
                 org.example.clothheaven.Model.User user = userRepository.findById(createOrderDTO.getUserId())
-                                .orElseThrow(() -> new RuntimeException("User not found: " + createOrderDTO.getUserId()));
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: " + createOrderDTO.getUserId()));
 
                 // Create new order with shipping and payment information
                 Orders order = new Orders(user);
@@ -105,7 +108,8 @@ public class OrderService {
                         // Fetch product entity
                         org.example.clothheaven.Model.Product product = productRepository
                                         .findById(cartItem.getProduct().getProductId())
-                                        .orElseThrow(() -> new RuntimeException("Product not found: " + cartItem.getProduct().getProductId()));
+                                        .orElseThrow(() -> new RuntimeException(
+                                                        "Product not found: " + cartItem.getProduct().getProductId()));
 
                         BigDecimal itemPrice = BigDecimal.valueOf(product.getProductPrice());
                         BigDecimal itemTotal = itemPrice.multiply(new BigDecimal(cartItem.getCartItemsQuantity()));
@@ -114,7 +118,9 @@ public class OrderService {
                                         savedOrder,
                                         product,
                                         cartItem.getCartItemsQuantity(),
-                                        itemTotal);
+                                        itemTotal,
+                                        cartItem.getColor(),
+                                        cartItem.getSize());
 
                         orderItemRepository.save(orderItem);
                         totalPrice = totalPrice.add(itemTotal);
@@ -175,11 +181,20 @@ public class OrderService {
                 String origName = file.getOriginalFilename();
                 String original = StringUtils.cleanPath(origName != null ? origName : "file");
                 String lower = original == null ? "" : original.toLowerCase();
-                if (!(lower.endsWith(".pdf") || lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg"))) {
+                if (!(lower.endsWith(".pdf") || lower.endsWith(".png") || lower.endsWith(".jpg")
+                                || lower.endsWith(".jpeg"))) {
                         throw new IllegalArgumentException("Only PDF, PNG, JPG, JPEG files are allowed");
                 }
 
                 try {
+                        // Store in database as binary data
+                        byte[] fileData = file.getBytes();
+                        order.setPaymentSlipData(fileData);
+                        order.setPaymentSlipContentType(file.getContentType());
+                        order.setPaymentSlipFilename(original);
+
+                        // Also store in file system as backup (optional - you can remove this if you
+                        // want DB only)
                         java.nio.file.Path root = java.nio.file.Paths.get("uploads/payment-slips");
                         java.nio.file.Files.createDirectories(root);
                         String filename = orderId + "-" + System.currentTimeMillis() + "-" + original;
@@ -199,9 +214,44 @@ public class OrderService {
                 }
         }
 
+        public OrderResponseDTO submitPaymentSlipUrl(Long orderId, String url) {
+                Orders order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+
+                if (url == null || url.trim().isEmpty()) {
+                        throw new IllegalArgumentException("URL is required");
+                }
+
+                String trimmedUrl = url.trim();
+                // Basic URL validation
+                if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
+                        throw new IllegalArgumentException("URL must start with http:// or https://");
+                }
+
+                // Just save the URL - no file download needed
+                order.setPaymentSlipUrl(trimmedUrl);
+                // Clear binary data since we're using external URL
+                order.setPaymentSlipData(null);
+                order.setPaymentSlipContentType(null);
+                order.setPaymentSlipFilename(trimmedUrl.substring(trimmedUrl.lastIndexOf('/') + 1));
+
+                orderRepository.save(order);
+
+                Orders updated = orderRepository.findByIdWithItems(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                return orderMapper.toOrderResponseDTO(updated);
+        }
+
         public byte[] generateOrderPdf(Long orderId) {
                 Orders order = orderRepository.findByIdWithItems(orderId)
                                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+
+                // Debug logging
+                System.out.println("=== PDF Generation Debug ===");
+                System.out.println("Order ID: " + order.getOrderId());
+                System.out.println("Payment Method: " + order.getPaymentMethod());
+                System.out.println("Payment Slip URL: " + order.getPaymentSlipUrl());
+                System.out.println("===========================");
 
                 try (PDDocument doc = new PDDocument(); ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                         PDPage page = new PDPage(PDRectangle.LETTER);
@@ -226,7 +276,8 @@ public class OrderService {
                                                 "Customer: " + order.getFirstName() + " " + order.getLastName(),
                                                 "Email: " + order.getEmailAddress(),
                                                 "Phone: " + order.getPhoneNumber(),
-                                                "Address: " + order.getHomeAddress() + ", " + order.getCountry() + " " + order.getPostalCode(),
+                                                "Address: " + order.getHomeAddress() + ", " + order.getCountry() + " "
+                                                                + order.getPostalCode(),
                                                 "Payment Method: " + order.getPaymentMethod(),
                                 };
 
@@ -248,7 +299,8 @@ public class OrderService {
                                 cs.setFont(PDType1Font.HELVETICA, 12);
 
                                 for (OrderItem it : order.getOrderItems()) {
-                                        if (y < margin + 90) break; // leave space for image block
+                                        if (y < margin + 90)
+                                                break; // leave space for image block
                                         String itemLine = String.format("- Product #%d  Qty: %d  Line Total: Rs. %s",
                                                         it.getProduct().getProductId(),
                                                         it.getOrderItemsQuantity(),
@@ -259,28 +311,38 @@ public class OrderService {
                                         cs.showText(itemLine);
                                         cs.endText();
 
-                                        // Color / Size placeholders (not tracked in backend yet)
+                                        // Color / Size from order item
                                         y -= 14;
                                         cs.beginText();
                                         cs.newLineAtOffset(margin + 16, y);
-                                        cs.showText("Color: N/A   Size: N/A");
+                                        String colorText = (it.getColor() != null && !it.getColor().isEmpty())
+                                                        ? it.getColor()
+                                                        : "N/A";
+                                        String sizeText = (it.getSize() != null && !it.getSize().isEmpty())
+                                                        ? it.getSize()
+                                                        : "N/A";
+                                        cs.showText("Color: " + colorText + "   Size: " + sizeText);
                                         cs.endText();
 
                                         // Try to embed product image (first image)
                                         try {
                                                 Long pid = it.getProduct().getProductId();
-                                                List<org.example.clothheaven.Model.Image> imgs = imageRepository.findByProductProductId(pid);
+                                                List<org.example.clothheaven.Model.Image> imgs = imageRepository
+                                                                .findByProductProductId(pid);
                                                 if (imgs != null && !imgs.isEmpty()) {
                                                         String urlStr = imgs.get(0).getImageUrl();
                                                         BufferedImage bimg = null;
                                                         if (urlStr != null) {
-                                                                if (urlStr.startsWith("http://") || urlStr.startsWith("https://")) {
-                                                                        try (InputStream is = new URL(urlStr).openStream()) {
+                                                                if (urlStr.startsWith("http://")
+                                                                                || urlStr.startsWith("https://")) {
+                                                                        try (InputStream is = new URL(urlStr)
+                                                                                        .openStream()) {
                                                                                 bimg = ImageIO.read(is);
                                                                         }
                                                                 } else if (urlStr.startsWith("/uploads/")) {
                                                                         String rel = urlStr.replaceFirst("^/", "");
-                                                                        File f = new File(rel); // maps to uploads/... on disk
+                                                                        File f = new File(rel); // maps to uploads/...
+                                                                                                // on disk
                                                                         if (f.exists()) {
                                                                                 bimg = ImageIO.read(f);
                                                                         }
@@ -293,11 +355,14 @@ public class OrderService {
                                                                 }
                                                         }
                                                         if (bimg != null) {
-                                                                PDImageXObject pdImage = LosslessFactory.createFromImage(doc, bimg);
+                                                                PDImageXObject pdImage = LosslessFactory
+                                                                                .createFromImage(doc, bimg);
                                                                 float imgW = 64, imgH = 64;
-                                                                float imgX = page.getMediaBox().getWidth() - margin - imgW;
+                                                                float imgX = page.getMediaBox().getWidth() - margin
+                                                                                - imgW;
                                                                 float imgY = y - imgH + 8;
-                                                                if (imgY < margin) imgY = margin;
+                                                                if (imgY < margin)
+                                                                        imgY = margin;
                                                                 cs.drawImage(pdImage, imgX, imgY, imgW, imgH);
                                                         }
                                                 }
@@ -314,6 +379,212 @@ public class OrderService {
                                 cs.newLineAtOffset(margin, y);
                                 cs.showText("Total: Rs. " + order.getOrdersPrice());
                                 cs.endText();
+
+                                // Add payment slip if available
+                                if ((order.getPaymentSlipData() != null && order.getPaymentSlipData().length > 0) ||
+                                                (order.getPaymentSlipUrl() != null
+                                                                && !order.getPaymentSlipUrl().isEmpty())) {
+                                        System.out.println("Payment slip found - Data: "
+                                                        + (order.getPaymentSlipData() != null
+                                                                        ? order.getPaymentSlipData().length + " bytes"
+                                                                        : "null")
+                                                        + ", URL: " + order.getPaymentSlipUrl());
+                                        y -= 30;
+                                        cs.setFont(PDType1Font.HELVETICA_BOLD, 13);
+                                        cs.beginText();
+                                        cs.newLineAtOffset(margin, y);
+                                        cs.showText("Payment Slip:");
+                                        cs.endText();
+                                        y -= 16;
+
+                                        try {
+                                                BufferedImage slipImage = null;
+                                                String contentType = order.getPaymentSlipContentType();
+
+                                                // First, try to load from database
+                                                if (order.getPaymentSlipData() != null
+                                                                && order.getPaymentSlipData().length > 0) {
+                                                        System.out.println("Loading payment slip from database ("
+                                                                        + order.getPaymentSlipData().length
+                                                                        + " bytes)");
+                                                        System.out.println("Content type: " + contentType);
+
+                                                        // Only try to load image files (not PDFs)
+                                                        if (contentType != null
+                                                                        && !contentType.toLowerCase().contains("pdf")) {
+                                                                try (ByteArrayInputStream bais = new ByteArrayInputStream(
+                                                                                order.getPaymentSlipData())) {
+                                                                        slipImage = ImageIO.read(bais);
+                                                                        System.out.println(
+                                                                                        "Image loaded from database: "
+                                                                                                        + (slipImage != null));
+                                                                        if (slipImage != null) {
+                                                                                System.out.println("Image dimensions: "
+                                                                                                + slipImage.getWidth()
+                                                                                                + "x"
+                                                                                                + slipImage.getHeight());
+                                                                        }
+                                                                }
+                                                        } else {
+                                                                System.out.println(
+                                                                                "Payment slip is a PDF, showing filename instead");
+                                                        }
+                                                }
+
+                                                // If database load failed, try loading from file system as fallback
+                                                if (slipImage == null && order.getPaymentSlipUrl() != null
+                                                                && !order.getPaymentSlipUrl().isEmpty()) {
+                                                        String slipUrl = order.getPaymentSlipUrl();
+                                                        System.out.println("Attempting to load image from file system: "
+                                                                        + slipUrl);
+
+                                                        // Only try to load image files (not PDFs)
+                                                        if (!slipUrl.toLowerCase().endsWith(".pdf")) {
+                                                                if (slipUrl.startsWith("http://")
+                                                                                || slipUrl.startsWith("https://")) {
+                                                                        System.out.println(
+                                                                                        "Loading from HTTP/HTTPS URL");
+                                                                        try (InputStream is = new URL(slipUrl)
+                                                                                        .openStream()) {
+                                                                                slipImage = ImageIO.read(is);
+                                                                        }
+                                                                } else if (slipUrl.startsWith("/uploads/")) {
+                                                                        String rel = slipUrl.replaceFirst("^/", "");
+                                                                        File f = new File(rel);
+                                                                        System.out.println("Loading from local file: "
+                                                                                        + f.getAbsolutePath());
+                                                                        System.out.println(
+                                                                                        "File exists: " + f.exists());
+                                                                        if (f.exists()) {
+                                                                                slipImage = ImageIO.read(f);
+                                                                                System.out.println(
+                                                                                                "Image loaded successfully: "
+                                                                                                                + (slipImage != null));
+                                                                        }
+                                                                } else {
+                                                                        File f = new File(slipUrl);
+                                                                        System.out.println("Loading from file path: "
+                                                                                        + f.getAbsolutePath());
+                                                                        System.out.println(
+                                                                                        "File exists: " + f.exists());
+                                                                        if (f.exists()) {
+                                                                                slipImage = ImageIO.read(f);
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+
+                                                // Now process the loaded image
+                                                if (slipImage != null) {
+                                                        System.out.println(
+                                                                        "Creating PDImageXObject from BufferedImage");
+                                                        System.out.println("Image dimensions: "
+                                                                        + slipImage.getWidth() + "x"
+                                                                        + slipImage.getHeight());
+                                                        PDImageXObject pdSlipImage = LosslessFactory
+                                                                        .createFromImage(doc, slipImage);
+
+                                                        // Calculate dimensions to fit on page
+                                                        float pageWidth = page.getMediaBox().getWidth()
+                                                                        - (2 * margin);
+                                                        float pageHeight = y - margin - 20;
+
+                                                        float imgWidth = slipImage.getWidth();
+                                                        float imgHeight = slipImage.getHeight();
+                                                        float scale = Math.min(pageWidth / imgWidth,
+                                                                        pageHeight / imgHeight);
+
+                                                        // If image is too large, scale it down
+                                                        if (scale > 1)
+                                                                scale = 1;
+
+                                                        float displayWidth = imgWidth * scale;
+                                                        float displayHeight = imgHeight * scale;
+
+                                                        // Check if we need a new page
+                                                        if (y - displayHeight < margin) {
+                                                                System.out.println(
+                                                                                "Creating new page for payment slip (not enough space on current page)");
+                                                                // Close current content stream
+                                                                cs.close();
+
+                                                                // Add new page for payment slip
+                                                                PDPage slipPage = new PDPage(
+                                                                                PDRectangle.LETTER);
+                                                                doc.addPage(slipPage);
+
+                                                                try (PDPageContentStream slipCs = new PDPageContentStream(
+                                                                                doc, slipPage)) {
+                                                                        float slipY = slipPage.getMediaBox()
+                                                                                        .getHeight() - margin;
+
+                                                                        slipCs.setFont(PDType1Font.HELVETICA_BOLD,
+                                                                                        13);
+                                                                        slipCs.beginText();
+                                                                        slipCs.newLineAtOffset(margin, slipY);
+                                                                        slipCs.showText("Payment Slip:");
+                                                                        slipCs.endText();
+
+                                                                        slipY -= 20;
+                                                                        float imgY = slipY - displayHeight;
+                                                                        if (imgY < margin)
+                                                                                imgY = margin;
+
+                                                                        slipCs.drawImage(pdSlipImage, margin,
+                                                                                        imgY, displayWidth,
+                                                                                        displayHeight);
+                                                                }
+
+                                                                // Return early since we already closed cs
+                                                                doc.save(baos);
+                                                                return baos.toByteArray();
+                                                        } else {
+                                                                // Draw on current page
+                                                                System.out.println(
+                                                                                "Drawing payment slip on current page");
+                                                                float imgY = y - displayHeight;
+                                                                cs.drawImage(pdSlipImage, margin, imgY,
+                                                                                displayWidth, displayHeight);
+                                                                System.out.println(
+                                                                                "Payment slip drawn successfully at position: "
+                                                                                                + margin + ", "
+                                                                                                + imgY);
+                                                        }
+                                                } else {
+                                                        // If image couldn't be loaded, show message
+                                                        System.out.println(
+                                                                        "Image could not be loaded, showing message instead");
+                                                        cs.setFont(PDType1Font.HELVETICA, 10);
+                                                        cs.beginText();
+                                                        cs.newLineAtOffset(margin, y);
+                                                        String filename = order.getPaymentSlipFilename() != null
+                                                                        ? order.getPaymentSlipFilename()
+                                                                        : (order.getPaymentSlipUrl() != null
+                                                                                        ? order.getPaymentSlipUrl()
+                                                                                        : "payment-slip");
+                                                        cs.showText("Payment slip: " + filename);
+                                                        cs.endText();
+                                                }
+                                        } catch (Exception e) {
+                                                // If payment slip fails to load, show error message
+                                                System.err.println("ERROR loading payment slip: " + e.getMessage());
+                                                e.printStackTrace();
+                                                cs.setFont(PDType1Font.HELVETICA, 10);
+                                                cs.beginText();
+                                                cs.newLineAtOffset(margin, y);
+                                                cs.showText("Payment slip: " + (order.getPaymentSlipFilename() != null
+                                                                ? order.getPaymentSlipFilename()
+                                                                : "Uploaded"));
+                                                cs.endText();
+                                                y -= 14;
+                                                cs.beginText();
+                                                cs.newLineAtOffset(margin, y);
+                                                cs.showText("(Could not embed image: " + e.getMessage() + ")");
+                                                cs.endText();
+                                        }
+                                } else {
+                                        System.out.println("No payment slip found");
+                                }
                         }
 
                         doc.save(baos);
@@ -321,5 +592,31 @@ public class OrderService {
                 } catch (Exception e) {
                         throw new RuntimeException("Failed to generate PDF: " + e.getMessage(), e);
                 }
+        }
+
+        public byte[] getPaymentSlipData(Long orderId) {
+                Orders order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+
+                if (order.getPaymentSlipData() == null || order.getPaymentSlipData().length == 0) {
+                        throw new RuntimeException("Payment slip not found in database for order: " + orderId);
+                }
+
+                return order.getPaymentSlipData();
+        }
+
+        public String getPaymentSlipContentType(Long orderId) {
+                Orders order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+
+                return order.getPaymentSlipContentType() != null ? order.getPaymentSlipContentType()
+                                : "application/octet-stream";
+        }
+
+        public String getPaymentSlipFilename(Long orderId) {
+                Orders order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+
+                return order.getPaymentSlipFilename() != null ? order.getPaymentSlipFilename() : "payment-slip";
         }
 }

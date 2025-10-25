@@ -48,6 +48,8 @@ public class OrderMapper {
                 orderItem.getOrderItemId(),
                 orderItem.getProduct() != null ? orderItem.getProduct().getProductId() : null,
                 orderItem.getOrderItemsQuantity(),
-                orderItem.getOrderItemsPrice());
+                orderItem.getOrderItemsPrice(),
+                orderItem.getColor(),
+                orderItem.getSize());
     }
 }

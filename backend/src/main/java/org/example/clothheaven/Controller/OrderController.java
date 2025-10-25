@@ -58,6 +58,14 @@ public class OrderController {
         return new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }
 
+    @PostMapping("/{orderId}/payment-slip-url")
+    public ResponseEntity<OrderResponseDTO> submitPaymentSlipUrl(
+            @PathVariable Long orderId,
+            @RequestBody String url) {
+        OrderResponseDTO orderResponse = orderService.submitPaymentSlipUrl(orderId, url);
+        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
+    }
+
     @GetMapping(value = "/{orderId}/pdf")
     public ResponseEntity<byte[]> downloadOrderPdf(@PathVariable Long orderId) {
         byte[] pdf = orderService.generateOrderPdf(orderId);
@@ -66,5 +74,20 @@ public class OrderController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=order-" + orderId + ".pdf");
         headers.setContentLength(pdf.length);
         return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/{orderId}/payment-slip")
+    public ResponseEntity<byte[]> getPaymentSlip(@PathVariable Long orderId) {
+        byte[] slipData = orderService.getPaymentSlipData(orderId);
+        String contentType = orderService.getPaymentSlipContentType(orderId);
+        String filename = orderService.getPaymentSlipFilename(orderId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(
+                MediaType.parseMediaType(contentType != null ? contentType : "application/octet-stream"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "inline; filename=\"" + (filename != null ? filename : "payment-slip") + "\"");
+        headers.setContentLength(slipData.length);
+        return new ResponseEntity<>(slipData, headers, HttpStatus.OK);
     }
 }

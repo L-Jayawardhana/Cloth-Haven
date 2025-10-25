@@ -47,21 +47,38 @@ public class CartService {
                                         return cartRepository.save(newCart);
                                 });
 
-                // Check if item already exists in cart
+                // Check if item already exists in cart with same color and size
                 Product product = productRepository.findById(addToCartDTO.getProductId())
                                 .orElseThrow(() -> new CartItemNotFoundException(
                                                 "Product not found with id: " + addToCartDTO.getProductId()));
-                Optional<CartItem> existingItem = cartItemRepository
-                                .findByCartCartIdAndProduct_ProductId(cart.getCartId(), product.getProductId());
+
+                // Find existing item with same product, color, and size
+                Optional<CartItem> existingItem = cart.getCartItems().stream()
+                                .filter(item -> item.getProduct().getProductId().equals(product.getProductId()))
+                                .filter(item -> {
+                                        String itemColor = item.getColor();
+                                        String itemSize = item.getSize();
+                                        String dtoColor = addToCartDTO.getColor();
+                                        String dtoSize = addToCartDTO.getSize();
+
+                                        boolean colorMatches = (itemColor == null && dtoColor == null) ||
+                                                        (itemColor != null && itemColor.equals(dtoColor));
+                                        boolean sizeMatches = (itemSize == null && dtoSize == null) ||
+                                                        (itemSize != null && itemSize.equals(dtoSize));
+
+                                        return colorMatches && sizeMatches;
+                                })
+                                .findFirst();
 
                 if (existingItem.isPresent()) {
-                        // Update quantity if item exists
+                        // Update quantity if exact same variant exists
                         CartItem item = existingItem.get();
                         item.setCartItemsQuantity(item.getCartItemsQuantity() + addToCartDTO.getQuantity());
                         cartItemRepository.save(item);
                 } else {
-                        // Create new cart item
-                        CartItem newItem = new CartItem(cart, product, addToCartDTO.getQuantity());
+                        // Create new cart item for this variant
+                        CartItem newItem = new CartItem(cart, product, addToCartDTO.getQuantity(),
+                                        addToCartDTO.getColor(), addToCartDTO.getSize());
                         cartItemRepository.save(newItem);
                 }
 
@@ -94,11 +111,12 @@ public class CartService {
                 return cartMapper.toCartResponseDTO(updatedCart);
         }
 
-        public void removeItemFromCart(Long userId, Long productId) {
-                Cart cart = cartRepository.findByUser_UserId(userId)
-                                .orElseThrow(() -> new CartItemNotFoundException("Cart not found for user: " + userId));
+        public void removeItemFromCart(Long cartItemId) {
+                CartItem cartItem = cartItemRepository.findById(cartItemId)
+                                .orElseThrow(() -> new CartItemNotFoundException(
+                                                "Cart item not found with id: " + cartItemId));
 
-                cartItemRepository.deleteByCartCartIdAndProduct_ProductId(cart.getCartId(), productId);
+                cartItemRepository.delete(cartItem);
         }
 
         public void clearCart(Long userId) {

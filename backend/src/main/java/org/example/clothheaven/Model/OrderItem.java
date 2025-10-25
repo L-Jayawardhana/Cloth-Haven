@@ -25,6 +25,12 @@ public class OrderItem {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal orderItemsPrice;
 
+    @Column(length = 50)
+    private String color;
+
+    @Column(length = 50)
+    private String size;
+
     // Constructors
     public OrderItem() {
     }
@@ -34,6 +40,15 @@ public class OrderItem {
         this.product = product;
         this.orderItemsQuantity = quantity;
         this.orderItemsPrice = price;
+    }
+
+    public OrderItem(Orders order, Product product, Integer quantity, BigDecimal price, String color, String size) {
+        this.order = order;
+        this.product = product;
+        this.orderItemsQuantity = quantity;
+        this.orderItemsPrice = price;
+        this.color = color;
+        this.size = size;
     }
 
     // Getters and Setters
@@ -75,5 +90,21 @@ public class OrderItem {
 
     public void setOrderItemsPrice(BigDecimal orderItemsPrice) {
         this.orderItemsPrice = orderItemsPrice;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 }
