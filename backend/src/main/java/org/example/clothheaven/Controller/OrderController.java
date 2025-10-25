@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 @Validated
 public class OrderController {
 
@@ -25,6 +26,12 @@ public class OrderController {
     public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO) {
         OrderResponseDTO orderResponse = orderService.createOrder(createOrderDTO);
         return new ResponseEntity<>(orderResponse, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        List<OrderResponseDTO> orders = orderService.getAllOrders();
+        return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
     @GetMapping("/user/{userId}")

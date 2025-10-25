@@ -25,108 +25,118 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class OrderService {
-    @Autowired
-    private org.example.clothheaven.Repository.UserRepository userRepository;
+        @Autowired
+        private org.example.clothheaven.Repository.UserRepository userRepository;
 
-    @Autowired
-    private org.example.clothheaven.Repository.ProductRepository productRepository;
+        @Autowired
+        private org.example.clothheaven.Repository.ProductRepository productRepository;
 
-    @Autowired
-    private OrderRepository orderRepository;
+        @Autowired
+        private OrderRepository orderRepository;
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+        @Autowired
+        private OrderItemRepository orderItemRepository;
 
-    @Autowired
-    private CartRepository cartRepository;
+        @Autowired
+        private CartRepository cartRepository;
 
-    @Autowired
-    private CartService cartService;
+        @Autowired
+        private CartService cartService;
 
-    @Autowired
-    private OrderMapper orderMapper;
+        @Autowired
+        private OrderMapper orderMapper;
 
-    public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
-        // Get user's cart
-        Cart cart = cartRepository.findByUserIdWithItems(createOrderDTO.getUserId())
-                .orElseThrow(
-                        () -> new CartItemNotFoundException("Cart not found for user: " + createOrderDTO.getUserId()));
+        public OrderResponseDTO createOrder(CreateOrderDTO createOrderDTO) {
+                // Get user's cart
+                Cart cart = cartRepository.findByUserIdWithItems(createOrderDTO.getUserId())
+                                .orElseThrow(
+                                                () -> new CartItemNotFoundException("Cart not found for user: "
+                                                                + createOrderDTO.getUserId()));
 
-        if (cart.getCartItems().isEmpty()) {
-            throw new EmptyCartException("Cannot create order from empty cart");
+                if (cart.getCartItems().isEmpty()) {
+                        throw new EmptyCartException("Cannot create order from empty cart");
+                }
+
+                // Fetch user entity
+                org.example.clothheaven.Model.User user = userRepository.findById(createOrderDTO.getUserId())
+                                .orElseThrow(() -> new RuntimeException(
+                                                "User not found: " + createOrderDTO.getUserId()));
+
+                // Create new order
+                Orders order = new Orders(user);
+                Orders savedOrder = orderRepository.save(order);
+
+                // Create order items from cart items
+                BigDecimal totalPrice = BigDecimal.ZERO;
+                for (CartItem cartItem : cart.getCartItems()) {
+                        // Fetch product entity
+                        org.example.clothheaven.Model.Product product = productRepository
+                                        .findById(cartItem.getProduct().getProductId())
+                                        .orElseThrow(
+                                                        () -> new RuntimeException("Product not found: "
+                                                                        + cartItem.getProduct().getProductId()));
+
+                        BigDecimal itemPrice = BigDecimal.valueOf(product.getProductPrice());
+                        BigDecimal itemTotal = itemPrice.multiply(new BigDecimal(cartItem.getCartItemsQuantity()));
+
+                        OrderItem orderItem = new OrderItem(
+                                        savedOrder,
+                                        product,
+                                        cartItem.getCartItemsQuantity(),
+                                        itemTotal);
+
+                        orderItemRepository.save(orderItem);
+                        totalPrice = totalPrice.add(itemTotal);
+                }
+
+                // Update order total price
+                savedOrder.setOrdersPrice(totalPrice);
+                orderRepository.save(savedOrder);
+
+                // Clear the cart after successful order creation
+                cartService.clearCart(createOrderDTO.getUserId());
+
+                // Return order with items
+                Orders orderWithItems = orderRepository.findByIdWithItems(savedOrder.getOrderId())
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+                return orderMapper.toOrderResponseDTO(orderWithItems);
         }
 
-        // Fetch user entity
-        org.example.clothheaven.Model.User user = userRepository.findById(createOrderDTO.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found: " + createOrderDTO.getUserId()));
-
-        // Create new order
-        Orders order = new Orders(user);
-        Orders savedOrder = orderRepository.save(order);
-
-        // Create order items from cart items
-        BigDecimal totalPrice = BigDecimal.ZERO;
-        for (CartItem cartItem : cart.getCartItems()) {
-            // Fetch product entity
-            org.example.clothheaven.Model.Product product = productRepository
-                    .findById(cartItem.getProduct().getProductId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Product not found: " + cartItem.getProduct().getProductId()));
-
-            BigDecimal itemPrice = BigDecimal.valueOf(product.getProductPrice());
-            BigDecimal itemTotal = itemPrice.multiply(new BigDecimal(cartItem.getCartItemsQuantity()));
-
-            OrderItem orderItem = new OrderItem(
-                    savedOrder,
-                    product,
-                    cartItem.getCartItemsQuantity(),
-                    itemTotal);
-
-            orderItemRepository.save(orderItem);
-            totalPrice = totalPrice.add(itemTotal);
+        public List<OrderResponseDTO> getAllOrders() {
+                List<Orders> orders = orderRepository.findAll();
+                return orders.stream()
+                                .map(orderMapper::toOrderResponseDTO)
+                                .collect(Collectors.toList());
         }
 
-        // Update order total price
-        savedOrder.setOrdersPrice(totalPrice);
-        orderRepository.save(savedOrder);
+        public List<OrderResponseDTO> getUserOrders(Long userId) {
+                org.example.clothheaven.Model.User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+                List<Orders> orders = orderRepository.findByUserWithItemsOrderByOrderDateDesc(user);
 
-        // Clear the cart after successful order creation
-        cartService.clearCart(createOrderDTO.getUserId());
+                return orders.stream()
+                                .map(orderMapper::toOrderResponseDTO)
+                                .collect(Collectors.toList());
+        }
 
-        // Return order with items
-        Orders orderWithItems = orderRepository.findByIdWithItems(savedOrder.getOrderId())
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+        public OrderResponseDTO getOrderById(Long orderId) {
+                Orders order = orderRepository.findByIdWithItems(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
 
-        return orderMapper.toOrderResponseDTO(orderWithItems);
-    }
+                return orderMapper.toOrderResponseDTO(order);
+        }
 
-    public List<OrderResponseDTO> getUserOrders(Long userId) {
-        org.example.clothheaven.Model.User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-        List<Orders> orders = orderRepository.findByUserWithItemsOrderByOrderDateDesc(user);
+        public OrderResponseDTO updateOrderStatus(Long orderId, UpdateOrderStatusDTO updateOrderStatusDTO) {
+                Orders order = orderRepository.findById(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
 
-        return orders.stream()
-                .map(orderMapper::toOrderResponseDTO)
-                .collect(Collectors.toList());
-    }
+                order.setStatus(updateOrderStatusDTO.getStatus());
+                orderRepository.save(order);
 
-    public OrderResponseDTO getOrderById(Long orderId) {
-        Orders order = orderRepository.findByIdWithItems(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
+                Orders updatedOrder = orderRepository.findByIdWithItems(orderId)
+                                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
 
-        return orderMapper.toOrderResponseDTO(order);
-    }
-
-    public OrderResponseDTO updateOrderStatus(Long orderId, UpdateOrderStatusDTO updateOrderStatusDTO) {
-        Orders order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
-
-        order.setStatus(updateOrderStatusDTO.getStatus());
-        orderRepository.save(order);
-
-        Orders updatedOrder = orderRepository.findByIdWithItems(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
-
-        return orderMapper.toOrderResponseDTO(updatedOrder);
-    }
+                return orderMapper.toOrderResponseDTO(updatedOrder);
+        }
 }

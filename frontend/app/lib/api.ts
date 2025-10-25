@@ -911,9 +911,42 @@ class InventoryApi {
   }
 }
 
+// Order API
+export interface OrderItem {
+  orderItemId: number;
+  productId: number;
+  productName?: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  orderId: number;
+  userId: number;
+  orderDate: string;
+  status: string;
+  totalPrice: number;
+  items: OrderItem[];
+}
+
+class OrderApi {
+  async getAllOrders(): Promise<Order[]> {
+    return apiService.request<Order[]>('/orders/all');
+  }
+
+  async getUserOrders(userId: number): Promise<Order[]> {
+    return apiService.request<Order[]>(`/orders/user/${userId}`);
+  }
+
+  async getOrderById(orderId: number): Promise<Order> {
+    return apiService.request<Order>(`/orders/${orderId}`);
+  }
+}
+
 export const productApi = new ProductApi();
 export const categoryApi = new CategoryApi();
 export const subCategoryApi = new SubCategoryApi();
 export const imageApi = new ImageApi();
 export const colorSizeApi = new ColorsSizeQuantityAvailabilityApi();
 export const inventoryApi = new InventoryApi();
+export const orderApi = new OrderApi();
