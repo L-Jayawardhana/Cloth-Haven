@@ -58,6 +58,16 @@ public class Orders {
     @Column(length = 255)
     private String paymentSlipUrl; // Store the URL or path to the uploaded payment slip
 
+    @Lob
+    @Column(name = "payment_slip_data", columnDefinition = "LONGBLOB")
+    private byte[] paymentSlipData; // Store the actual image data in database
+
+    @Column(name = "payment_slip_content_type", length = 100)
+    private String paymentSlipContentType; // Store the content type (image/jpeg, image/png, application/pdf)
+
+    @Column(name = "payment_slip_filename", length = 255)
+    private String paymentSlipFilename; // Store the original filename
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -68,7 +78,10 @@ public class Orders {
         this.ordersPrice = BigDecimal.ZERO;
     }
 
-    public Orders(Long orderId, User user, LocalDateTime orderDate, OrderStatus status, BigDecimal ordersPrice, String firstName, String lastName, String country, String postalCode, String phoneNumber, String homeAddress, String emailAddress, PaymentMethod paymentMethod, String paymentSlipUrl, List<OrderItem> orderItems) {
+    public Orders(Long orderId, User user, LocalDateTime orderDate, OrderStatus status, BigDecimal ordersPrice,
+            String firstName, String lastName, String country, String postalCode, String phoneNumber,
+            String homeAddress, String emailAddress, PaymentMethod paymentMethod, String paymentSlipUrl,
+            List<OrderItem> orderItems) {
         this.orderId = orderId;
         this.user = user;
         this.orderDate = orderDate;
@@ -212,6 +225,30 @@ public class Orders {
 
     public void setPaymentSlipUrl(String paymentSlipUrl) {
         this.paymentSlipUrl = paymentSlipUrl;
+    }
+
+    public byte[] getPaymentSlipData() {
+        return paymentSlipData;
+    }
+
+    public void setPaymentSlipData(byte[] paymentSlipData) {
+        this.paymentSlipData = paymentSlipData;
+    }
+
+    public String getPaymentSlipContentType() {
+        return paymentSlipContentType;
+    }
+
+    public void setPaymentSlipContentType(String paymentSlipContentType) {
+        this.paymentSlipContentType = paymentSlipContentType;
+    }
+
+    public String getPaymentSlipFilename() {
+        return paymentSlipFilename;
+    }
+
+    public void setPaymentSlipFilename(String paymentSlipFilename) {
+        this.paymentSlipFilename = paymentSlipFilename;
     }
 
     public List<OrderItem> getOrderItems() {

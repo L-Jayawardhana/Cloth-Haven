@@ -20,6 +20,12 @@ public class CartItem {
     @Column(nullable = false)
     private Integer cartItemsQuantity;
 
+    @Column(length = 50)
+    private String color;
+
+    @Column(length = 50)
+    private String size;
+
     // Constructors
     public CartItem() {
     }
@@ -28,6 +34,14 @@ public class CartItem {
         this.cart = cart;
         this.product = product;
         this.cartItemsQuantity = quantity;
+    }
+
+    public CartItem(Cart cart, Product product, Integer quantity, String color, String size) {
+        this.cart = cart;
+        this.product = product;
+        this.cartItemsQuantity = quantity;
+        this.color = color;
+        this.size = size;
     }
 
     // Getters and Setters
@@ -61,5 +75,21 @@ public class CartItem {
 
     public void setCartItemsQuantity(Integer cartItemsQuantity) {
         this.cartItemsQuantity = cartItemsQuantity;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
     }
 }

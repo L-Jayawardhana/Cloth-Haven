@@ -19,6 +19,8 @@ export interface CartItem {
   productName?: string;
   productImage?: string;
   price?: number;
+  color?: string;
+  size?: string;
 }
 
 export interface Cart {
@@ -32,8 +34,8 @@ class CartApi {
     return apiService.request<Cart>(`/cart/user/${userId}`);
   }
 
-  async removeItemFromCart(userId: number, productId: number): Promise<void> {
-    await apiService.request<void>(`/cart/user/${userId}/product/${productId}`, { method: "DELETE" });
+  async removeItemFromCart(cartItemId: number): Promise<void> {
+    await apiService.request<void>(`/cart/item/${cartItemId}`, { method: "DELETE" });
   }
 
   async updateCartItemQuantity(cartItemId: number, quantity: number): Promise<Cart> {
@@ -47,10 +49,16 @@ class CartApi {
     await apiService.request<void>(`/cart/user/${userId}/clear`, { method: "DELETE" });
   }
 
-  async addItemToCart(payload: { userId: number; productId: number; quantity: number }): Promise<Cart> {
+  async addItemToCart(payload: { userId: number; productId: number; quantity: number; color?: string; size?: string }): Promise<Cart> {
     return apiService.request<Cart>(`/cart/add`, {
       method: 'POST',
-      body: JSON.stringify({ userId: payload.userId, productId: payload.productId, quantity: payload.quantity }),
+      body: JSON.stringify({ 
+        userId: payload.userId, 
+        productId: payload.productId, 
+        quantity: payload.quantity,
+        color: payload.color,
+        size: payload.size
+      }),
     });
   }
 }
@@ -942,6 +950,8 @@ export interface OrderItemResponse {
   productId: number;
   quantity: number;
   price: number; // total price for this line (qty * unit price)
+  color?: string;
+  size?: string;
 }
 
 export interface OrderResponse {
@@ -1004,6 +1014,45 @@ class OrderApi {
       throw new Error(err || `HTTP ${res.status}`);
     }
     return res.json();
+  }
+
+  async submitPaymentSlipUrl(orderId: number, slipUrl: string): Promise<OrderResponse> {
+    const url = `${API_BASE_URL}/orders/${orderId}/payment-slip-url`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'text/plain',
+    };
+    // Attach JWT if present
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { method: 'POST', body: slipUrl, headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async getPaymentSlipFromDatabase(orderId: number): Promise<Blob> {
+    const url = `${API_BASE_URL}/orders/${orderId}/payment-slip`;
+    const headers: Record<string, string> = {};
+    try {
+      const raw = localStorage.getItem('user');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.token) headers['Authorization'] = `Bearer ${parsed.token}`;
+      }
+    } catch {}
+    const res = await fetch(url, { method: 'GET', headers });
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(err || `HTTP ${res.status}`);
+    }
+    return res.blob();
   }
 
   async downloadOrderPdf(orderId: number): Promise<Blob> {

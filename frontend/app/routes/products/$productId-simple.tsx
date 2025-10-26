@@ -248,7 +248,13 @@ export default function ProductDetails() {
       return;
     }
     try {
-      await cartApi.addItemToCart({ userId: resolvedUserId, productId: product!.productId, quantity });
+      await cartApi.addItemToCart({ 
+        userId: resolvedUserId, 
+        productId: product!.productId, 
+        quantity,
+        color: selectedColor,
+        size: selectedSize
+      });
       alert(`Added ${quantity} x ${product!.name} (${selectedColor}, ${selectedSize}) to cart!`);
     } catch (err) {
       console.error('Add to cart failed', err);
