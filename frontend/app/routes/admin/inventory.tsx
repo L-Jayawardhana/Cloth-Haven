@@ -851,13 +851,23 @@ export default function AdminInventoryPage() {
 
       {/* Stock Update Modal */}
       {showStockModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slideUp">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Update Stock</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md bg-white rounded-xl shadow-xl border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-50 rounded-t-xl">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Update Stock</h3>
+                  <p className="text-sm text-gray-600">Adjust inventory levels</p>
+                </div>
+              </div>
               <button
                 onClick={closeStockUpdateModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -866,20 +876,20 @@ export default function AdminInventoryPage() {
             </div>
             
             {stockUpdateProduct && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <p className="text-sm font-semibold text-gray-700">Product</p>
                 <p className="text-sm text-gray-600 mt-1">{stockUpdateProduct.name} (ID: {stockUpdateProduct.productId})</p>
               </div>
             )}
 
-            <form onSubmit={handleStockUpdate} className="space-y-5">
+            <form onSubmit={handleStockUpdate} className="p-6 space-y-4">
               {/* Color Selection */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Color</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
                 <select
                   value={stockUpdate.color}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, color: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                   required
                 >
                   <option value="">Select Color</option>
@@ -891,11 +901,11 @@ export default function AdminInventoryPage() {
 
               {/* Size Selection */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Size</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Size</label>
                 <select
                   value={stockUpdate.size}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, size: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                   required
                 >
                   <option value="">Select Size</option>
@@ -911,11 +921,11 @@ export default function AdminInventoryPage() {
 
               {/* Change Type */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Change Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Change Type</label>
                 <select
                   value={stockUpdate.changeType}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, changeType: e.target.value as any })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                 >
                   {CHANGE_TYPES.map(type => (
                     <option key={type} value={type}>{type}</option>
@@ -925,14 +935,14 @@ export default function AdminInventoryPage() {
 
               {/* Quantity Change */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Quantity Change
                 </label>
                 <input
                   type="number"
                   value={stockUpdate.quantityChange}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, quantityChange: parseInt(e.target.value) || 0 })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                   placeholder="Enter quantity change..."
                   required
                 />
@@ -941,31 +951,41 @@ export default function AdminInventoryPage() {
 
               {/* Reason */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Reason (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reason (Optional)</label>
                 <input
                   type="text"
                   value={stockUpdate.reason || ""}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, reason: e.target.value })}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                   placeholder="Enter reason for change..."
                 />
               </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+                  <svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-medium">{error}</span>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={closeStockUpdateModal}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={loading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
-                  {loading ? "Updating..." : "Update Stock"}
+                  {loading ? 'Updating...' : 'Update Stock'}
                 </button>
               </div>
             </form>
@@ -975,13 +995,24 @@ export default function AdminInventoryPage() {
 
       {/* Stock View Modal */}
       {showStockView && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slideUp">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Current Stock Details</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-50 rounded-t-xl">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Current Stock Details</h3>
+                  <p className="text-sm text-gray-600">View inventory levels by variant</p>
+                </div>
+              </div>
               <button
                 onClick={closeStockView}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -990,7 +1021,7 @@ export default function AdminInventoryPage() {
             </div>
             
             {stockViewProduct && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <p className="text-sm font-semibold text-gray-700">Product</p>
                 <p className="text-sm text-gray-600 mt-1">{stockViewProduct.name} (ID: {stockViewProduct.productId})</p>
               </div>
@@ -1046,10 +1077,10 @@ export default function AdminInventoryPage() {
               </table>
             </div>
 
-            <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
+            <div className="flex justify-end px-6 py-4">
               <button
                 onClick={closeStockView}
-                className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Close
               </button>
@@ -1060,20 +1091,23 @@ export default function AdminInventoryPage() {
 
       {/* Low Stock Modal */}
       {showLowStock && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 animate-slideUp">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900">
-                  Low Stock Alert
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Items with stock levels at or below {lowStockThreshold} units
-                </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-50 rounded-t-xl">
+              <div className="flex items-center">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Low Stock Alert</h3>
+                  <p className="text-sm text-gray-600">Items at or below {lowStockThreshold} units</p>
+                </div>
               </div>
               <button
                 onClick={() => setShowLowStock(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1140,13 +1174,13 @@ export default function AdminInventoryPage() {
                 </table>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 px-6 py-4">
                 <div className="text-sm text-gray-700 font-medium">
                   Found <span className="font-bold text-gray-900">{lowStockItems.length}</span> low stock {lowStockItems.length === 1 ? 'item' : 'items'}
                 </div>
                 <button
                   onClick={() => setShowLowStock(false)}
-                  className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Close
                 </button>
