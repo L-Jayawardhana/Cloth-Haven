@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { inventoryApi, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 const API_BASE = "http://localhost:8080/api/v1";
 
@@ -454,86 +455,131 @@ export default function AdminInventoryPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Inventory</h1>
-          <p className="text-slate-600 mt-1">Monitor stock levels and manage inventory</p>
+          <h1 className="text-3xl font-bold text-slate-900">Inventory Management</h1>
+          <p className="text-slate-600 mt-1">Monitor stock levels and manage inventory across all products</p>
         </div>
         <div className="flex gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Low Stock Threshold:</label>
+          <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm">
+            <label className="text-sm font-medium text-slate-700">Low Stock Threshold:</label>
             <input
               type="number"
               value={lowStockThreshold}
               onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 5)}
               min="1"
-              className="w-16 rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
             />
             <button
               onClick={loadLowStockItems}
               disabled={loading}
-              className="rounded-md bg-orange-600 px-3 py-2 text-sm text-white hover:bg-orange-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors text-sm font-medium"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
               View Low Stock
             </button>
           </div>
           <button
             onClick={() => loadProducts()}
-            className="rounded-md bg-sky-600 px-3 py-2 text-sm text-white hover:bg-sky-700"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium"
           >
-            Refresh
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh Data
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 border border-red-100 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700 shadow-sm">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {error}
+          </div>
+        </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-sky-100 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-sky-50 text-sky-700">
-            <tr>
-              <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Product ID</th>
-              <th className="px-4 py-3">Stock</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p.productId} className="border-t">
-                <td className="px-4 py-3">{p.name}</td>
-                <td className="px-4 py-3">{p.productId}</td>
-                <td className="px-4 py-3">{p.totalQuantity ?? "-"}</td>
-                <td className="px-4 py-3">{(p.totalQuantity ?? 0) < 5 ? "Low" : "OK"}</td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => openStockView(p)}
-                      className="rounded-md bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 transition-colors"
-                    >
-                      View Stock
-                    </button>
-                    <button
-                      onClick={() => openStockUpdateModal(p)}
-                      className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs text-white hover:bg-emerald-700 transition-colors"
-                    >
-                      Update Stock
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">
-                  No products found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* Products Overview Card */}
+      <Card className="border-slate-200 bg-gradient-to-br from-slate-50 to-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl font-bold text-slate-900">Product Inventory Overview</CardTitle>
+          <p className="text-sm text-slate-600 mt-1">Manage stock levels and view inventory status for all products</p>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-slate-700">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">Product</th>
+                  <th className="px-6 py-4 font-semibold">Product ID</th>
+                  <th className="px-6 py-4 font-semibold">Total Stock</th>
+                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((p) => (
+                  <tr key={p.productId} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-slate-900">{p.name}</td>
+                    <td className="px-6 py-4 text-slate-600">{p.productId}</td>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-slate-900">{p.totalQuantity ?? "-"}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                        (p.totalQuantity ?? 0) < lowStockThreshold 
+                          ? 'bg-orange-100 text-orange-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {(p.totalQuantity ?? 0) < lowStockThreshold ? "Low Stock" : "In Stock"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => openStockView(p)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          View Stock
+                        </button>
+                        <button
+                          onClick={() => openStockUpdateModal(p)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-xs font-medium"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Update Stock
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {products.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        <span className="font-medium">No products found</span>
+                        <span>Add products to start managing inventory</span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="rounded-xl border border-sky-100 bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
@@ -896,82 +942,96 @@ export default function AdminInventoryPage() {
       {/* Low Stock Modal */}
       {showLowStock && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">
-                Low Stock Items (≤ {lowStockThreshold} units)
-              </h2>
-              <button
-                onClick={() => setShowLowStock(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <p className="text-sm text-gray-600 mb-4">
-              Showing all product variants with stock levels at or below {lowStockThreshold} units
-            </p>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-red-50 text-red-700">
-                  <tr>
-                    <th className="px-4 py-3">Product</th>
-                    <th className="px-4 py-3">Product ID</th>
-                    <th className="px-4 py-3">Color</th>
-                    <th className="px-4 py-3">Size</th>
-                    <th className="px-4 py-3">Current Stock</th>
-                    <th className="px-4 py-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lowStockItems.map((item) => (
-                    <tr key={`${item.productId}-${item.id}`} className="border-t">
-                      <td className="px-4 py-3 font-medium">{(item as any).productName || `Product ${item.productId}`}</td>
-                      <td className="px-4 py-3">{item.productId}</td>
-                      <td className="px-4 py-3">{item.color}</td>
-                      <td className="px-4 py-3">{item.size}</td>
-                      <td className="px-4 py-3">
-                        <span className={`font-bold ${item.quantity === 0 ? 'text-red-600' : 'text-orange-600'}`}>
-                          {item.quantity}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                          item.quantity === 0 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-orange-100 text-orange-800'
-                        }`}>
-                          {item.quantity === 0 ? 'OUT OF STOCK' : 'LOW STOCK'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {lowStockItems.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
-                        <div className="flex flex-col items-center gap-2">
-                          <span className="text-green-600 font-medium">✓ No low stock items found!</span>
-                          <span>All product variants have more than {lowStockThreshold} units in stock.</span>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-600">
-                Found {lowStockItems.length} low stock {lowStockItems.length === 1 ? 'item' : 'items'}
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-200">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">
+                  Low Stock Alert
+                </h2>
+                <p className="text-sm text-slate-600 mt-1">
+                  Items with stock levels at or below {lowStockThreshold} units
+                </p>
               </div>
               <button
                 onClick={() => setShowLowStock(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="text-slate-400 hover:text-slate-600 transition-colors"
               >
-                Close
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-orange-50 text-orange-700">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold">Product</th>
+                      <th className="px-6 py-4 font-semibold">Product ID</th>
+                      <th className="px-6 py-4 font-semibold">Color</th>
+                      <th className="px-6 py-4 font-semibold">Size</th>
+                      <th className="px-6 py-4 font-semibold">Current Stock</th>
+                      <th className="px-6 py-4 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lowStockItems.map((item) => (
+                      <tr key={`${item.productId}-${item.id}`} className="border-t border-slate-100 hover:bg-orange-50 transition-colors">
+                        <td className="px-6 py-4 font-medium text-slate-900">{(item as any).productName || `Product ${item.productId}`}</td>
+                        <td className="px-6 py-4 text-slate-600">{item.productId}</td>
+                        <td className="px-6 py-4 text-slate-600">{item.color}</td>
+                        <td className="px-6 py-4 text-slate-600">{item.size}</td>
+                        <td className="px-6 py-4">
+                          <span className={`font-bold text-lg ${
+                            item.quantity === 0 ? 'text-red-600' : 'text-orange-600'
+                          }`}>
+                            {item.quantity}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                            item.quantity === 0 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {item.quantity === 0 ? 'OUT OF STOCK' : 'LOW STOCK'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {lowStockItems.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
+                          <div className="flex flex-col items-center gap-3">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                            <div>
+                              <span className="text-green-600 font-semibold text-lg">✓ No low stock items found!</span>
+                              <p className="text-slate-600 mt-1">All product variants have more than {lowStockThreshold} units in stock.</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-between items-center mt-6 p-4 bg-slate-50 rounded-lg">
+                <div className="text-sm text-slate-600">
+                  <span className="font-semibold text-slate-900">Found {lowStockItems.length}</span> low stock {lowStockItems.length === 1 ? 'item' : 'items'}
+                </div>
+                <button
+                  onClick={() => setShowLowStock(false)}
+                  className="px-6 py-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
