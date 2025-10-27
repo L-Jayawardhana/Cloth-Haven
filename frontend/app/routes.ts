@@ -8,6 +8,7 @@ import {
 export default [
   index("routes/home.tsx"),
   // Clean paths for common pages
+  route("about", "routes/about.tsx"),
   route("login", "routes/auth/login.tsx"),
   route("register", "routes/auth/register.tsx"),
   route("products", "routes/products/index.tsx"),
