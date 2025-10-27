@@ -996,8 +996,11 @@ function SalesTrendChart({ data, range }: { data: { date: string; revenue: numbe
   const height = 200;
   const padding = 20;
   
+  // Handle case when there's only one data point
+  const divisor = chartData.length > 1 ? chartData.length - 1 : 1;
+  
   const points = chartData.map((value, index) => {
-    const x = padding + (index * (width - 2 * padding)) / (chartData.length - 1);
+    const x = padding + (index * (width - 2 * padding)) / divisor;
     const y = height - padding - ((value / maxValue) * (height - 2 * padding));
     return `${x},${y}`;
   }).join(' ');
@@ -1066,7 +1069,7 @@ function SalesTrendChart({ data, range }: { data: { date: string; revenue: numbe
         />
         
         {chartData.map((value, index) => {
-          const x = padding + (index * (width - 2 * padding)) / (chartData.length - 1);
+          const x = padding + (index * (width - 2 * padding)) / divisor;
           const y = height - padding - ((value / maxValue) * (height - 2 * padding));
           return (
             <g key={index}>
