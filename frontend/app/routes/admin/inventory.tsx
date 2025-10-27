@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { inventoryApi, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
+export function meta() {
+  return [
+    { title: "Inventory Management - Cloth Heaven" },
+    { name: "description", content: "Manage product inventory and stock levels" },
+  ];
+}
+
 const API_BASE = "http://localhost:8080/api/v1";
 
 type Product = {
@@ -452,229 +459,289 @@ export default function AdminInventoryPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Inventory Management</h1>
-          <p className="text-slate-600 mt-1">Monitor stock levels and manage inventory across all products</p>
+    <>
+      <style>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-inventory-card {
+          animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .hover-lift {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+      
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-8">
+        {/* Header Section */}
+        <div className="animate-fadeInUp">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Inventory Management</h1>
+          <p className="text-gray-600 mt-2">Monitor stock levels and manage inventory across all products</p>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm">
-            <label className="text-sm font-medium text-slate-700">Low Stock Threshold:</label>
-            <input
-              type="number"
-              value={lowStockThreshold}
-              onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 5)}
-              min="1"
-              className="w-16 rounded-md border border-slate-300 px-2 py-1 text-sm focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-            />
-            <button
-              onClick={loadLowStockItems}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors text-sm font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-              View Low Stock
-            </button>
+
+        {/* Action Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fadeInUp" style={{animationDelay: '0.1s'}}>
+          {/* Low Stock Threshold Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <p className="text-sm font-medium text-gray-600 mb-3">Low Stock Threshold</p>
+            <div className="flex items-center gap-3">
+              <input
+                type="number"
+                value={lowStockThreshold}
+                onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 5)}
+                min="1"
+                className="w-24 rounded-lg border border-gray-300 px-3 py-2.5 text-base font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              />
+              <span className="text-sm text-gray-600">units</span>
+            </div>
           </div>
+
+          {/* View Low Stock Button */}
+          <button
+            onClick={loadLowStockItems}
+            disabled={loading}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 text-left group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">View Low Stock</p>
+                <p className="text-xs text-gray-600">Check items below threshold</p>
+              </div>
+            </div>
+          </button>
+
+          {/* Refresh Data Button */}
           <button
             onClick={() => loadProducts()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors text-sm font-medium"
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 text-left group"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Refresh Data
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Refresh Data</p>
+                <p className="text-xs text-gray-600">Reload inventory</p>
+              </div>
+            </div>
           </button>
         </div>
-      </div>
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700 shadow-sm">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {error}
-          </div>
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center">
+          <svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+          {error}
         </div>
       )}
 
       {/* Products Overview Card */}
-      <Card className="border-slate-200 bg-gradient-to-br from-slate-50 to-white">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-bold text-slate-900">Product Inventory Overview</CardTitle>
-          <p className="text-sm text-slate-600 mt-1">Manage stock levels and view inventory status for all products</p>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-700">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Product</th>
-                  <th className="px-6 py-4 font-semibold">Product ID</th>
-                  <th className="px-6 py-4 font-semibold">Total Stock</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((p) => (
-                  <tr key={p.productId} className="border-t border-slate-100 hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-900">{p.name}</td>
-                    <td className="px-6 py-4 text-slate-600">{p.productId}</td>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-slate-900">{p.totalQuantity ?? "-"}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                        (p.totalQuantity ?? 0) < lowStockThreshold 
-                          ? 'bg-orange-100 text-orange-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {(p.totalQuantity ?? 0) < lowStockThreshold ? "Low Stock" : "In Stock"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openStockView(p)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          View Stock
-                        </button>
-                        <button
-                          onClick={() => openStockUpdateModal(p)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-xs font-medium"
-                        >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          Update Stock
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {products.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500">
-                      <div className="flex flex-col items-center gap-2">
-                        <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                        <span className="font-medium">No products found</span>
-                        <span>Add products to start managing inventory</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="rounded-xl border border-sky-100 bg-white p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">Inventory Log</h2>
-          <div className="flex gap-2">
-            <button
-              onClick={downloadCSV}
-              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-              <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export CSV
-            </button>
-            <button
-              onClick={downloadPDF}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export PDF
-            </button>
-          </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-lg font-semibold text-gray-900">Product Inventory Overview</h2>
+          <p className="text-sm text-gray-600 mt-1">Manage stock levels and view inventory status for all products</p>
         </div>
-        {/* Filter options */}
-        <div className="flex flex-wrap gap-3 mb-4 items-end">
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Product</label>
-            <select
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-              value={logFilters.productId}
-              onChange={e => setLogFilters(f => ({ ...f, productId: e.target.value }))}
-            >
-              <option value="">All</option>
-              {products.map(p => (
-                <option key={p.productId} value={p.productId}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Change Type</label>
-            <select
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-              value={logFilters.changeType}
-              onChange={e => setLogFilters(f => ({ ...f, changeType: e.target.value }))}
-            >
-              <option value="">All</option>
-              {CHANGE_TYPES.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">Start Date</label>
-            <input
-              type="date"
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-              value={logFilters.startDate}
-              onChange={e => setLogFilters(f => ({ ...f, startDate: e.target.value }))}
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-600 mb-1">End Date</label>
-            <input
-              type="date"
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm"
-              value={logFilters.endDate}
-              onChange={e => setLogFilters(f => ({ ...f, endDate: e.target.value }))}
-            />
-          </div>
-          <button
-            className="rounded bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200"
-            onClick={() => setLogFilters({ productId: '', changeType: '', startDate: '', endDate: '' })}
-            type="button"
-          >
-            Clear Filters
-          </button>
-        </div>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-sky-50 text-sky-700">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Product</th>
-                <th className="px-4 py-3">Color</th>
-                <th className="px-4 py-3">Size</th>
-                <th className="px-4 py-3">Change Type</th>
-                <th className="px-4 py-3">Quantity</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Stock</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {products.map((p) => (
+                <tr key={p.productId} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{p.name}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-600">{p.productId}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{p.totalQuantity ?? "-"}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                      (p.totalQuantity ?? 0) < lowStockThreshold 
+                        ? 'bg-orange-100 text-orange-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {(p.totalQuantity ?? 0) < lowStockThreshold ? "Low Stock" : "In Stock"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => openStockView(p)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        View Stock
+                      </button>
+                      <button
+                        onClick={() => openStockUpdateModal(p)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Update Stock
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {products.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+                      <p className="text-gray-500">Add products to start managing inventory</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Inventory Log</h2>
+              <p className="text-sm text-gray-600 mt-1">Track all inventory movements and changes</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={downloadCSV}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export CSV
+              </button>
+              <button
+                onClick={downloadPDF}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export PDF
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-4 space-y-4">
+          {/* Filter options */}
+          <div className="flex flex-wrap gap-3 items-end">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Product</label>
+              <select
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                value={logFilters.productId}
+                onChange={e => setLogFilters(f => ({ ...f, productId: e.target.value }))}
+              >
+                <option value="">All Products</option>
+                {products.map(p => (
+                  <option key={p.productId} value={p.productId}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Change Type</label>
+              <select
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                value={logFilters.changeType}
+                onChange={e => setLogFilters(f => ({ ...f, changeType: e.target.value }))}
+              >
+                <option value="">All Types</option>
+                {CHANGE_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                value={logFilters.startDate}
+                onChange={e => setLogFilters(f => ({ ...f, startDate: e.target.value }))}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                value={logFilters.endDate}
+                onChange={e => setLogFilters(f => ({ ...f, endDate: e.target.value }))}
+              />
+            </div>
+            <button
+              className="px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              onClick={() => setLogFilters({ productId: '', changeType: '', startDate: '', endDate: '' })}
+              type="button"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Color</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Size</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Change Type</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Quantity</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
               {currentLogs.map((row) => (
-                <tr key={row.logId ?? Math.random()} className="border-t">
-                  <td className="px-4 py-3">{formatDate(row.inventoryLogsDate)}</td>
-                  <td className="px-4 py-3">{
+                <tr key={row.logId ?? Math.random()} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(row.inventoryLogsDate)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{
                     // Get product name from the nested product object or find by ID
                     (() => {
                       if (row.product?.name) return row.product.name;
@@ -692,16 +759,33 @@ export default function AdminInventoryPage() {
                       return 'Unknown Product';
                     })()
                   }</td>
-                  <td className="px-4 py-3">{row.product?.color ?? row.color ?? '-'}</td>
-                  <td className="px-4 py-3">{row.product?.size ?? row.size ?? '-'}</td>
-                  <td className="px-4 py-3">{row.changeType}</td>
-                  <td className="px-4 py-3">{row.quantityChanged}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{row.product?.color ?? row.color ?? '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{row.product?.size ?? row.size ?? '-'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                      row.changeType === 'ORDER' ? 'bg-blue-100 text-blue-800' :
+                      row.changeType === 'RESTOCK' ? 'bg-green-100 text-green-800' :
+                      row.changeType === 'CANCEL' ? 'bg-orange-100 text-orange-800' :
+                      row.changeType === 'RETURN' ? 'bg-purple-100 text-purple-800' :
+                      row.changeType === 'DAMAGE' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {row.changeType}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.quantityChanged}</td>
                 </tr>
               ))}
               {currentLogs.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
-                    No logs found
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No logs found</h3>
+                      <p className="text-gray-500">Filter results may have no matches</p>
+                    </div>
                   </td>
                 </tr>
               )}
@@ -711,28 +795,54 @@ export default function AdminInventoryPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="mt-4 px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-lg">
-            <div className="text-sm text-slate-700">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredLogs.length)} of{' '}
-              {filteredLogs.length} logs
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+            <div className="flex items-center text-sm text-gray-700">
+              <span className="font-medium">
+                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredLogs.length)} of{' '}
+                {filteredLogs.length} logs
+              </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
               >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
                 Previous
               </button>
-              <span className="px-3 py-1 text-sm">
-                {currentPage} of {totalPages}
-              </span>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  const isActive = pageNum === currentPage;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum)}
+                      className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-gray-900 text-white'
+                          : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-500 transition-colors"
               >
                 Next
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </button>
             </div>
           </div>
@@ -741,32 +851,35 @@ export default function AdminInventoryPage() {
 
       {/* Stock Update Modal */}
       {showStockModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Update Stock</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slideUp">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Update Stock</h2>
               <button
                 onClick={closeStockUpdateModal}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
               >
-                ✕
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             
             {stockUpdateProduct && (
-              <p className="text-sm text-gray-600 mb-4">
-                Product: <span className="font-medium">{stockUpdateProduct.name}</span> (ID: {stockUpdateProduct.productId})
-              </p>
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm font-semibold text-gray-700">Product</p>
+                <p className="text-sm text-gray-600 mt-1">{stockUpdateProduct.name} (ID: {stockUpdateProduct.productId})</p>
+              </div>
             )}
 
-            <form onSubmit={handleStockUpdate} className="space-y-4">
+            <form onSubmit={handleStockUpdate} className="space-y-5">
               {/* Color Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Color</label>
                 <select
                   value={stockUpdate.color}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, color: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
                   required
                 >
                   <option value="">Select Color</option>
@@ -778,11 +891,11 @@ export default function AdminInventoryPage() {
 
               {/* Size Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Size</label>
                 <select
                   value={stockUpdate.size}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, size: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
                   required
                 >
                   <option value="">Select Size</option>
@@ -798,11 +911,11 @@ export default function AdminInventoryPage() {
 
               {/* Change Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Change Type</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Change Type</label>
                 <select
                   value={stockUpdate.changeType}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, changeType: e.target.value as any })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
                 >
                   {CHANGE_TYPES.map(type => (
                     <option key={type} value={type}>{type}</option>
@@ -812,47 +925,45 @@ export default function AdminInventoryPage() {
 
               {/* Quantity Change */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Quantity Change
-                  <span className="text-xs text-gray-500 ml-1">
-                    (+ to add, - to subtract)
-                  </span>
                 </label>
                 <input
                   type="number"
                   value={stockUpdate.quantityChange}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, quantityChange: parseInt(e.target.value) || 0 })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
                   placeholder="Enter quantity change..."
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1 ml-1">(+ to add, - to subtract)</p>
               </div>
 
               {/* Reason */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason (Optional)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Reason (Optional)</label>
                 <input
                   type="text"
                   value={stockUpdate.reason || ""}
                   onChange={(e) => setStockUpdate({ ...stockUpdate, reason: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition"
                   placeholder="Enter reason for change..."
                 />
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={closeStockUpdateModal}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                 >
                   {loading ? "Updating..." : "Update Stock"}
                 </button>
@@ -864,46 +975,49 @@ export default function AdminInventoryPage() {
 
       {/* Stock View Modal */}
       {showStockView && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Current Stock Details</h2>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slideUp">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900">Current Stock Details</h2>
               <button
                 onClick={closeStockView}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
               >
-                ✕
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             
             {stockViewProduct && (
-              <p className="text-sm text-gray-600 mb-4">
-                Product: <span className="font-medium">{stockViewProduct.name}</span> (ID: {stockViewProduct.productId})
-              </p>
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm font-semibold text-gray-700">Product</p>
+                <p className="text-sm text-gray-600 mt-1">{stockViewProduct.name} (ID: {stockViewProduct.productId})</p>
+              </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border border-gray-200">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 text-gray-700">
                   <tr>
-                    <th className="px-4 py-3">Color</th>
-                    <th className="px-4 py-3">Size</th>
-                    <th className="px-4 py-3">Quantity</th>
-                    <th className="px-4 py-3">Status</th>
+                    <th className="px-6 py-4 font-semibold">Color</th>
+                    <th className="px-6 py-4 font-semibold">Size</th>
+                    <th className="px-6 py-4 font-semibold">Quantity</th>
+                    <th className="px-6 py-4 font-semibold">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stockViewVariants.map((variant) => (
-                    <tr key={variant.id} className="border-t">
-                      <td className="px-4 py-3">{variant.color}</td>
-                      <td className="px-4 py-3">{variant.size}</td>
-                      <td className="px-4 py-3">
-                        <span className={`font-medium ${variant.quantity <= lowStockThreshold ? 'text-red-600' : 'text-green-600'}`}>
+                    <tr key={variant.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-gray-600">{variant.color}</td>
+                      <td className="px-6 py-4 text-gray-600">{variant.size}</td>
+                      <td className="px-6 py-4">
+                        <span className={`font-bold text-lg ${variant.quantity <= lowStockThreshold ? 'text-red-600' : 'text-green-600'}`}>
                           {variant.quantity}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
                           variant.quantity === 0 
                             ? 'bg-red-100 text-red-800' 
                             : variant.quantity <= lowStockThreshold 
@@ -918,8 +1032,13 @@ export default function AdminInventoryPage() {
                   ))}
                   {stockViewVariants.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-500">
-                        No variants found for this product
+                      <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-500">
+                        <div className="flex flex-col items-center gap-2">
+                          <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span className="font-medium">No variants found for this product</span>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -927,10 +1046,10 @@ export default function AdminInventoryPage() {
               </table>
             </div>
 
-            <div className="flex justify-end mt-6">
+            <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
               <button
                 onClick={closeStockView}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
               >
                 Close
               </button>
@@ -941,20 +1060,20 @@ export default function AdminInventoryPage() {
 
       {/* Low Stock Modal */}
       {showLowStock && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-slate-200">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-gray-200 animate-slideUp">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">
+                <h2 className="text-xl font-bold text-gray-900">
                   Low Stock Alert
                 </h2>
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1">
                   Items with stock levels at or below {lowStockThreshold} units
                 </p>
               </div>
               <button
                 onClick={() => setShowLowStock(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -963,7 +1082,7 @@ export default function AdminInventoryPage() {
             </div>
             
             <div className="p-6">
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="overflow-x-auto rounded-xl border border-gray-200">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-orange-50 text-orange-700">
                     <tr>
@@ -977,11 +1096,11 @@ export default function AdminInventoryPage() {
                   </thead>
                   <tbody>
                     {lowStockItems.map((item) => (
-                      <tr key={`${item.productId}-${item.id}`} className="border-t border-slate-100 hover:bg-orange-50 transition-colors">
-                        <td className="px-6 py-4 font-medium text-slate-900">{(item as any).productName || `Product ${item.productId}`}</td>
-                        <td className="px-6 py-4 text-slate-600">{item.productId}</td>
-                        <td className="px-6 py-4 text-slate-600">{item.color}</td>
-                        <td className="px-6 py-4 text-slate-600">{item.size}</td>
+                      <tr key={`${item.productId}-${item.id}`} className="border-t border-gray-100 hover:bg-orange-50 transition-colors">
+                        <td className="px-6 py-4 font-medium text-gray-900">{(item as any).productName || `Product ${item.productId}`}</td>
+                        <td className="px-6 py-4 text-gray-600">{item.productId}</td>
+                        <td className="px-6 py-4 text-gray-600">{item.color}</td>
+                        <td className="px-6 py-4 text-gray-600">{item.size}</td>
                         <td className="px-6 py-4">
                           <span className={`font-bold text-lg ${
                             item.quantity === 0 ? 'text-red-600' : 'text-orange-600'
@@ -1002,7 +1121,7 @@ export default function AdminInventoryPage() {
                     ))}
                     {lowStockItems.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-500">
+                        <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
                           <div className="flex flex-col items-center gap-3">
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                               <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1011,7 +1130,7 @@ export default function AdminInventoryPage() {
                             </div>
                             <div>
                               <span className="text-green-600 font-semibold text-lg">✓ No low stock items found!</span>
-                              <p className="text-slate-600 mt-1">All product variants have more than {lowStockThreshold} units in stock.</p>
+                              <p className="text-gray-600 mt-1">All product variants have more than {lowStockThreshold} units in stock.</p>
                             </div>
                           </div>
                         </td>
@@ -1021,13 +1140,13 @@ export default function AdminInventoryPage() {
                 </table>
               </div>
 
-              <div className="flex justify-between items-center mt-6 p-4 bg-slate-50 rounded-lg">
-                <div className="text-sm text-slate-600">
-                  <span className="font-semibold text-slate-900">Found {lowStockItems.length}</span> low stock {lowStockItems.length === 1 ? 'item' : 'items'}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="text-sm text-gray-700 font-medium">
+                  Found <span className="font-bold text-gray-900">{lowStockItems.length}</span> low stock {lowStockItems.length === 1 ? 'item' : 'items'}
                 </div>
                 <button
                   onClick={() => setShowLowStock(false)}
-                  className="px-6 py-3 text-sm font-semibold text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+                  className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
                 >
                   Close
                 </button>
@@ -1036,6 +1155,9 @@ export default function AdminInventoryPage() {
           </div>
         </div>
       )}
-    </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
