@@ -170,7 +170,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <div className="text-sm">
-              <p className="font-medium mb-2">Company</p>
               <div className="grid gap-1">
                 <a href="#" className="hover:text-gray-700">About</a>
                 <a href="#" className="hover:text-gray-700">Contact</a>

@@ -46,6 +46,10 @@ export default function AdminInventoryPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 11;
+
   // Form state for adding a log
   const [selectedProductId, setSelectedProductId] = useState<number | "">("");
   const [changeType, setChangeType] = useState<string>(CHANGE_TYPES[0]);
@@ -149,12 +153,145 @@ export default function AdminInventoryPage() {
       filtered = filtered.filter(l => l.inventoryLogsDate && l.inventoryLogsDate <= logFilters.endDate + 'T23:59:59');
     }
     setFilteredLogs(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   }
 
   useEffect(() => {
     applyLogFilters();
     // eslint-disable-next-line
   }, [logs, logFilters]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentLogs = filteredLogs.slice(startIndex, startIndex + itemsPerPage);
+
+  function goToPage(page: number) {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  }
+
+  // Download as CSV
+  function downloadCSV() {
+    const headers = ['Date', 'Product', 'Color', 'Size', 'Change Type', 'Quantity'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredLogs.map(row => {
+        const productName = (() => {
+          if (row.product?.name) return row.product.name;
+          const productId = row.product?.productId || row.productId;
+          if (productId) {
+            const product = products.find(p => 
+              p.productId === productId || 
+              p.productId === Number(productId) || 
+              String(p.productId) === String(productId)
+            );
+            if (product) return product.name;
+          }
+          if (row.productName) return row.productName;
+          if (productId) return `Product ID: ${productId}`;
+          return 'Unknown Product';
+        })();
+        
+        return [
+          formatDate(row.inventoryLogsDate),
+          `"${productName.replace(/"/g, '""')}"`, // Escape quotes
+          row.product?.color ?? row.color ?? '-',
+          row.product?.size ?? row.size ?? '-',
+          row.changeType ?? '-',
+          row.quantityChanged ?? 0
+        ].join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `inventory_logs_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  // Download as PDF
+  function downloadPDF() {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const tableRows = filteredLogs.map(row => {
+      const productName = (() => {
+        if (row.product?.name) return row.product.name;
+        const productId = row.product?.productId || row.productId;
+        if (productId) {
+          const product = products.find(p => 
+            p.productId === productId || 
+            p.productId === Number(productId) || 
+            String(p.productId) === String(productId)
+          );
+          if (product) return product.name;
+        }
+        if (row.productName) return row.productName;
+        if (productId) return `Product ID: ${productId}`;
+        return 'Unknown Product';
+      })();
+
+      return `
+        <tr>
+          <td style="border: 1px solid #ddd; padding: 8px;">${formatDate(row.inventoryLogsDate)}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${productName}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${row.product?.color ?? row.color ?? '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${row.product?.size ?? row.size ?? '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${row.changeType ?? '-'}</td>
+          <td style="border: 1px solid #ddd; padding: 8px;">${row.quantityChanged ?? 0}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Inventory Logs Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background-color: #0ea5e9; color: white; padding: 10px; border: 1px solid #ddd; }
+            td { padding: 8px; border: 1px solid #ddd; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .report-info { text-align: center; color: #666; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>Inventory Logs Report</h1>
+          <div class="report-info">
+            Generated on ${new Date().toLocaleString()}
+            <br>Total Records: ${filteredLogs.length}
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Product</th>
+                <th>Color</th>
+                <th>Size</th>
+                <th>Change Type</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+  }
 
   function formatDate(dt?: string) {
     if (!dt) return "-";
@@ -399,7 +536,28 @@ export default function AdminInventoryPage() {
       </div>
 
       <div className="rounded-xl border border-sky-100 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-medium mb-2">Inventory Log</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium">Inventory Log</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={downloadCSV}
+              className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+              <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export CSV
+            </button>
+            <button
+              onClick={downloadPDF}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+            >
+              <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Export PDF
+            </button>
+          </div>
+        </div>
         {/* Filter options */}
         <div className="flex flex-wrap gap-3 mb-4 items-end">
           <div>
@@ -467,7 +625,7 @@ export default function AdminInventoryPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredLogs.map((row) => (
+              {currentLogs.map((row) => (
                 <tr key={row.logId ?? Math.random()} className="border-t">
                   <td className="px-4 py-3">{formatDate(row.inventoryLogsDate)}</td>
                   <td className="px-4 py-3">{
@@ -494,7 +652,7 @@ export default function AdminInventoryPage() {
                   <td className="px-4 py-3">{row.quantityChanged}</td>
                 </tr>
               ))}
-              {filteredLogs.length === 0 && (
+              {currentLogs.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
                     No logs found
@@ -504,6 +662,35 @@ export default function AdminInventoryPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4 px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between rounded-b-lg">
+            <div className="text-sm text-slate-700">
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredLogs.length)} of{' '}
+              {filteredLogs.length} logs
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-1 text-sm">
+                {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Stock Update Modal */}
