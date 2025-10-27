@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Edit2, Trash2, Plus, X } from "lucide-react";
 import { productApi, categoryApi, subCategoryApi, colorSizeApi, imageApi } from '~/lib/api';
 import type { Product, Category, SubCategory } from '~/lib/api';
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -596,140 +597,211 @@ export default function AdminProductsPage() {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
   };
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6 bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Product Management</h1>
-          <p className="text-slate-600 mt-1">Manage product inventory and organize your catalog</p>
+          <h1 className="text-3xl font-bold text-gray-900">Product Catalog Management</h1>
+          <p className="text-gray-600 mt-1">Create, edit, and organize your product inventory</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             Add Product
           </button>
           <button 
             onClick={() => window.location.href = '/admin/categories'}
-            className="inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors text-sm font-medium shadow-sm"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
             Manage Categories
           </button>
         </div>
       </div>
 
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Products</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{products.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">In Stock</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {products.filter(p => (p.totalQuantity || 0) > 0).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Out of Stock</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">
+                {products.filter(p => (p.totalQuantity || 0) === 0).length}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Categories</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{categories.length}</p>
+            </div>
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Search and Filters */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <input 
-          className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" 
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          autoComplete="off"
-          spellCheck="false"
-        />
-        <select 
-          className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map(category => (
-            <option key={category.categoryId} value={category.categoryId.toString()}>
-              {category.categoryName}
-            </option>
-          ))}
-        </select>
-        <select 
-          className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-          value={stockFilter}
-          onChange={(e) => setStockFilter(e.target.value)}
-        >
-          <option value="">All Stock Status</option>
-          <option value="inStock">In Stock</option>
-          <option value="outOfStock">Out of Stock</option>
-        </select>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input 
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm" 
+              placeholder="Search by product name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+              spellCheck="false"
+            />
+          </div>
+          
+          <select 
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category.categoryId} value={category.categoryId.toString()}>
+                {category.categoryName}
+              </option>
+            ))}
+          </select>
+          
+          <div className="flex gap-2">
+            <select 
+              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value)}
+            >
+              <option value="">All Stock Status</option>
+              <option value="inStock">In Stock</option>
+              <option value="outOfStock">Out of Stock</option>
+            </select>
+            <button 
+              onClick={() => { setSearchTerm(''); setCategoryFilter(''); setStockFilter(''); }} 
+              className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Products Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
-            <p className="mt-4 text-slate-600">Loading products...</p>
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600 font-medium">Loading products...</p>
           </div>
         ) : currentProducts.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-slate-600">
-              {searchTerm || categoryFilter || stockFilter ? 'No products found matching your filters.' : 'No products found.'}
+          <div className="p-12 text-center">
+            <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">No products found</h3>
+            <p className="text-gray-600">
+              {searchTerm || categoryFilter || stockFilter ? 'Try adjusting your filters or search terms' : 'Add your first product to get started'}
             </p>
           </div>
         ) : (
           <>
-            <div>
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Product ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Product Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Stock Quantity
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-6 py-4 font-semibold">Product ID</th>
+                    <th className="px-6 py-4 font-semibold">Product Name</th>
+                    <th className="px-6 py-4 font-semibold">Category</th>
+                    <th className="px-6 py-4 font-semibold">Price</th>
+                    <th className="px-6 py-4 font-semibold">Stock Quantity</th>
+                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-100">
+                <tbody>
                   {currentProducts.map((product) => (
-                    <tr key={product.productId} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900">
-                        {product.productId}
+                    <tr key={product.productId} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-gray-900">{product.productId}</td>
+                      <td className="px-6 py-4 text-gray-900">{product.name}</td>
+                      <td className="px-6 py-4 text-gray-600">{getCategoryName(product.categoryId)}</td>
+                      <td className="px-6 py-4">
+                        <span className="font-semibold text-gray-900">Rs. {product.productPrice.toFixed(2)}</span>
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-900">
-                        {product.name}
-                      </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600">
-                        {getCategoryName(product.categoryId)}
-                      </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-900">
-                        ${product.productPrice.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
                           (product.totalQuantity || 0) > 0 
-                            ? 'bg-emerald-100 text-emerald-800' 
+                            ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
                           {product.totalQuantity || 0}
                         </span>
                       </td>
-                      <td className="px-6 py-3 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
                           <button 
                             onClick={() => handleEditProduct(product)}
-                            className="inline-flex items-center px-3 py-1 border border-slate-300 rounded-md text-sm text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
                           >
-                            <Edit2 className="w-4 h-4 mr-1" />
+                            <Edit2 className="w-3 h-3" />
                             Edit
                           </button>
                           <button 
                             onClick={() => handleDeleteProduct(product)}
-                            className="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-sm text-red-700 bg-white hover:bg-red-50 transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs font-medium"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
+                            <Trash2 className="w-3 h-3" />
                             Delete
                           </button>
                         </div>
@@ -742,8 +814,8 @@ export default function AdminProductsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                <div className="text-sm text-slate-700">
+              <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between rounded-b-xl">
+                <div className="text-sm text-gray-700">
                   Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredProducts.length)} of{' '}
                   {filteredProducts.length} products
                 </div>
@@ -751,17 +823,17 @@ export default function AdminProductsPage() {
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 border border-slate-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors font-medium"
                   >
                     Previous
                   </button>
-                  <span className="px-3 py-1 text-sm text-slate-600">
+                  <span className="px-3 py-1.5 text-sm text-gray-600 font-medium">
                     {currentPage} of {totalPages}
                   </span>
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 border border-slate-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
+                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors font-medium"
                   >
                     Next
                   </button>
@@ -774,16 +846,14 @@ export default function AdminProductsPage() {
 
       {/* Add Product Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center">
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/10" onClick={() => {
-            setIsAddModalOpen(false);
-            resetForm();
-          }} />
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           {/* Dialog */}
-          <div className="relative z-10 w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="border-b border-gray-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-6 py-4 rounded-t-xl">
-              <div className="flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gray-50 rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                  <Plus className="w-6 h-6 text-white" />
+                </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
                     {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -792,25 +862,27 @@ export default function AdminProductsPage() {
                     {editingProduct ? 'Update product information' : 'Create a new product entry'}
                   </p>
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={clearForm}
-                    className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsAddModalOpen(false);
-                      resetForm();
-                    }}
-                    className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={clearForm}
+                  className="px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    resetForm();
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
             </div>
             <div className="p-6">
@@ -829,7 +901,7 @@ export default function AdminProductsPage() {
                       onClick={() => setActiveTab('basic')}
                       className={`py-2 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'basic'
-                          ? 'border-emerald-500 text-emerald-600'
+                          ? 'border-gray-900 text-gray-900'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
@@ -840,7 +912,7 @@ export default function AdminProductsPage() {
                       onClick={() => setActiveTab('sizeColor')}
                       className={`py-2 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'sizeColor'
-                          ? 'border-emerald-500 text-emerald-600'
+                          ? 'border-gray-900 text-gray-900'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
@@ -851,7 +923,7 @@ export default function AdminProductsPage() {
                       onClick={() => setActiveTab('images')}
                       className={`py-2 px-1 border-b-2 font-medium text-sm ${
                         activeTab === 'images'
-                          ? 'border-emerald-500 text-emerald-600'
+                          ? 'border-gray-900 text-gray-900'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     >
@@ -872,7 +944,7 @@ export default function AdminProductsPage() {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                         placeholder="Enter product name"
                       />
                     </div>
@@ -882,7 +954,7 @@ export default function AdminProductsPage() {
                       <textarea
                         value={formData.description}
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                         placeholder="Enter product description"
                         rows={4}
                       />
@@ -893,7 +965,7 @@ export default function AdminProductsPage() {
                       <select
                         value={formData.categoryId}
                         onChange={(e) => handleCategoryChange(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                       >
                         <option value="">Select a category</option>
                         {categories.map(category => (
@@ -909,7 +981,7 @@ export default function AdminProductsPage() {
                       <select
                         value={formData.subCategoryId}
                         onChange={(e) => setFormData(prev => ({ ...prev, subCategoryId: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-colors"
                         disabled={!formData.categoryId || filteredSubCategories.length === 0}
                       >
                         <option value="">Select a subcategory (optional)</option>
@@ -950,7 +1022,7 @@ export default function AdminProductsPage() {
                                 type="checkbox"
                                 checked={selectedSizes.includes(size)}
                                 onChange={(e) => handleSizeSelection(size, e.target.checked)}
-                                className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                               />
                               <span className="text-sm font-medium text-gray-700">{size}</span>
                             </label>
@@ -979,7 +1051,7 @@ export default function AdminProductsPage() {
                                       type="checkbox"
                                       checked={sizeColorCombinations[size]?.includes(color) || false}
                                       onChange={(e) => handleColorSelection(size, color, e.target.checked)}
-                                      className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                    className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                                     />
                                     <span className="text-xs text-gray-700">{color}</span>
                                   </label>
@@ -993,13 +1065,13 @@ export default function AdminProductsPage() {
                     
                     {/* Selection Summary */}
                     {selectedSizes.length > 0 && (
-                      <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                        <h5 className="text-sm font-medium text-emerald-800 mb-2">Selection Summary</h5>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h5 className="text-sm font-medium text-gray-900 mb-2">Selection Summary</h5>
                         <div className="space-y-1">
-                          <p className="text-sm text-emerald-700">
+                          <p className="text-sm text-gray-700">
                             <span className="font-medium">{selectedSizes.length}</span> sizes selected
                           </p>
-                          <p className="text-sm text-emerald-700">
+                          <p className="text-sm text-gray-700">
                             <span className="font-medium">
                               {Object.values(sizeColorCombinations).reduce((total, colors) => total + colors.length, 0)}
                             </span> total variants will be created
@@ -1028,10 +1100,10 @@ export default function AdminProductsPage() {
                                 type="url"
                                 value={url}
                                 onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 transition-colors ${
                                   url.trim() !== '' && !isValidImageUrl(url)
                                     ? 'border-red-300 focus:border-red-500 focus:ring-red-200'
-                                    : 'border-gray-300 focus:border-emerald-500'
+                                    : 'border-gray-300 focus:border-gray-900'
                                 }`}
                                 placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
                               />
@@ -1058,7 +1130,7 @@ export default function AdminProductsPage() {
                         <button
                           type="button"
                           onClick={addImageUrl}
-                          className="w-full py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-md hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                          className="w-full py-2 border-2 border-dashed border-gray-300 text-gray-600 rounded-md hover:border-gray-400 hover:text-gray-900 transition-colors"
                         >
                           + Add Another Image URL
                         </button>
@@ -1099,10 +1171,10 @@ export default function AdminProductsPage() {
                     )}
 
                     {/* Images Summary */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h5 className="text-sm font-medium text-blue-800 mb-2">Image Summary</h5>
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <h5 className="text-sm font-medium text-gray-900 mb-2">Image Summary</h5>
                       <div className="space-y-1">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-gray-700">
                           <span className="font-medium">{getValidImageUrls().length}</span> valid images will be saved
                         </p>
                         {imageUrls.filter(url => url.trim() !== '' && !isValidImageUrl(url)).length > 0 && (
@@ -1120,7 +1192,7 @@ export default function AdminProductsPage() {
                           type="button"
                           onClick={handleSave}
                           disabled={isSubmitting}
-                          className="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isSubmitting ? (editingProduct ? 'Updating...' : 'Saving...') : (editingProduct ? 'Update Product' : 'Save Product')}
                         </button>
@@ -1137,18 +1209,31 @@ export default function AdminProductsPage() {
 
       {/* Delete Product Confirmation Modal */}
       {showDeleteModal && productToDelete && (
-        <div className="fixed inset-0 z-50 grid place-items-center">
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/30" onClick={handleCancelDelete} />
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           {/* Dialog */}
-          <div className="relative z-10 w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl">
-            <div className="border-b border-gray-200 bg-gradient-to-r from-red-50 to-pink-50 px-6 py-4 rounded-t-xl">
-              <h3 className="text-lg font-semibold text-red-600">
-                Delete Product
-              </h3>
-              <p className="text-sm text-gray-600">
-                This action requires admin verification
-              </p>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-200">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-gradient-to-r from-red-50 to-pink-50 rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-red-600">
+                    Delete Product
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    This action requires admin verification
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancelDelete}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
             
             <form onSubmit={handleConfirmDeleteProduct} className="p-6">
