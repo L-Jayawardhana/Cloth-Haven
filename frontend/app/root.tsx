@@ -106,6 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <a href="/products" className="hover:text-gray-700">Products</a>
                 {user && <a href="/orders" className="hover:text-gray-700">Orders</a>}
                 {user && <a href="/profile" className="hover:text-gray-700">Profile</a>}
+                <a href="/about" className="hover:text-gray-700">About</a>
               </nav>
             )}
             {isAdmin ? (
@@ -170,8 +171,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <div className="text-sm">
+              <p className="font-medium mb-2">Company</p>
               <div className="grid gap-1">
-                <a href="#" className="hover:text-gray-700">About</a>
+                <a href="/about" className="hover:text-gray-700">About Us</a>
                 <a href="#" className="hover:text-gray-700">Contact</a>
               </div>
             </div>
