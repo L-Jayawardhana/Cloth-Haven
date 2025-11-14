@@ -348,22 +348,22 @@ export default function AdminCategoriesPage() {
 
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Category Management</h1>
               <p className="text-gray-600 mt-2">Organize and manage your product categories and subcategories</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <button
                 onClick={() => window.location.href = '/admin/products'}
-                className="inline-flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                className="inline-flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200 whitespace-nowrap"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Products
               </button>
               <button
                 onClick={() => setShowAddCategoryModal(true)}
-                className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm"
+                className="inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm whitespace-nowrap"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Category

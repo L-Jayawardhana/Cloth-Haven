@@ -671,11 +671,11 @@ export default function AdminInventoryPage() {
         </div>
         <div className="px-6 py-4 space-y-4">
           {/* Filter options */}
-          <div className="flex flex-wrap gap-3 items-end">
+          <div className="grid grid-cols-5 gap-3 items-end">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-2">Product</label>
               <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                 value={logFilters.productId}
                 onChange={e => setLogFilters(f => ({ ...f, productId: e.target.value }))}
               >
@@ -688,7 +688,7 @@ export default function AdminInventoryPage() {
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-2">Change Type</label>
               <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                 value={logFilters.changeType}
                 onChange={e => setLogFilters(f => ({ ...f, changeType: e.target.value }))}
               >
@@ -702,7 +702,7 @@ export default function AdminInventoryPage() {
               <label className="block text-xs font-semibold text-gray-700 mb-2">Start Date</label>
               <input
                 type="date"
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                 value={logFilters.startDate}
                 onChange={e => setLogFilters(f => ({ ...f, startDate: e.target.value }))}
               />
@@ -711,13 +711,13 @@ export default function AdminInventoryPage() {
               <label className="block text-xs font-semibold text-gray-700 mb-2">End Date</label>
               <input
                 type="date"
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                 value={logFilters.endDate}
                 onChange={e => setLogFilters(f => ({ ...f, endDate: e.target.value }))}
               />
             </div>
             <button
-              className="px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-3 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
               onClick={() => setLogFilters({ productId: '', changeType: '', startDate: '', endDate: '' })}
               type="button"
             >
