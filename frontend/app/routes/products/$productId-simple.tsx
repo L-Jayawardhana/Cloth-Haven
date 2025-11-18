@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router';
 import { productApi, imageApi, colorSizeApi, cartApi, type Product, type ProductImage, type ColorsSizeQuantityAvailability } from '../../lib/api';
+import { useToast } from '../../components/ui/use-toast';
+import { useCartStore } from '../../store/cartStore';
 
 export default function ProductDetails() {
+  const { toast } = useToast();
+  const incrementCount = useCartStore((state) => state.incrementCount);
   const { productId } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [productImages, setProductImages] = useState<ProductImage[]>([]);
@@ -14,6 +18,7 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [showSizeChart, setShowSizeChart] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   // Helper function to get color code
   const getColorCode = (colorName: string): string => {
@@ -239,14 +244,20 @@ export default function ProductDetails() {
   }
 
   const handleAddToCart = async () => {
-    if (!isInStock) return;
+    if (!isInStock || isAdding) return;
     const raw = localStorage.getItem('user');
     const user = raw ? JSON.parse(raw) : null;
     const resolvedUserId = user ? (user.userId ?? user.userid ?? user.id ?? null) : null;
     if (!resolvedUserId) {
-      alert('Please sign in to add items to cart.');
+      toast({
+        variant: "destructive",
+        title: "Sign in required",
+        description: "Please sign in to add items to your cart.",
+      });
       return;
     }
+    
+    setIsAdding(true);
     try {
       await cartApi.addItemToCart({ 
         userId: resolvedUserId, 
@@ -255,10 +266,24 @@ export default function ProductDetails() {
         color: selectedColor,
         size: selectedSize
       });
-      alert(`Added ${quantity} x ${product!.name} (${selectedColor}, ${selectedSize}) to cart!`);
+      
+      // Update cart count
+      incrementCount(quantity);
+      
+      toast({
+        variant: "success",
+        title: "Added to cart!",
+        description: `${quantity} x ${product!.name} (${selectedColor}, ${selectedSize}) has been added to your cart.`,
+      });
     } catch (err) {
       console.error('Add to cart failed', err);
-      alert('Failed to add to cart');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add product to cart. Please try again.",
+      });
+    } finally {
+      setTimeout(() => setIsAdding(false), 500);
     }
   };
 
@@ -482,26 +507,40 @@ export default function ProductDetails() {
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={isProductCompletelyOutOfStock || !isInStock || !selectedSize}
-              className={`w-full py-4 px-6 rounded-md text-white font-semibold text-lg transition-colors flex items-center justify-center space-x-2 ${
-                !isProductCompletelyOutOfStock && isInStock && selectedSize
-                  ? 'bg-gray-900 hover:bg-gray-800'
+              disabled={isProductCompletelyOutOfStock || !isInStock || !selectedSize || isAdding}
+              className={`w-full py-4 px-6 rounded-md text-white font-semibold text-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+                !isProductCompletelyOutOfStock && isInStock && selectedSize && !isAdding
+                  ? 'bg-gray-900 hover:bg-gray-800 active:scale-95'
+                  : isAdding
+                  ? 'bg-gray-700 cursor-wait'
                   : 'bg-gray-400 cursor-not-allowed'
               }`}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-.4-2L3 3m4 10v6a1 1 0 001 1h8a1 1 0 001-1v-6m-9 0V9a1 1 0 011-1h6a1 1 0 011 1v4.1" />
-              </svg>
-              <span>
-                {isProductCompletelyOutOfStock 
-                  ? 'PRODUCT OUT OF STOCK' 
-                  : !isInStock 
-                  ? 'SELECTION OUT OF STOCK'
-                  : !selectedSize 
-                  ? 'SELECT SIZE' 
-                  : 'ADD TO CART'
-                }
-              </span>
+              {isAdding ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>ADDING TO CART...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m-.4-2L3 3m4 10v6a1 1 0 001 1h8a1 1 0 001-1v-6m-9 0V9a1 1 0 011-1h6a1 1 0 011 1v4.1" />
+                  </svg>
+                  <span>
+                    {isProductCompletelyOutOfStock 
+                      ? 'PRODUCT OUT OF STOCK' 
+                      : !isInStock 
+                      ? 'SELECTION OUT OF STOCK'
+                      : !selectedSize 
+                      ? 'SELECT SIZE' 
+                      : 'ADD TO CART'
+                    }
+                  </span>
+                </>
+              )}
             </button>
 
             {/* Shipping Info */}

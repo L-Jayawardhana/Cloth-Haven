@@ -265,61 +265,63 @@ export default function AdminUsersPage() {
   }
   return (
     <>
-      <div className="space-y-8">
-        {/* Messages */}
-        {successMsg && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg">
-            {successMsg}
-          </div>
-        )}
-        {errorMsg && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
-            {errorMsg}
-          </div>
-        )}
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="space-y-8">
+            {/* Messages */}
+            {successMsg && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg">
+                {successMsg}
+              </div>
+            )}
+            {errorMsg && (
+              <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+                {errorMsg}
+              </div>
+            )}
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Users & Staff</h1>
-            <p className="text-slate-600 mt-1">Manage user accounts and staff members</p>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={loadUsers} 
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
-            >
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
-            <button 
-              onClick={() => setIsAddOpen(true)} 
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-            >
-              Add Staff
-            </button>
-          </div>
-        </div>
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Users & Staff</h1>
+                <p className="text-gray-600 mt-2">Manage user accounts and staff members</p>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={loadUsers} 
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-colors"
+                >
+                  {loading ? 'Loading...' : 'Refresh'}
+                </button>
+                <button 
+                  onClick={() => setIsAddOpen(true)} 
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Add Staff
+                </button>
+              </div>
+            </div>
 
-        {/* Search and Filters */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <input 
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" 
-            placeholder="Search users..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select 
-            className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
-          >
-            <option value="">All Roles</option>
-            <option value="CUSTOMER">Customer</option>
-            <option value="STAFF">Staff</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </div>
+            {/* Search and Filters */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <input 
+                className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500" 
+                placeholder="Search users..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select 
+                className="px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
+                <option value="">All Roles</option>
+                <option value="CUSTOMER">Customer</option>
+                <option value="STAFF">Staff</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
 
       {isAddOpen ? (
         <div className="fixed inset-0 z-50 grid place-items-center">
@@ -429,146 +431,152 @@ export default function AdminUsersPage() {
         </div>
       ) : null}
 
-        {loadError && (
-          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            <div className="flex items-center gap-2">
-              <span>❌</span>
-              <div>
-                <div className="font-medium">Failed to load users</div>
-                <div className="mt-1">{loadError}</div>
-                <button 
-                  onClick={loadUsers}
-                  className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border"
-                >
-                  Retry
-                </button>
+            {loadError && (
+              <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center">
+                <svg className="w-5 h-5 text-red-400 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <div className="font-medium">Failed to load users</div>
+                  <div className="mt-1 text-sm">{loadError}</div>
+                  <button 
+                    onClick={loadUsers}
+                    className="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded border border-red-300"
+                  >
+                    Retry
+                  </button>
+                </div>
               </div>
+            )}
+
+            {/* Users Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {loading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
+                  <p className="mt-4 text-slate-600">Loading users...</p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-8 text-center">
+                  <p className="text-slate-600">
+                    {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h2 className="text-lg font-semibold text-gray-900">Users & Staff Directory</h2>
+                    <p className="text-sm text-gray-600 mt-1">Showing {filteredUsers.length} total users</p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-auto">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
+                            ID
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Username
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">
+                            Role
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">
+                            Created
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {currentUsers.map((user) => (
+                          <tr key={user.userId} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-600 text-left">
+                              {user.userId}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
+                              {user.username}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-600 text-left">
+                              {user.email}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-600 text-left">
+                              <RoleBadge role={user.role} />
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm text-slate-600 text-left">
+                              {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-left">
+                              <div className="flex gap-1.5 justify-start">
+                                <button 
+                                  onClick={() => handleViewUser(user)}
+                                  className="p-1.5 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
+                                  title="View details"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleEditUser(user)}
+                                  className="p-1.5 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
+                                  title="Edit user"
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleDeleteUser(user)}
+                                  className="p-1.5 border border-red-200 rounded-md text-red-600 bg-white hover:bg-red-50 transition-colors"
+                                  title="Delete user"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                      <div className="text-sm text-gray-700">
+                        Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{' '}
+                        {filteredUsers.length} users
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => goToPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                        >
+                          Previous
+                        </button>
+                        <span className="px-4 py-2 text-sm font-medium text-gray-700">
+                          {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          onClick={() => goToPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white transition-colors"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Users Table */}
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto"></div>
-              <p className="mt-4 text-slate-600">Loading users...</p>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-slate-600">
-                {searchTerm || roleFilter ? 'No users match your filters' : 'No users found'}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div>
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Username
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider w-24">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white">
-                    {currentUsers.map((user) => (
-                      <tr key={user.userId} className="hover:bg-slate-50 border-b border-slate-100">
-                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
-                          {user.userId}
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-slate-900 text-left">
-                          {user.username}
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
-                          {user.email}
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
-                          <RoleBadge role={user.role} />
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-sm text-slate-600 text-left">
-                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                        </td>
-                        <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-left">
-                          <div className="flex gap-2 justify-center">
-                            <button 
-                              onClick={() => handleViewUser(user)}
-                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
-                              title="View details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleEditUser(user)}
-                              className="p-2 border border-slate-200 rounded-md text-slate-600 bg-white hover:bg-slate-50 transition-colors"
-                              title="Edit user"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteUser(user)}
-                              className="p-2 border border-red-200 rounded-md text-red-600 bg-white hover:bg-red-50 transition-colors"
-                              title="Delete user"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-                  <div className="text-sm text-slate-700">
-                    Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredUsers.length)} of{' '}
-                    {filteredUsers.length} users
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => goToPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      Previous
-                    </button>
-                    <span className="px-3 py-1 text-sm">
-                      {currentPage} of {totalPages}
-                    </span>
-                    <button
-                      onClick={() => goToPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-slate-200 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
-
-    {/* View User Details Dialog */}
+    
+      {/* View User Details Dialog */}
       {isViewDialogOpen && selectedUser && (
         <div className="fixed inset-0 z-50 grid place-items-center">
           <div className="absolute inset-0 bg-black/30" onClick={handleCloseDialogs} />

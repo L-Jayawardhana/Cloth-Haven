@@ -1,5 +1,7 @@
 package org.example.clothheaven.Config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -8,17 +10,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Arrays;
-
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
 @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                // Allow your local frontend AND your deployed frontend (replace with real Vercel URL later)
-                // Or use "*" to allow EVERYONE (Easiest for testing, but less secure)
-                .allowedOriginPatterns("*") 
+                .allowedOrigins("https://your-frontend-domain.com", "http://localhost:5173", "http://127.0.0.1:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -27,8 +25,9 @@ public class CorsConfig implements WebMvcConfigurer {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow all origins temporarily so your Vercel app can connect
-        configuration.setAllowedOriginPatterns(Arrays.asList("*")); 
+        
+      
+      configuration.setAllowedOrigins(Arrays.asList("https://your-frontend-domain.com", "http://localhost:5173", "http://127.0.0.1:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

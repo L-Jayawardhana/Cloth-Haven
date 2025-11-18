@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { inventoryApi, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
+import { inventoryApi, apiService, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export function meta() {
@@ -103,9 +103,7 @@ export default function AdminInventoryPage() {
   async function loadProducts() {
     try {
       setError(null);
-      const res = await fetch(`${API_BASE}/products/get-products`);
-      if (!res.ok) throw new Error(`Products fetch failed: ${res.status}`);
-      const data = await res.json();
+      const data = await apiService.request<Product[]>('/products/get-products');
       setProducts(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err?.message || String(err));
@@ -115,9 +113,7 @@ export default function AdminInventoryPage() {
   async function loadLogs() {
     try {
       setError(null);
-      const res = await fetch(`${API_BASE}/inventoryLogs/getAllLogs`);
-      if (!res.ok) throw new Error(`Logs fetch failed: ${res.status}`);
-      let data = await res.json();
+      let data = await apiService.request<InventoryLog[]>('/inventoryLogs/getAllLogs');
       if (!Array.isArray(data)) data = [];
       
       console.log('Testing color/size - First log:', data[0]);
@@ -328,15 +324,10 @@ export default function AdminInventoryPage() {
         quantityChanged: Number(quantity),
         inventoryLogsDate: nowLocal,
       };
-      const res = await fetch(`${API_BASE}/inventoryLogs/addLog`, {
+      await apiService.request('/inventoryLogs/addLog', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Add log failed: ${res.status}`);
-      }
       // refresh logs
       await loadLogs();
       // reset form
@@ -671,11 +662,11 @@ export default function AdminInventoryPage() {
         </div>
         <div className="px-6 py-4 space-y-4">
           {/* Filter options */}
-          <div className="flex flex-wrap gap-3 items-end">
+          <div className="grid grid-cols-5 gap-3 items-end">
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-2">Product</label>
               <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                 value={logFilters.productId}
                 onChange={e => setLogFilters(f => ({ ...f, productId: e.target.value }))}
               >
@@ -688,7 +679,7 @@ export default function AdminInventoryPage() {
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-2">Change Type</label>
               <select
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm bg-white"
                 value={logFilters.changeType}
                 onChange={e => setLogFilters(f => ({ ...f, changeType: e.target.value }))}
               >
@@ -702,7 +693,7 @@ export default function AdminInventoryPage() {
               <label className="block text-xs font-semibold text-gray-700 mb-2">Start Date</label>
               <input
                 type="date"
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                 value={logFilters.startDate}
                 onChange={e => setLogFilters(f => ({ ...f, startDate: e.target.value }))}
               />
@@ -711,13 +702,13 @@ export default function AdminInventoryPage() {
               <label className="block text-xs font-semibold text-gray-700 mb-2">End Date</label>
               <input
                 type="date"
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
                 value={logFilters.endDate}
                 onChange={e => setLogFilters(f => ({ ...f, endDate: e.target.value }))}
               />
             </div>
             <button
-              className="px-4 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full px-3 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
               onClick={() => setLogFilters({ productId: '', changeType: '', startDate: '', endDate: '' })}
               type="button"
             >

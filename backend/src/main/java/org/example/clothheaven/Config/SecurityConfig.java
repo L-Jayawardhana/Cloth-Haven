@@ -1,8 +1,7 @@
 package org.example.clothheaven.Config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.Map;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -39,23 +41,64 @@ public class SecurityConfig {
                 })
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Health check
                         .requestMatchers("/actuator/**").permitAll()
+                        
+                        // Authentication endpoints - public
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        // Product endpoints - allow all access
-                        .requestMatchers("/api/v1/products/**").permitAll()
-                        // Category endpoints - allow all access
-                        .requestMatchers("/api/v1/categories/**").permitAll()
-                        // Sub-category endpoints - allow all access
-                        .requestMatchers("/api/v1/sub-categories/**").permitAll()
-                        // Image endpoints - allow all access
-                        .requestMatchers("/api/v1/images/**").permitAll()
-                        // Color/Size/Quantity endpoints - allow all access
-                        .requestMatchers("/api/v1/colors-size-quantity-availability/**").permitAll()
-                        // Inventory logs endpoints - allow all access for now (TODO: Add admin auth)
-                        .requestMatchers("/api/v1/inventoryLogs/**").permitAll()
-                        // Admin endpoints - require ADMIN role
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/v1/users/**").permitAll()
+                        
+                        // Product endpoints
+                        .requestMatchers("GET", "/api/v1/products/**").permitAll() // Anyone can view products
+                        .requestMatchers("POST", "/api/v1/products/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can create
+                        .requestMatchers("PUT", "/api/v1/products/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can update
+                        .requestMatchers("DELETE", "/api/v1/products/**").hasRole("ADMIN") // Only admin can delete
+                        
+                        // Category endpoints
+                        .requestMatchers("GET", "/api/v1/categories/**").permitAll() // Anyone can view categories
+                        .requestMatchers("POST", "/api/v1/categories/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can create
+                        .requestMatchers("PUT", "/api/v1/categories/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can update
+                        .requestMatchers("DELETE", "/api/v1/categories/**").hasRole("ADMIN") // Only admin can delete
+                        
+                        // Sub-category endpoints
+                        .requestMatchers("GET", "/api/v1/sub-categories/**").permitAll() // Anyone can view subcategories
+                        .requestMatchers("POST", "/api/v1/sub-categories/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can create
+                        .requestMatchers("PUT", "/api/v1/sub-categories/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can update
+                        .requestMatchers("DELETE", "/api/v1/sub-categories/**").hasRole("ADMIN") // Only admin can delete
+                        
+                        // Image endpoints
+                        .requestMatchers("GET", "/api/v1/images/**").permitAll() // Anyone can view images
+                        .requestMatchers("POST", "/api/v1/images/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can upload
+                        .requestMatchers("PUT", "/api/v1/images/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can update
+                        .requestMatchers("DELETE", "/api/v1/images/**").hasRole("ADMIN") // Only admin can delete
+                        
+                        // Color/Size/Quantity endpoints
+                        .requestMatchers("GET", "/api/v1/colors-size-quantity-availability/**").permitAll() // Anyone can view inventory
+                        .requestMatchers("POST", "/api/v1/colors-size-quantity-availability/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can add
+                        .requestMatchers("PUT", "/api/v1/colors-size-quantity-availability/**").hasAnyRole("ADMIN", "STAFF") // Only admin/staff can update
+                        .requestMatchers("DELETE", "/api/v1/colors-size-quantity-availability/**").hasRole("ADMIN") // Only admin can delete
+                        
+                        // Inventory logs endpoints - admin and staff only
+                        .requestMatchers("/api/v1/inventoryLogs/**").hasAnyRole("ADMIN", "STAFF")
+                        
+                        // Sales report endpoints - admin and staff only
+                        .requestMatchers("/api/v1/sales-report/**").hasAnyRole("ADMIN", "STAFF")
+                        
+                        // User management endpoints
+                        .requestMatchers("GET", "/api/v1/users").hasRole("ADMIN") // Only admin can list all users
+                        .requestMatchers("GET", "/api/v1/users/{id}").authenticated() // Users can view their own profile
+                        .requestMatchers("PUT", "/api/v1/users/**").authenticated() // Users can update their own profile
+                        .requestMatchers("DELETE", "/api/v1/users/**").hasRole("ADMIN") // Only admin can delete users
+                        
+                        // Staff endpoints - admin only
+                        .requestMatchers("/api/v1/staff/**").hasRole("ADMIN")
+                        
+                        // Cart endpoints - authenticated users only
+                        .requestMatchers("/api/v1/cart/**").authenticated()
+                        
+                        // Order endpoints - authenticated users only
+                        .requestMatchers("/api/v1/orders/**").authenticated()
+                        
+                        // Any other request requires authentication
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(customAuthenticationEntryPoint())
