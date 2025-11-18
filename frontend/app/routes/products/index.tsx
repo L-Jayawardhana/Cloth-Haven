@@ -12,8 +12,12 @@ import {
 } from '../../lib/api';
 import { ProductCard } from '../../components/ProductCard';
 import { cartApi } from '../../lib/api';
+import { useToast } from '../../components/ui/use-toast';
+import { useCartStore } from '../../store/cartStore';
 
 export default function Products() {
+  const { toast } = useToast();
+  const incrementCount = useCartStore((state) => state.incrementCount);
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [productImages, setProductImages] = useState<{ [key: number]: ProductImage[] }>({});
@@ -50,15 +54,32 @@ export default function Products() {
       const user = raw ? JSON.parse(raw) : null;
       const resolvedUserId = user ? (user.userId ?? user.userid ?? user.id ?? null) : null;
       if (!resolvedUserId) {
-        alert('Please sign in to add items to cart.');
+        toast({
+          variant: "destructive",
+          title: "Sign in required",
+          description: "Please sign in to add items to your cart.",
+        });
         return;
       }
+      
       await cartApi.addItemToCart({ userId: resolvedUserId, productId, quantity: 1 });
       const product = products.find(p => p.productId === productId);
-      alert(`${product?.name ?? 'Product'} added to cart!`);
+      
+      // Update cart count
+      incrementCount(1);
+      
+      toast({
+        variant: "success",
+        title: "Added to cart!",
+        description: `${product?.name ?? 'Product'} has been added to your cart.`,
+      });
     } catch (error) {
       console.error('Error adding to cart:', error);
-      alert('Failed to add product to cart');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add product to cart. Please try again.",
+      });
     }
   };
 
