@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { inventoryApi, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
+import { inventoryApi, apiService, type InventoryStockUpdate, type ColorsSizeQuantityAvailability } from "../../lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 export function meta() {
@@ -103,9 +103,7 @@ export default function AdminInventoryPage() {
   async function loadProducts() {
     try {
       setError(null);
-      const res = await fetch(`${API_BASE}/products/get-products`);
-      if (!res.ok) throw new Error(`Products fetch failed: ${res.status}`);
-      const data = await res.json();
+      const data = await apiService.request<Product[]>('/products/get-products');
       setProducts(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err?.message || String(err));
@@ -115,9 +113,7 @@ export default function AdminInventoryPage() {
   async function loadLogs() {
     try {
       setError(null);
-      const res = await fetch(`${API_BASE}/inventoryLogs/getAllLogs`);
-      if (!res.ok) throw new Error(`Logs fetch failed: ${res.status}`);
-      let data = await res.json();
+      let data = await apiService.request<InventoryLog[]>('/inventoryLogs/getAllLogs');
       if (!Array.isArray(data)) data = [];
       
       console.log('Testing color/size - First log:', data[0]);
@@ -328,15 +324,10 @@ export default function AdminInventoryPage() {
         quantityChanged: Number(quantity),
         inventoryLogsDate: nowLocal,
       };
-      const res = await fetch(`${API_BASE}/inventoryLogs/addLog`, {
+      await apiService.request('/inventoryLogs/addLog', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err || `Add log failed: ${res.status}`);
-      }
       // refresh logs
       await loadLogs();
       // reset form
