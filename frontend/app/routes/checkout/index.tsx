@@ -21,9 +21,6 @@ export default function Checkout() {
     emailAddress: '',
     paymentMethod: 'CASH_ON_DELIVERY' as PaymentMethod,
   });
-  const [paymentFile, setPaymentFile] = useState<File | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string>('');
-  const [paymentInputType, setPaymentInputType] = useState<'file' | 'url'>('file');
 
   useEffect(() => {
     try {
@@ -117,23 +114,6 @@ export default function Checkout() {
     if (!form.phoneNumber?.trim()) return 'Phone number is required';
     if (!form.homeAddress?.trim()) return 'Home address is required';
     if (!form.emailAddress?.trim()) return 'Email address is required';
-    // If user chooses PAYMENT_SLIP, require a file upload OR URL
-    if (form.paymentMethod === 'PAYMENT_SLIP') {
-      if (paymentInputType === 'file' && !paymentFile) {
-        return 'Please upload a payment slip (PDF/PNG/JPG) or switch to URL input.';
-      }
-      if (paymentInputType === 'url' && !paymentUrl?.trim()) {
-        return 'Please enter a payment slip URL or switch to file upload.';
-      }
-      if (paymentInputType === 'url' && paymentUrl?.trim()) {
-        // Basic URL validation
-        try {
-          new URL(paymentUrl);
-        } catch {
-          return 'Please enter a valid URL (e.g., https://example.com/slip.jpg)';
-        }
-      }
-    }
     return null;
   };
 
@@ -184,19 +164,6 @@ export default function Checkout() {
           };
           const order = await orderApi.createOrder(payload);
           
-          // Upload payment slip if needed
-          if (form.paymentMethod === 'PAYMENT_SLIP') {
-            try {
-              if (paymentInputType === 'file' && paymentFile) {
-                await orderApi.uploadPaymentSlip(order.orderId, paymentFile);
-              } else if (paymentInputType === 'url' && paymentUrl.trim()) {
-                await orderApi.submitPaymentSlipUrl(order.orderId, paymentUrl.trim());
-              }
-            } catch (e: any) {
-              console.error('Payment slip submission failed', e);
-            }
-          }
-          
           // Restore other cart items (excluding the one we just ordered)
           for (const item of originalCartData.items || []) {
             if (item.cartItemId !== singleItem.cartItemId) {
@@ -246,20 +213,6 @@ export default function Checkout() {
           paymentMethod: form.paymentMethod,
         };
         const order = await orderApi.createOrder(payload);
-        
-        // If a payment slip file was provided, upload it against the created order
-        if (form.paymentMethod === 'PAYMENT_SLIP') {
-          try {
-            if (paymentInputType === 'file' && paymentFile) {
-              await orderApi.uploadPaymentSlip(order.orderId, paymentFile);
-            } else if (paymentInputType === 'url' && paymentUrl.trim()) {
-              await orderApi.submitPaymentSlipUrl(order.orderId, paymentUrl.trim());
-            }
-          } catch (e: any) {
-            console.error('Payment slip submission failed', e);
-            // keep going; order has been created
-          }
-        }
         
         setSuccessMsg(`Order #${order.orderId} placed successfully!`);
         // After successful order, consider redirecting or clearing UI
@@ -345,99 +298,18 @@ export default function Checkout() {
 
             <div className="mt-6">
               <h3 className="font-medium">Payment method</h3>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <label className={`flex items-center gap-3 rounded-md border p-3 ${form.paymentMethod === 'CASH_ON_DELIVERY' ? 'border-gray-900' : 'border-gray-300'}`}>
+              <div className="mt-3">
+                <label className="flex items-center gap-3 rounded-md border border-gray-900 bg-gray-50 p-3">
                   <input
                     type="radio"
                     name="paymentMethod"
                     value="CASH_ON_DELIVERY"
-                    checked={form.paymentMethod === 'CASH_ON_DELIVERY'}
-                    onChange={(e) => setForm(prev => ({ ...prev, paymentMethod: e.target.value as PaymentMethod }))}
+                    checked={true}
+                    readOnly
                   />
-                  <span>Cash on Delivery</span>
-                </label>
-                <label className={`flex items-center gap-3 rounded-md border p-3 ${form.paymentMethod === 'PAYMENT_SLIP' ? 'border-gray-900' : 'border-gray-300'}`}>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="PAYMENT_SLIP"
-                    checked={form.paymentMethod === 'PAYMENT_SLIP'}
-                    onChange={(e) => setForm(prev => ({ ...prev, paymentMethod: e.target.value as PaymentMethod }))}
-                  />
-                  <span>Payment Slip</span>
+                  <span className="font-medium">Cash on Delivery</span>
                 </label>
               </div>
-
-              {form.paymentMethod === 'PAYMENT_SLIP' && (
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center gap-4 text-sm">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={paymentInputType === 'file'}
-                        onChange={() => {
-                          setPaymentInputType('file');
-                          setPaymentUrl('');
-                        }}
-                      />
-                      <span>Upload File</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        checked={paymentInputType === 'url'}
-                        onChange={() => {
-                          setPaymentInputType('url');
-                          setPaymentFile(null);
-                        }}
-                      />
-                      <span>Enter URL</span>
-                    </label>
-                  </div>
-
-                  {paymentInputType === 'file' ? (
-                    <div>
-                      <label className="block text-sm text-gray-700 mb-1">Upload payment slip (PDF, PNG, JPG)</label>
-                      <input
-                        type="file"
-                        accept=".pdf,image/png,image/jpeg,image/jpg"
-                        onChange={(e) => setPaymentFile(e.target.files?.[0] ?? null)}
-                        className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      />
-                      {paymentFile && (
-                        <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span>File selected: {paymentFile.name}</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm text-gray-700 mb-1">Payment slip URL</label>
-                      <input
-                        type="url"
-                        value={paymentUrl}
-                        onChange={(e) => setPaymentUrl(e.target.value)}
-                        placeholder="https://example.com/payment-slip.jpg"
-                        className="w-full rounded-md border border-gray-300 px-3 py-2"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Enter the URL of your payment slip image (must start with http:// or https://)
-                      </p>
-                      {paymentUrl && (
-                        <div className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span>URL entered</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             <div className="mt-6">

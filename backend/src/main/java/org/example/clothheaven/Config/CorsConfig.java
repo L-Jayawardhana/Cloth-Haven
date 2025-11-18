@@ -16,7 +16,7 @@ public class CorsConfig implements WebMvcConfigurer {
 @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://cloth-haven.vercel.app")
+                .allowedOrigins("https://cloth-haven.vercel.app" , "http://localhost:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -27,7 +27,7 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration configuration = new CorsConfiguration();
         
       
-      configuration.setAllowedOrigins(Arrays.asList("https://cloth-haven.vercel.app"));
+      configuration.setAllowedOrigins(Arrays.asList("https://cloth-haven.vercel.app", "http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
