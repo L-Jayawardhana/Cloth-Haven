@@ -1,5 +1,8 @@
 package org.example.clothheaven.Controller;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.example.clothheaven.DTO.ColorsSizeQuantityAvailabilityResponseDTO;
 import org.example.clothheaven.DTO.InventoryLogsCreateDTO;
 import org.example.clothheaven.DTO.InventoryLogsResponseDTO;
@@ -7,14 +10,16 @@ import org.example.clothheaven.DTO.InventoryStockUpdateDTO;
 import org.example.clothheaven.Service.InventoryLogsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/inventoryLogs")
-@CrossOrigin(origins = { "http://localhost:5173", "http://127.0.0.1:5173" })
 public class InventoryLogsController {
 
     private final InventoryLogsService inventoryLogsService;
