@@ -1,3 +1,13 @@
+#!/bin/sh
+# Wrapper start script for Railway — forwards to backend/start.sh
+if [ -f "./backend/start.sh" ]; then
+  # ensure backend start script is executable and run it
+  chmod +x ./backend/start.sh 2>/dev/null || true
+  exec sh ./backend/start.sh
+else
+  echo "Error: ./backend/start.sh not found"
+  exit 1
+fi
 #!/bin/bash
 
 # 1. Start MySQL Server
