@@ -169,34 +169,49 @@ export default function AdminDashboard() {
       
       // Calculate date range based on selection
       const now = new Date();
+      // Set to start of today to include full day
+      now.setHours(23, 59, 59, 999);
+      
       let startDate: Date;
       let groupBy: 'day' | 'week' | 'month';
+      let numPeriods: number;
       
       switch (selectedRange) {
         case '7days':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          startDate = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
           groupBy = 'day';
+          numPeriods = 7;
           break;
         case '30days':
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          startDate = new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
           groupBy = 'day';
+          numPeriods = 30;
           break;
         case '60days':
-          startDate = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+          startDate = new Date(now.getTime() - 59 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
           groupBy = 'day';
+          numPeriods = 60;
           break;
         case '6months':
           startDate = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
           groupBy = 'week';
+          numPeriods = 26;
           break;
         case '12months':
           startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          startDate.setHours(0, 0, 0, 0);
           groupBy = 'month';
+          numPeriods = 12;
           break;
       }
       
-      // Filter orders within the date range
+      // Filter orders within the date range (exclude cancelled orders from revenue)
       const filteredOrders = allOrders.filter(o => {
+        if (o.status === 'CANCELLED') return false;
         const orderDate = new Date(o.orderDate);
         return orderDate >= startDate && orderDate <= now;
       });
@@ -206,15 +221,13 @@ export default function AdminDashboard() {
       
       // Initialize all periods with 0
       if (groupBy === 'day') {
-        const days = selectedRange === '7days' ? 7 : selectedRange === '30days' ? 30 : 60;
-        for (let i = 0; i < days; i++) {
+        for (let i = 0; i < numPeriods; i++) {
           const date = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000);
           const key = date.toISOString().split('T')[0];
           revenueMap.set(key, 0);
         }
       } else if (groupBy === 'week') {
-        // For 6 months, create ~26 weeks
-        for (let i = 0; i < 26; i++) {
+        for (let i = 0; i < numPeriods; i++) {
           const date = new Date(startDate.getTime() + i * 7 * 24 * 60 * 60 * 1000);
           const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
@@ -222,8 +235,7 @@ export default function AdminDashboard() {
           revenueMap.set(key, 0);
         }
       } else { // month
-        // For 12 months, create 12 month keys
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < numPeriods; i++) {
           const date = new Date(startDate);
           date.setMonth(startDate.getMonth() + i);
           const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -247,10 +259,9 @@ export default function AdminDashboard() {
           key = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
         }
         
-        if (revenueMap.has(key)) {
-          const currentRevenue = revenueMap.get(key) || 0;
-          revenueMap.set(key, currentRevenue + (order.totalPrice || 0));
-        }
+        // Add revenue even if key doesn't exist in map (for edge cases)
+        const currentRevenue = revenueMap.get(key) || 0;
+        revenueMap.set(key, currentRevenue + (order.totalPrice || 0));
       });
       
       // Convert to array and sort by date
