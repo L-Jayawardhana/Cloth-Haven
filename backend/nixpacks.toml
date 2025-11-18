@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['maven', 'jdk11']
+
+[phases.build]
+cmds = ['mvn clean install -DskipTests']
+
+[phases.start]
+cmd = 'java -Dserver.port=$PORT $JAVA_OPTS -jar target/*.jar'
